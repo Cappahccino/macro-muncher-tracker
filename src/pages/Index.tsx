@@ -3,8 +3,9 @@ import { MacroCircle } from "@/components/MacroCircle";
 import { AddMealForm } from "@/components/AddMealForm";
 import { DailySummary } from "@/components/DailySummary";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import { Slider } from "@/components/ui/slider";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Meal {
   name: string;
@@ -16,6 +17,7 @@ interface Meal {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [targets, setTargets] = useState({
     calories: 2000,
@@ -38,10 +40,36 @@ const Index = () => {
     setMeals([...meals, meal]);
   };
 
-  const handleTargetChange = (value: number[], key: keyof typeof targets) => {
+  const handleTargetChange = (value: string, key: keyof typeof targets) => {
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue < 0) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a valid positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const maxValues = {
+      calories: 10000,
+      protein: 1000,
+      carbs: 1000,
+      fat: 1000,
+    };
+
+    if (numValue > maxValues[key]) {
+      toast({
+        title: "Value too high",
+        description: `Maximum value for ${key} is ${maxValues[key]}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTargets((prev) => ({
       ...prev,
-      [key]: value[0],
+      [key]: numValue,
     }));
   };
 
@@ -61,11 +89,13 @@ const Index = () => {
             color="stroke-primary"
           />
           <div className="px-2">
-            <Slider
-              defaultValue={[targets.calories]}
-              max={5000}
-              step={50}
-              onValueChange={(value) => handleTargetChange(value, "calories")}
+            <Input
+              type="number"
+              value={targets.calories}
+              onChange={(e) => handleTargetChange(e.target.value, "calories")}
+              className="text-center"
+              min="0"
+              max="10000"
             />
           </div>
         </div>
@@ -78,11 +108,13 @@ const Index = () => {
             color="stroke-secondary"
           />
           <div className="px-2">
-            <Slider
-              defaultValue={[targets.protein]}
-              max={300}
-              step={5}
-              onValueChange={(value) => handleTargetChange(value, "protein")}
+            <Input
+              type="number"
+              value={targets.protein}
+              onChange={(e) => handleTargetChange(e.target.value, "protein")}
+              className="text-center"
+              min="0"
+              max="1000"
             />
           </div>
         </div>
@@ -95,11 +127,13 @@ const Index = () => {
             color="stroke-accent"
           />
           <div className="px-2">
-            <Slider
-              defaultValue={[targets.carbs]}
-              max={500}
-              step={5}
-              onValueChange={(value) => handleTargetChange(value, "carbs")}
+            <Input
+              type="number"
+              value={targets.carbs}
+              onChange={(e) => handleTargetChange(e.target.value, "carbs")}
+              className="text-center"
+              min="0"
+              max="1000"
             />
           </div>
         </div>
@@ -112,11 +146,13 @@ const Index = () => {
             color="stroke-destructive"
           />
           <div className="px-2">
-            <Slider
-              defaultValue={[targets.fat]}
-              max={200}
-              step={5}
-              onValueChange={(value) => handleTargetChange(value, "fat")}
+            <Input
+              type="number"
+              value={targets.fat}
+              onChange={(e) => handleTargetChange(e.target.value, "fat")}
+              className="text-center"
+              min="0"
+              max="1000"
             />
           </div>
         </div>

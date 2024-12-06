@@ -19,6 +19,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
+  const [editingMeal, setEditingMeal] = useState<{ index: number; meal: Meal } | null>(null);
   const [targets, setTargets] = useState({
     calories: 2000,
     protein: 150,
@@ -37,7 +38,35 @@ const Index = () => {
   );
 
   const handleAddMeal = (meal: Meal) => {
-    setMeals([...meals, meal]);
+    if (editingMeal !== null) {
+      const updatedMeals = [...meals];
+      updatedMeals[editingMeal.index] = meal;
+      setMeals(updatedMeals);
+      setEditingMeal(null);
+      toast({
+        title: "Success",
+        description: "Meal updated successfully",
+      });
+    } else {
+      setMeals([...meals, meal]);
+      toast({
+        title: "Success",
+        description: "Meal added successfully",
+      });
+    }
+  };
+
+  const handleDeleteMeal = (index: number) => {
+    const updatedMeals = meals.filter((_, i) => i !== index);
+    setMeals(updatedMeals);
+    toast({
+      title: "Success",
+      description: "Meal deleted successfully",
+    });
+  };
+
+  const handleEditMeal = (index: number, meal: Meal) => {
+    setEditingMeal({ index, meal });
   };
 
   const handleTargetChange = (value: string, key: keyof typeof targets) => {
@@ -159,8 +188,12 @@ const Index = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <AddMealForm onAddMeal={handleAddMeal} />
-        <DailySummary meals={meals} />
+        <AddMealForm onAddMeal={handleAddMeal} initialMeal={editingMeal?.meal} />
+        <DailySummary 
+          meals={meals} 
+          onDeleteMeal={handleDeleteMeal}
+          onEditMeal={handleEditMeal}
+        />
       </div>
     </div>
   );

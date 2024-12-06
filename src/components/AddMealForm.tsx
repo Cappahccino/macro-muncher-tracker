@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,10 @@ interface Meal {
 
 interface AddMealFormProps {
   onAddMeal: (meal: Meal) => void;
+  initialMeal?: Meal | null;
 }
 
-export function AddMealForm({ onAddMeal }: AddMealFormProps) {
+export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   const { toast } = useToast();
   const [meal, setMeal] = useState<Meal>({
     name: "",
@@ -25,6 +26,12 @@ export function AddMealForm({ onAddMeal }: AddMealFormProps) {
     carbs: 0,
     fat: 0,
   });
+
+  useEffect(() => {
+    if (initialMeal) {
+      setMeal(initialMeal);
+    }
+  }, [initialMeal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,10 +45,6 @@ export function AddMealForm({ onAddMeal }: AddMealFormProps) {
     }
     onAddMeal(meal);
     setMeal({ name: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
-    toast({
-      title: "Success",
-      description: "Meal added successfully",
-    });
   };
 
   return (
@@ -93,7 +96,7 @@ export function AddMealForm({ onAddMeal }: AddMealFormProps) {
           </div>
         </div>
         <Button type="submit" className="w-full">
-          Add Meal
+          {initialMeal ? "Update Meal" : "Add Meal"}
         </Button>
       </form>
     </Card>

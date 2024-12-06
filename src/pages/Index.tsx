@@ -2,6 +2,8 @@ import { useState } from "react";
 import { MacroCircle } from "@/components/MacroCircle";
 import { AddMealForm } from "@/components/AddMealForm";
 import { DailySummary } from "@/components/DailySummary";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface Meal {
   name: string;
@@ -12,6 +14,7 @@ interface Meal {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [meals, setMeals] = useState<Meal[]>([]);
 
   const targets = {
@@ -37,9 +40,10 @@ const Index = () => {
 
   return (
     <div className="container max-w-4xl mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Macro & Calorie Tracker
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">MyMacros</h1>
+        <Button onClick={() => navigate("/food-list")}>Food List</Button>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MacroCircle

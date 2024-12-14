@@ -59,6 +59,7 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
           placeholder="Meal name"
           value={meal.name}
           onChange={(value) => handleMealChange({ name: String(value) })}
+          isMealName={true}
         />
         <MacroInputsGrid meal={meal} onMealChange={handleMealChange} />
         <Button type="submit" className="w-full">

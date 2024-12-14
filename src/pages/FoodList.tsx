@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Plus, ArrowLeft } from "lucide-react";
 
 interface FoodItem {
   name: string;
@@ -16,6 +18,7 @@ interface FoodItem {
 }
 
 const FoodList = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [newFood, setNewFood] = useState<FoodItem>({
@@ -54,9 +57,36 @@ const FoodList = () => {
     });
   };
 
+  const handleAddToMeal = (food: FoodItem) => {
+    const meal = {
+      name: food.name,
+      calories: food.calories,
+      protein: food.protein,
+      carbs: food.carbs,
+      fat: food.fat,
+    };
+    
+    // Get existing meals from localStorage or initialize empty array
+    const existingMeals = JSON.parse(localStorage.getItem('meals') || '[]');
+    existingMeals.push(meal);
+    localStorage.setItem('meals', JSON.stringify(existingMeals));
+    
+    toast({
+      title: "Success",
+      description: `${food.name} added to meals`,
+    });
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-4 space-y-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Food List</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">Food List</h1>
+        </div>
+      </div>
       
       <Card className="p-4">
         <form onSubmit={handleAddFood} className="space-y-4">
@@ -121,17 +151,29 @@ const FoodList = () => {
       <div className="space-y-4">
         {foodItems.map((food, index) => (
           <Card key={index} className="p-4">
-            <h3 className="font-bold text-lg">{food.name}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-              <p>Calories: {food.calories}</p>
-              <p>Protein: {food.protein}g</p>
-              <p>Carbs: {food.carbs}g</p>
-              <p>Fat: {food.fat}g</p>
-              <p>Fibre: {food.fibre}g</p>
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg">{food.name}</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <p>Calories: {food.calories}</p>
+                  <p>Protein: {food.protein}g</p>
+                  <p>Carbs: {food.carbs}g</p>
+                  <p>Fat: {food.fat}g</p>
+                  <p>Fibre: {food.fibre}g</p>
+                </div>
+                {food.notes && (
+                  <p className="mt-2 text-muted-foreground">Notes: {food.notes}</p>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handleAddToMeal(food)}
+                className="ml-4"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-            {food.notes && (
-              <p className="mt-2 text-gray-600">Notes: {food.notes}</p>
-            )}
           </Card>
         ))}
       </div>

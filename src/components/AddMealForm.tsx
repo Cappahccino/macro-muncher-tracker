@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { MealFormInput } from "./MealFormInput";
+import { MacroInputsGrid } from "./MacroInputsGrid";
 
 interface Meal {
   name: string;
@@ -47,54 +48,19 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
     setMeal({ name: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
   };
 
+  const handleMealChange = (updates: Partial<Meal>) => {
+    setMeal((prev) => ({ ...prev, ...updates }));
+  };
+
   return (
     <Card className="p-4">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Input
-            placeholder="Meal name"
-            value={meal.name}
-            onChange={(e) => setMeal({ ...meal, name: e.target.value })}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Input
-              type="number"
-              placeholder="Calories"
-              value={meal.calories || ""}
-              onChange={(e) =>
-                setMeal({ ...meal, calories: Number(e.target.value) })
-              }
-            />
-          </div>
-          <div>
-            <Input
-              type="number"
-              placeholder="Protein (g)"
-              value={meal.protein || ""}
-              onChange={(e) =>
-                setMeal({ ...meal, protein: Number(e.target.value) })
-              }
-            />
-          </div>
-          <div>
-            <Input
-              type="number"
-              placeholder="Carbs (g)"
-              value={meal.carbs || ""}
-              onChange={(e) => setMeal({ ...meal, carbs: Number(e.target.value) })}
-            />
-          </div>
-          <div>
-            <Input
-              type="number"
-              placeholder="Fat (g)"
-              value={meal.fat || ""}
-              onChange={(e) => setMeal({ ...meal, fat: Number(e.target.value) })}
-            />
-          </div>
-        </div>
+        <MealFormInput
+          placeholder="Meal name"
+          value={meal.name}
+          onChange={(value) => handleMealChange({ name: String(value) })}
+        />
+        <MacroInputsGrid meal={meal} onMealChange={handleMealChange} />
         <Button type="submit" className="w-full">
           {initialMeal ? "Update Meal" : "Add Meal"}
         </Button>

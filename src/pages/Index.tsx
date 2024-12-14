@@ -2,10 +2,9 @@ import { useState } from "react";
 import { MacroCircle } from "@/components/MacroCircle";
 import { AddMealForm } from "@/components/AddMealForm";
 import { DailySummary } from "@/components/DailySummary";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { Header } from "@/components/Header";
 
 interface Meal {
   name: string;
@@ -16,7 +15,6 @@ interface Meal {
 }
 
 const Index = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [editingMeal, setEditingMeal] = useState<{ index: number; meal: Meal } | null>(null);
@@ -104,10 +102,7 @@ const Index = () => {
 
   return (
     <div className="container max-w-4xl mx-auto p-4 space-y-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">MyMacros</h1>
-        <Button onClick={() => navigate("/food-list")}>Food List</Button>
-      </div>
+      <Header />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-4">

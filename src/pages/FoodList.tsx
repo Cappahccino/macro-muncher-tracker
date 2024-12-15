@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, Edit, Check, X } from "lucide-react";
 
 interface FoodItem {
   name: string;
@@ -21,6 +21,7 @@ const FoodList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newFood, setNewFood] = useState<FoodItem>({
     name: "",
     calories: 0,
@@ -30,6 +31,19 @@ const FoodList = () => {
     fibre: 0,
     notes: "",
   });
+
+  // Load food items from localStorage on component mount
+  useEffect(() => {
+    const savedItems = localStorage.getItem('foodItems');
+    if (savedItems) {
+      setFoodItems(JSON.parse(savedItems));
+    }
+  }, []);
+
+  // Save food items to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('foodItems', JSON.stringify(foodItems));
+  }, [foodItems]);
 
   const handleAddFood = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +55,26 @@ const FoodList = () => {
       });
       return;
     }
-    setFoodItems([...foodItems, newFood]);
+
+    if (editingIndex !== null) {
+      // Update existing food item
+      const updatedItems = [...foodItems];
+      updatedItems[editingIndex] = newFood;
+      setFoodItems(updatedItems);
+      setEditingIndex(null);
+      toast({
+        title: "Success",
+        description: "Food item updated successfully",
+      });
+    } else {
+      // Add new food item
+      setFoodItems([...foodItems, newFood]);
+      toast({
+        title: "Success",
+        description: "Food item added successfully",
+      });
+    }
+
     setNewFood({
       name: "",
       calories: 0,
@@ -51,29 +84,32 @@ const FoodList = () => {
       fibre: 0,
       notes: "",
     });
+  };
+
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    setNewFood(foodItems[index]);
+  };
+
+  const handleDelete = (index: number) => {
+    const updatedItems = foodItems.filter((_, i) => i !== index);
+    setFoodItems(updatedItems);
     toast({
       title: "Success",
-      description: "Food item added successfully",
+      description: "Food item deleted successfully",
     });
   };
 
-  const handleAddToMeal = (food: FoodItem) => {
-    const meal = {
-      name: food.name,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-    };
-    
-    // Get existing meals from localStorage or initialize empty array
-    const existingMeals = JSON.parse(localStorage.getItem('meals') || '[]');
-    existingMeals.push(meal);
-    localStorage.setItem('meals', JSON.stringify(existingMeals));
-    
-    toast({
-      title: "Success",
-      description: `${food.name} added to meals`,
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setNewFood({
+      name: "",
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fibre: 0,
+      notes: "",
     });
   };
 
@@ -142,9 +178,16 @@ const FoodList = () => {
             value={newFood.notes}
             onChange={(e) => setNewFood({ ...newFood, notes: e.target.value })}
           />
-          <Button type="submit" className="w-full">
-            Add Food Item
-          </Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">
+              {editingIndex !== null ? "Update Food Item" : "Add Food Item"}
+            </Button>
+            {editingIndex !== null && (
+              <Button type="button" variant="outline" onClick={handleCancelEdit}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </Card>
 
@@ -165,14 +208,22 @@ const FoodList = () => {
                   <p className="mt-2 text-muted-foreground">Notes: {food.notes}</p>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleAddToMeal(food)}
-                className="ml-4"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleEdit(index)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleDelete(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </Card>
         ))}

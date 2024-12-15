@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { FoodSelect } from "@/components/FoodSelect";
 
 interface FoodComponent {
   name: string;
   amount: number;
-  unit: string;
   calories: number;
   protein: number;
   carbs: number;
@@ -40,6 +40,26 @@ const MealsList = () => {
     components: [],
     totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
   });
+
+  const calculateTotalMacros = (components: FoodComponent[]) => {
+    return components.reduce((acc, component) => ({
+      calories: acc.calories + component.calories,
+      protein: acc.protein + component.protein,
+      carbs: acc.carbs + component.carbs,
+      fat: acc.fat + component.fat,
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  };
+
+  const handleAddComponent = (component: FoodComponent) => {
+    const updatedComponents = [...newTemplate.components, component];
+    const totalMacros = calculateTotalMacros(updatedComponents);
+    
+    setNewTemplate({
+      ...newTemplate,
+      components: updatedComponents,
+      totalMacros
+    });
+  };
 
   const handleAddTemplate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +104,43 @@ const MealsList = () => {
             value={newTemplate.name}
             onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
           />
+          <FoodSelect onAddComponent={handleAddComponent} />
+          
+          {newTemplate.components.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="font-medium">Components:</h4>
+              {newTemplate.components.map((component, idx) => (
+                <div key={idx} className="pl-4">
+                  <p>{component.name} - {component.amount}g</p>
+                  <p className="text-sm text-muted-foreground">
+                    Calories: {component.calories.toFixed(1)} | 
+                    Protein: {component.protein.toFixed(1)}g | 
+                    Carbs: {component.carbs.toFixed(1)}g | 
+                    Fat: {component.fat.toFixed(1)}g
+                  </p>
+                </div>
+              ))}
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Calories</p>
+                  <p className="font-medium">{newTemplate.totalMacros.calories.toFixed(1)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Protein</p>
+                  <p className="font-medium">{newTemplate.totalMacros.protein.toFixed(1)}g</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Carbs</p>
+                  <p className="font-medium">{newTemplate.totalMacros.carbs.toFixed(1)}g</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Fat</p>
+                  <p className="font-medium">{newTemplate.totalMacros.fat.toFixed(1)}g</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Button type="submit" className="w-full">
             Add Template
           </Button>
@@ -99,25 +156,31 @@ const MealsList = () => {
                 <h4 className="font-medium">Components:</h4>
                 {template.components.map((component, idx) => (
                   <div key={idx} className="pl-4">
-                    <p>{component.name} - {component.amount}{component.unit}</p>
+                    <p>{component.name} - {component.amount}g</p>
+                    <p className="text-sm text-muted-foreground">
+                      Calories: {component.calories.toFixed(1)} | 
+                      Protein: {component.protein.toFixed(1)}g | 
+                      Carbs: {component.carbs.toFixed(1)}g | 
+                      Fat: {component.fat.toFixed(1)}g
+                    </p>
                   </div>
                 ))}
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Calories</p>
-                    <p className="font-medium">{template.totalMacros.calories}</p>
+                    <p className="text-sm text-muted-foreground">Total Calories</p>
+                    <p className="font-medium">{template.totalMacros.calories.toFixed(1)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Protein</p>
-                    <p className="font-medium">{template.totalMacros.protein}g</p>
+                    <p className="text-sm text-muted-foreground">Total Protein</p>
+                    <p className="font-medium">{template.totalMacros.protein.toFixed(1)}g</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Carbs</p>
-                    <p className="font-medium">{template.totalMacros.carbs}g</p>
+                    <p className="text-sm text-muted-foreground">Total Carbs</p>
+                    <p className="font-medium">{template.totalMacros.carbs.toFixed(1)}g</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Fat</p>
-                    <p className="font-medium">{template.totalMacros.fat}g</p>
+                    <p className="text-sm text-muted-foreground">Total Fat</p>
+                    <p className="font-medium">{template.totalMacros.fat.toFixed(1)}g</p>
                   </div>
                 </div>
               </div>

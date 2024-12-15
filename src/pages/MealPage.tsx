@@ -1,5 +1,6 @@
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { MealDetails } from "@/components/MealDetails";
+import { Header } from "@/components/Header";
 
 const MealPage = () => {
   const location = useLocation();
@@ -11,6 +12,7 @@ const MealPage = () => {
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
+      <Header />
       <MealDetails meal={meal} />
     </div>
   );

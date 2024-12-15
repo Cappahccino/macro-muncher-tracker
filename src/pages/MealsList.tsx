@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MealTemplateForm } from "@/components/MealTemplateForm";
 import { MealTemplateList } from "@/components/MealTemplateList";
+import { Header } from "@/components/Header";
 
 interface FoodComponent {
   name: string;
@@ -85,13 +86,7 @@ const MealsList = () => {
 
   return (
     <div className="container max-w-4xl mx-auto p-4 space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Meal Templates</h1>
-      </div>
-
+      <Header />
       <MealTemplateForm
         editingIndex={editingIndex}
         template={newTemplate}
@@ -105,7 +100,6 @@ const MealsList = () => {
           });
         }}
       />
-
       <MealTemplateList
         templates={mealTemplates}
         onEdit={handleEditTemplate}

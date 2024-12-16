@@ -13,6 +13,7 @@ interface FoodItem {
   fat: number;
   fibre: number;
   notes: string;
+  weight: number;
 }
 
 interface FoodFormProps {
@@ -32,6 +33,7 @@ export function FoodForm({ onSave, initialFood, onCancel }: FoodFormProps) {
       fat: 0,
       fibre: 0,
       notes: "",
+      weight: 100, // Default weight is 100g
     }
   );
 
@@ -57,6 +59,12 @@ export function FoodForm({ onSave, initialFood, onCancel }: FoodFormProps) {
           onChange={(e) => setFood({ ...food, name: e.target.value })}
         />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <Input
+            type="number"
+            placeholder="Weight (g)"
+            value={food.weight || ""}
+            onChange={(e) => setFood({ ...food, weight: Number(e.target.value) })}
+          />
           <Input
             type="number"
             placeholder="Calories"

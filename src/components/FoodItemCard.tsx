@@ -10,6 +10,7 @@ interface FoodItem {
   fat: number;
   fibre: number;
   notes: string;
+  weight: number;
 }
 
 interface FoodItemCardProps {
@@ -25,6 +26,7 @@ export function FoodItemCard({ food, onEdit, onDelete }: FoodItemCardProps) {
         <div className="space-y-2">
           <h3 className="font-bold text-lg">{food.name}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <p>Weight: {food.weight}g</p>
             <p>Calories: {food.calories}</p>
             <p>Protein: {food.protein}g</p>
             <p>Carbs: {food.carbs}g</p>

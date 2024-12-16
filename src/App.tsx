@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import FoodList from "./pages/FoodList";
 import MealPage from "./pages/MealPage";
 import MealsList from "./pages/MealsList";
+import WeightProgress from "./pages/WeightProgress";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/food-list" element={<FoodList />} />
           <Route path="/meal/:id" element={<MealPage />} />
           <Route path="/meals-list" element={<MealsList />} />
+          <Route path="/weight-progress" element={<WeightProgress />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

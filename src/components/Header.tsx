@@ -23,6 +23,9 @@ export const Header = () => {
         {location.pathname !== "/meals-list" && (
           <Button onClick={() => navigate("/meals-list")}>Meals List</Button>
         )}
+        {location.pathname !== "/weight-progress" && (
+          <Button onClick={() => navigate("/weight-progress")}>Weight Progress</Button>
+        )}
       </div>
     </div>
   );

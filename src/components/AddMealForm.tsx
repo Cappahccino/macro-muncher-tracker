@@ -34,6 +34,22 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
     }
   }, [initialMeal]);
 
+  useEffect(() => {
+    const handleTemplateSelection = (event: any) => {
+      const macros = event.detail;
+      setMeal(prev => ({
+        ...prev,
+        calories: macros.calories,
+        protein: macros.protein,
+        carbs: macros.carbs,
+        fat: macros.fat
+      }));
+    };
+
+    window.addEventListener('templateSelected', handleTemplateSelection);
+    return () => window.removeEventListener('templateSelected', handleTemplateSelection);
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!meal.name) {

@@ -16,12 +16,28 @@ export function MealFormInput({
   onChange,
   isMealName = false
 }: MealFormInputProps) {
+  const handleTemplateSelect = (templateName: string) => {
+    const savedTemplates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
+    const selectedTemplate = savedTemplates.find((t: any) => t.name === templateName);
+    
+    if (selectedTemplate) {
+      onChange(selectedTemplate.name);
+      // Emit an event to notify parent component about template selection
+      const event = new CustomEvent('templateSelected', { 
+        detail: selectedTemplate.totalMacros 
+      });
+      window.dispatchEvent(event);
+    } else {
+      onChange(templateName);
+    }
+  };
+
   if (isMealName) {
     return (
       <div className="space-y-2">
         <MealSelect 
           value={String(value)} 
-          onChange={(newValue) => onChange(newValue)} 
+          onChange={handleTemplateSelect} 
         />
         <Input
           type={type}

@@ -12,6 +12,7 @@ interface FoodItem {
   fat: number;
   fibre: number;
   notes: string;
+  weight: number;
 }
 
 const FoodList = () => {

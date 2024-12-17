@@ -9,12 +9,13 @@ interface WeightProgressChartProps {
 
 export const WeightProgressChart = ({ entries }: WeightProgressChartProps) => {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Weight Progress Chart</CardTitle>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[300px]">
         <ChartContainer
+          className="h-full"
           config={{
             weight: {
               theme: {

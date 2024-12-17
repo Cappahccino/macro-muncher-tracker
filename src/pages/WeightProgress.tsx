@@ -8,10 +8,12 @@ import { WeightEntry } from "@/components/weight/types";
 
 const WeightProgress = () => {
   const [entries, setEntries] = useState<WeightEntry[]>([]);
+  const [currentWeight, setCurrentWeight] = useState<number>(0);
+  const [targetWeight, setTargetWeight] = useState<number>(0);
 
   const handleGoalSet = (current: number, target: number) => {
-    // This could be expanded to store goals and track progress
-    console.log("Goal set:", { current, target });
+    setCurrentWeight(current);
+    setTargetWeight(target);
   };
 
   const handleAddEntry = (newEntry: WeightEntry) => {
@@ -28,7 +30,11 @@ const WeightProgress = () => {
       <Header />
       
       <div className="grid gap-8">
-        <WeightProgressChart entries={entries} />
+        <WeightProgressChart 
+          entries={entries} 
+          currentWeight={currentWeight}
+          targetWeight={targetWeight}
+        />
         <WeightGoalCard onGoalSet={handleGoalSet} />
         <WeightEntryCard onEntryAdd={handleAddEntry} />
         <WeightEntriesTable entries={entries} />

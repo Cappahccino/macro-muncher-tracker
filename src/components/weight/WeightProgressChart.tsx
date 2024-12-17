@@ -15,7 +15,7 @@ export const WeightProgressChart = ({ entries, currentWeight, targetWeight }: We
       <CardHeader>
         <CardTitle>Weight Progress Chart</CardTitle>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[300px]">
         <ChartContainer
           config={{
             weight: {

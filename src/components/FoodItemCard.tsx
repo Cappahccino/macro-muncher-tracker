@@ -22,10 +22,10 @@ interface FoodItemCardProps {
 export function FoodItemCard({ food, onEdit, onDelete }: FoodItemCardProps) {
   return (
     <Card className="p-4">
-      <div className="flex justify-between items-start">
-        <div className="space-y-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="space-y-2 flex-1">
           <h3 className="font-bold text-lg">{food.name}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
             <p>Weight: {food.weight}g</p>
             <p>Calories: {food.calories}</p>
             <p>Protein: {food.protein}g</p>
@@ -34,10 +34,10 @@ export function FoodItemCard({ food, onEdit, onDelete }: FoodItemCardProps) {
             <p>Fibre: {food.fibre}g</p>
           </div>
           {food.notes && (
-            <p className="mt-2 text-muted-foreground">Notes: {food.notes}</p>
+            <p className="mt-2 text-sm text-muted-foreground">Notes: {food.notes}</p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex sm:flex-col gap-2">
           <Button
             variant="outline"
             size="icon"

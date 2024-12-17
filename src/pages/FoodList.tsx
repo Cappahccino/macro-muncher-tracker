@@ -60,22 +60,24 @@ const FoodList = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto p-4 space-y-8">
+    <div className="container max-w-4xl mx-auto p-4 space-y-6">
       <Header />
-      <FoodForm
-        onSave={handleSaveFood}
-        initialFood={editingIndex !== null ? foodItems[editingIndex] : undefined}
-        onCancel={editingIndex !== null ? () => setEditingIndex(null) : undefined}
-      />
-      <div className="space-y-4">
-        {foodItems.map((food, index) => (
-          <FoodItemCard
-            key={index}
-            food={food}
-            onEdit={() => setEditingIndex(index)}
-            onDelete={() => handleDelete(index)}
-          />
-        ))}
+      <div className="space-y-6">
+        <FoodForm
+          onSave={handleSaveFood}
+          initialFood={editingIndex !== null ? foodItems[editingIndex] : undefined}
+          onCancel={editingIndex !== null ? () => setEditingIndex(null) : undefined}
+        />
+        <div className="space-y-4">
+          {foodItems.map((food, index) => (
+            <FoodItemCard
+              key={index}
+              food={food}
+              onEdit={() => setEditingIndex(index)}
+              onDelete={() => handleDelete(index)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -104,7 +104,7 @@ const Index = () => {
     <div className="container max-w-4xl mx-auto p-4 space-y-8">
       <Header />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="space-y-4">
           <MacroCircle
             label="Calories"

@@ -1,21 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { Line, LineChart, XAxis, YAxis, ReferenceLine } from "recharts";
+import { Line, LineChart, XAxis, YAxis } from "recharts";
 import { WeightEntry } from "./types";
 
 interface WeightProgressChartProps {
   entries: WeightEntry[];
-  currentWeight: number;
-  targetWeight: number;
 }
 
-export const WeightProgressChart = ({ entries, currentWeight, targetWeight }: WeightProgressChartProps) => {
+export const WeightProgressChart = ({ entries }: WeightProgressChartProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Weight Progress Chart</CardTitle>
       </CardHeader>
-      <CardContent className="h-[300px]">
+      <CardContent className="h-[400px]">
         <ChartContainer
           config={{
             weight: {
@@ -36,22 +34,6 @@ export const WeightProgressChart = ({ entries, currentWeight, targetWeight }: We
               stroke="var(--color-weight)"
               strokeWidth={2}
             />
-            {currentWeight > 0 && (
-              <ReferenceLine 
-                y={currentWeight} 
-                stroke="blue" 
-                strokeDasharray="3 3" 
-                label="Starting Weight" 
-              />
-            )}
-            {targetWeight > 0 && (
-              <ReferenceLine 
-                y={targetWeight} 
-                stroke="green" 
-                strokeDasharray="3 3" 
-                label="Target Weight" 
-              />
-            )}
           </LineChart>
         </ChartContainer>
       </CardContent>

@@ -11,11 +11,14 @@ interface WeightEntryCardProps {
 
 export const WeightEntryCard = ({ onEntryAdd }: WeightEntryCardProps) => {
   const { toast } = useToast();
-  const [morningWeight, setMorningWeight] = useState<number>(0);
-  const [nightWeight, setNightWeight] = useState<number>(0);
+  const [morningWeight, setMorningWeight] = useState<string>("");
+  const [nightWeight, setNightWeight] = useState<string>("");
 
   const handleAddEntry = () => {
-    if (morningWeight <= 0 || nightWeight <= 0) {
+    const morning = parseFloat(morningWeight);
+    const night = parseFloat(nightWeight);
+
+    if (isNaN(morning) || isNaN(night) || morning <= 0 || night <= 0) {
       toast({
         title: "Invalid weights",
         description: "Please enter valid weights greater than 0",
@@ -26,8 +29,8 @@ export const WeightEntryCard = ({ onEntryAdd }: WeightEntryCardProps) => {
 
     const newEntry: WeightEntry = {
       date: new Date().toISOString().split('T')[0],
-      morningWeight,
-      nightWeight,
+      morningWeight: morning,
+      nightWeight: night,
       calories: 2000, // This would come from daily totals
       protein: 150,   // This would come from daily totals
       carbs: 200,     // This would come from daily totals
@@ -36,6 +39,8 @@ export const WeightEntryCard = ({ onEntryAdd }: WeightEntryCardProps) => {
     };
 
     onEntryAdd(newEntry);
+    setMorningWeight("");
+    setNightWeight("");
     toast({
       title: "Entry added",
       description: "Weight entry has been recorded",
@@ -52,16 +57,20 @@ export const WeightEntryCard = ({ onEntryAdd }: WeightEntryCardProps) => {
           <label>Morning Weight (kg)</label>
           <Input
             type="number"
-            value={morningWeight || ''}
-            onChange={(e) => setMorningWeight(Number(e.target.value))}
+            value={morningWeight}
+            onChange={(e) => setMorningWeight(e.target.value)}
+            placeholder="Enter morning weight"
+            step="0.1"
           />
         </div>
         <div className="grid gap-2">
           <label>Night Weight (kg)</label>
           <Input
             type="number"
-            value={nightWeight || ''}
-            onChange={(e) => setNightWeight(Number(e.target.value))}
+            value={nightWeight}
+            onChange={(e) => setNightWeight(e.target.value)}
+            placeholder="Enter night weight"
+            step="0.1"
           />
         </div>
         <Button className="self-end" onClick={handleAddEntry}>Add Entry</Button>

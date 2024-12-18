@@ -20,35 +20,44 @@ interface AddMealFormProps {
 
 export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   const { toast } = useToast();
-  const [meal, setMeal] = useState<Meal>({
-    name: "",
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
+  const [meal, setMeal] = useState<Meal>(() => {
+    const savedMeal = localStorage.getItem('currentMeal');
+    if (savedMeal) {
+      return JSON.parse(savedMeal);
+    }
+    return {
+      name: "",
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    };
   });
 
   useEffect(() => {
     if (initialMeal) {
       setMeal(initialMeal);
+      localStorage.setItem('currentMeal', JSON.stringify(initialMeal));
     }
   }, [initialMeal]);
 
   useEffect(() => {
     const handleTemplateSelection = (event: any) => {
       const macros = event.detail;
-      setMeal(prev => ({
-        ...prev,
+      const updatedMeal = {
+        ...meal,
         calories: macros.calories,
         protein: macros.protein,
         carbs: macros.carbs,
         fat: macros.fat
-      }));
+      };
+      setMeal(updatedMeal);
+      localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));
     };
 
     window.addEventListener('templateSelected', handleTemplateSelection);
     return () => window.removeEventListener('templateSelected', handleTemplateSelection);
-  }, []);
+  }, [meal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,11 +70,15 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
       return;
     }
     onAddMeal(meal);
-    setMeal({ name: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
+    const emptyMeal = { name: "", calories: 0, protein: 0, carbs: 0, fat: 0 };
+    setMeal(emptyMeal);
+    localStorage.setItem('currentMeal', JSON.stringify(emptyMeal));
   };
 
   const handleMealChange = (updates: Partial<Meal>) => {
-    setMeal((prev) => ({ ...prev, ...updates }));
+    const updatedMeal = { ...meal, ...updates };
+    setMeal(updatedMeal);
+    localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));
   };
 
   return (

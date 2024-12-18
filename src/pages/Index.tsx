@@ -105,7 +105,7 @@ const Index = () => {
     if (numValue > maxValues[key]) {
       toast({
         title: "Value too high",
-        description: `Maximum value for ${key} is ${maxValues[key]}`,
+        description: `Maximum value for ${String(key)} is ${maxValues[key]}`,
         variant: "destructive",
       });
       return;

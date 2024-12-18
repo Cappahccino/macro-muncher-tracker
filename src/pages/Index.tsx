@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MacroCircle } from "@/components/MacroCircle";
 import { AddMealForm } from "@/components/AddMealForm";
 import { DailySummary } from "@/components/DailySummary";
@@ -16,14 +16,31 @@ interface Meal {
 
 const Index = () => {
   const { toast } = useToast();
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [editingMeal, setEditingMeal] = useState<{ index: number; meal: Meal } | null>(null);
-  const [targets, setTargets] = useState({
-    calories: 2000,
-    protein: 150,
-    carbs: 250,
-    fat: 70,
+  const [meals, setMeals] = useState<Meal[]>(() => {
+    const savedMeals = localStorage.getItem('dailyMeals');
+    return savedMeals ? JSON.parse(savedMeals) : [];
   });
+  
+  const [editingMeal, setEditingMeal] = useState<{ index: number; meal: Meal } | null>(null);
+  const [targets, setTargets] = useState(() => {
+    const savedTargets = localStorage.getItem('macroTargets');
+    return savedTargets ? JSON.parse(savedTargets) : {
+      calories: 2000,
+      protein: 150,
+      carbs: 250,
+      fat: 70,
+    };
+  });
+
+  // Save meals whenever they change
+  useEffect(() => {
+    localStorage.setItem('dailyMeals', JSON.stringify(meals));
+  }, [meals]);
+
+  // Save targets whenever they change
+  useEffect(() => {
+    localStorage.setItem('macroTargets', JSON.stringify(targets));
+  }, [targets]);
 
   const totals = meals.reduce(
     (acc, meal) => ({

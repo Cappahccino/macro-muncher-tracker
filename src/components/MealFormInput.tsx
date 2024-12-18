@@ -21,14 +21,14 @@ export function MealFormInput({
     const selectedTemplate = savedTemplates.find((t: any) => t.name === templateName);
     
     if (selectedTemplate) {
-      onChange(selectedTemplate.name);
+      // Update the meal name input with the template name
+      onChange(templateName);
+      
       // Emit an event to notify parent component about template selection
       const event = new CustomEvent('templateSelected', { 
         detail: selectedTemplate.totalMacros 
       });
       window.dispatchEvent(event);
-    } else {
-      onChange(templateName);
     }
   };
 
@@ -42,8 +42,8 @@ export function MealFormInput({
         <Input
           type={type}
           placeholder={placeholder}
-          value={value || ""}
-          onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
       </div>
     );
@@ -54,7 +54,7 @@ export function MealFormInput({
       <Input
         type={type}
         placeholder={placeholder}
-        value={value || ""}
+        value={value}
         onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
       />
     </div>

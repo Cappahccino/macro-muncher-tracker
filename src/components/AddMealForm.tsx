@@ -42,21 +42,19 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   }, [initialMeal]);
 
   useEffect(() => {
-    const handleTemplateSelection = (event: any) => {
-      const macros = event.detail;
+    const handleTemplateSelection = (event: CustomEvent) => {
+      const { name, ...macros } = event.detail;
       const updatedMeal = {
         ...meal,
-        calories: macros.calories,
-        protein: macros.protein,
-        carbs: macros.carbs,
-        fat: macros.fat
+        name: name,
+        ...macros
       };
       setMeal(updatedMeal);
       localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));
     };
 
-    window.addEventListener('templateSelected', handleTemplateSelection);
-    return () => window.removeEventListener('templateSelected', handleTemplateSelection);
+    window.addEventListener('templateSelected', handleTemplateSelection as EventListener);
+    return () => window.removeEventListener('templateSelected', handleTemplateSelection as EventListener);
   }, [meal]);
 
   const handleSubmit = (e: React.FormEvent) => {

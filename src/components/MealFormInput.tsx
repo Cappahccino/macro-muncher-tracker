@@ -26,7 +26,10 @@ export function MealFormInput({
     
     if (selectedTemplate) {
       const event = new CustomEvent('templateSelected', { 
-        detail: selectedTemplate.totalMacros 
+        detail: {
+          ...selectedTemplate.totalMacros,
+          name: selectedTemplate.name
+        }
       });
       window.dispatchEvent(event);
     }
@@ -35,17 +38,27 @@ export function MealFormInput({
   return (
     <div className="space-y-2">
       {isMealName && (
-        <MealSelect 
-          value={String(value)} 
-          onChange={handleTemplateSelect} 
+        <>
+          <MealSelect 
+            value={String(value)} 
+            onChange={handleTemplateSelect} 
+          />
+          <Input
+            type={type}
+            placeholder={placeholder}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </>
+      )}
+      {!isMealName && (
+        <Input
+          type={type}
+          placeholder={placeholder}
+          value={value || ""}
+          onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
         />
       )}
-      <Input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
-      />
     </div>
   );
 }

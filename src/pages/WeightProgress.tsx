@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { WeightGoalCard } from "@/components/weight/WeightGoalCard";
 import { WeightEntryCard } from "@/components/weight/WeightEntryCard";
@@ -7,19 +7,54 @@ import { WeightEntriesTable } from "@/components/weight/WeightEntriesTable";
 import { WeightEntry } from "@/components/weight/types";
 
 const WeightProgress = () => {
-  const [entries, setEntries] = useState<WeightEntry[]>([]);
+  const [entries, setEntries] = useState<WeightEntry[]>(() => {
+    const savedEntries = localStorage.getItem('weightEntries');
+    return savedEntries ? JSON.parse(savedEntries) : [];
+  });
+
+  // Get daily macros from homepage
+  const getDailyMacros = () => {
+    const dailyMeals = JSON.parse(localStorage.getItem('dailyMeals') || '[]');
+    return dailyMeals.reduce(
+      (acc: any, meal: any) => ({
+        calories: acc.calories + meal.calories,
+        protein: acc.protein + meal.protein,
+        carbs: acc.carbs + meal.carbs,
+        fat: acc.fat + meal.fat,
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+  };
+
+  // Save entries whenever they change
+  useEffect(() => {
+    localStorage.setItem('weightEntries', JSON.stringify(entries));
+  }, [entries]);
 
   const handleGoalSet = (current: number, target: number) => {
     console.log("Goal set:", { current, target });
+    // Save weight goals to localStorage
+    localStorage.setItem('weightGoals', JSON.stringify({ current, target }));
   };
 
   const handleAddEntry = (newEntry: WeightEntry) => {
     const lastEntry = entries[0];
     const weightChange = lastEntry 
-      ? newEntry.morningWeight - lastEntry.morningWeight
+      ? Number((newEntry.morningWeight - lastEntry.morningWeight).toFixed(2))
       : 0;
 
-    setEntries([{ ...newEntry, weightChange }, ...entries]);
+    // Add daily macros to the entry
+    const dailyMacros = getDailyMacros();
+    const entryWithMacros = {
+      ...newEntry,
+      weightChange,
+      calories: dailyMacros.calories,
+      protein: dailyMacros.protein,
+      carbs: dailyMacros.carbs,
+      fat: dailyMacros.fat,
+    };
+
+    setEntries([entryWithMacros, ...entries]);
   };
 
   return (

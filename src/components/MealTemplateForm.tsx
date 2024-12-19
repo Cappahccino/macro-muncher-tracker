@@ -4,6 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FoodSelect } from "@/components/FoodSelect";
 import { toast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface FoodComponent {
   name: string;
@@ -39,6 +49,7 @@ export function MealTemplateForm({
   onCancel 
 }: MealTemplateFormProps) {
   const [currentTemplate, setCurrentTemplate] = useState<MealTemplate>(template);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleAddComponent = (component: FoodComponent) => {
     const updatedComponents = [...currentTemplate.components, component];
@@ -70,63 +81,94 @@ export function MealTemplateForm({
       });
       return;
     }
+    
+    if (editingIndex !== null) {
+      setShowConfirmDialog(true);
+    } else {
+      onSave(currentTemplate);
+    }
+  };
+
+  const handleConfirmEdit = () => {
     onSave(currentTemplate);
+    setShowConfirmDialog(false);
   };
 
   return (
-    <Card className="p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          placeholder="Template name"
-          value={currentTemplate.name}
-          onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
-        />
-        <FoodSelect onAddComponent={handleAddComponent} />
-        
-        {currentTemplate.components.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <h4 className="font-medium">Components:</h4>
-            {currentTemplate.components.map((component, idx) => (
-              <div key={idx} className="pl-4">
-                <p>{component.name} - {component.amount}g</p>
-                <p className="text-sm text-muted-foreground">
-                  Calories: {component.calories.toFixed(1)} | 
-                  Protein: {component.protein.toFixed(1)}g | 
-                  Carbs: {component.carbs.toFixed(1)}g | 
-                  Fat: {component.fat.toFixed(1)}g
-                </p>
-              </div>
-            ))}
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Calories</p>
-                <p className="font-medium">{currentTemplate.totalMacros.calories.toFixed(1)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Protein</p>
-                <p className="font-medium">{currentTemplate.totalMacros.protein.toFixed(1)}g</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Carbs</p>
-                <p className="font-medium">{currentTemplate.totalMacros.carbs.toFixed(1)}g</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Fat</p>
-                <p className="font-medium">{currentTemplate.totalMacros.fat.toFixed(1)}g</p>
+    <>
+      <Card className="p-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            placeholder="Template name"
+            value={currentTemplate.name}
+            onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
+          />
+          <FoodSelect onAddComponent={handleAddComponent} />
+          
+          {currentTemplate.components.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <h4 className="font-medium">Components:</h4>
+              {currentTemplate.components.map((component, idx) => (
+                <div key={idx} className="pl-4">
+                  <p>{component.name} - {component.amount}g</p>
+                  <p className="text-sm text-muted-foreground">
+                    Calories: {component.calories.toFixed(1)} | 
+                    Protein: {component.protein.toFixed(1)}g | 
+                    Carbs: {component.carbs.toFixed(1)}g | 
+                    Fat: {component.fat.toFixed(1)}g
+                  </p>
+                </div>
+              ))}
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Calories</p>
+                  <p className="font-medium">{currentTemplate.totalMacros.calories.toFixed(1)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Protein</p>
+                  <p className="font-medium">{currentTemplate.totalMacros.protein.toFixed(1)}g</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Carbs</p>
+                  <p className="font-medium">{currentTemplate.totalMacros.carbs.toFixed(1)}g</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Fat</p>
+                  <p className="font-medium">{currentTemplate.totalMacros.fat.toFixed(1)}g</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        
-        <Button type="submit" className="w-full">
-          {editingIndex !== null ? "Save Changes" : "Add Template"}
-        </Button>
-        {editingIndex !== null && (
-          <Button type="button" variant="outline" className="w-full" onClick={onCancel}>
-            Cancel Edit
+          )}
+          
+          <Button type="submit" className="w-full">
+            {editingIndex !== null ? "Save Changes" : "Add Template"}
           </Button>
-        )}
-      </form>
-    </Card>
+          {editingIndex !== null && (
+            <Button type="button" variant="outline" className="w-full" onClick={onCancel}>
+              Cancel Edit
+            </Button>
+          )}
+        </form>
+      </Card>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Template Update</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to update this meal template? This will overwrite the existing template with the new information.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmEdit}>
+              Update Template
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -26,6 +26,31 @@ const WeightProgress = () => {
     );
   };
 
+  // Update entries when daily meals change
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'dailyMeals') {
+        const updatedMacros = getDailyMacros();
+        // Update the latest entry with new macro values
+        setEntries(currentEntries => {
+          if (currentEntries.length === 0) return currentEntries;
+          
+          const [latestEntry, ...oldEntries] = currentEntries;
+          return [{
+            ...latestEntry,
+            calories: updatedMacros.calories,
+            protein: updatedMacros.protein,
+            carbs: updatedMacros.carbs,
+            fat: updatedMacros.fat,
+          }, ...oldEntries];
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Save entries whenever they change
   useEffect(() => {
     localStorage.setItem('weightEntries', JSON.stringify(entries));

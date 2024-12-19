@@ -8,6 +8,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface FoodItem {
   name: string;
@@ -32,6 +42,8 @@ interface FoodSelectProps {
 export function FoodSelect({ onAddComponent }: FoodSelectProps) {
   const [selectedFood, setSelectedFood] = useState<string>("");
   const [weight, setWeight] = useState<number>(100);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingComponent, setPendingComponent] = useState<any>(null);
   
   const foodItems: FoodItem[] = JSON.parse(localStorage.getItem('foodItems') || '[]');
 
@@ -49,14 +61,40 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
     const food = foodItems.find(item => item.name === selectedFood);
     if (food) {
       const macros = calculateMacros(food, weight);
-      onAddComponent({
+      const newComponent = {
         name: food.name,
         amount: weight,
         ...macros
-      });
-      setSelectedFood("");
-      setWeight(100);
+      };
+      
+      // Check if this component already exists in the current template
+      const templates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
+      const currentTemplate = templates.find((template: any) => 
+        template.components.some((comp: any) => comp.name === food.name)
+      );
+
+      if (currentTemplate) {
+        setPendingComponent(newComponent);
+        setShowConfirmDialog(true);
+      } else {
+        onAddComponent(newComponent);
+        resetForm();
+      }
     }
+  };
+
+  const handleConfirmAdd = () => {
+    if (pendingComponent) {
+      onAddComponent(pendingComponent);
+      resetForm();
+      setShowConfirmDialog(false);
+    }
+  };
+
+  const resetForm = () => {
+    setSelectedFood("");
+    setWeight(100);
+    setPendingComponent(null);
   };
 
   return (
@@ -83,6 +121,28 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
         />
         <Button onClick={handleAddComponent}>Add Component</Button>
       </div>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Component</AlertDialogTitle>
+            <AlertDialogDescription>
+              This food item already exists in the template. Do you want to update it with the new weight and macros?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowConfirmDialog(false);
+              resetForm();
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAdd}>
+              Update Component
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

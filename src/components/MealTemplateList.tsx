@@ -57,31 +57,31 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
               <h4 className="font-medium">Components:</h4>
               {template.components.map((component, idx) => (
                 <div key={idx} className="pl-4">
-                  <p>{component.name} - {component.amount}g</p>
+                  <p>{component.name} - {Math.round(component.amount)}g</p>
                   <p className="text-sm text-muted-foreground">
-                    Calories: {component.calories.toFixed(1)} | 
-                    Protein: {component.protein.toFixed(1)}g | 
-                    Carbs: {component.carbs.toFixed(1)}g | 
-                    Fat: {component.fat.toFixed(1)}g
+                    Calories: {Math.round(component.calories)} | 
+                    Protein: {Math.round(component.protein)}g | 
+                    Carbs: {Math.round(component.carbs)}g | 
+                    Fat: {Math.round(component.fat)}g
                   </p>
                 </div>
               ))}
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Calories</p>
-                  <p className="font-medium">{template.totalMacros.calories.toFixed(1)}</p>
+                  <p className="font-medium">{Math.round(template.totalMacros.calories)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Protein</p>
-                  <p className="font-medium">{template.totalMacros.protein.toFixed(1)}g</p>
+                  <p className="font-medium">{Math.round(template.totalMacros.protein)}g</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Carbs</p>
-                  <p className="font-medium">{template.totalMacros.carbs.toFixed(1)}g</p>
+                  <p className="font-medium">{Math.round(template.totalMacros.carbs)}g</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Fat</p>
-                  <p className="font-medium">{template.totalMacros.fat.toFixed(1)}g</p>
+                  <p className="font-medium">{Math.round(template.totalMacros.fat)}g</p>
                 </div>
               </div>
             </div>

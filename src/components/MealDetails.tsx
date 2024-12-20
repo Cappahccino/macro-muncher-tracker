@@ -31,19 +31,19 @@ export function MealDetails({ meal }: MealDetailsProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Calories</p>
-            <p className="text-2xl font-bold">{meal.calories}</p>
+            <p className="text-2xl font-bold">{Math.round(meal.calories)}</p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Protein</p>
-            <p className="text-2xl font-bold">{meal.protein}g</p>
+            <p className="text-2xl font-bold">{Math.round(meal.protein)}g</p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Carbs</p>
-            <p className="text-2xl font-bold">{meal.carbs}g</p>
+            <p className="text-2xl font-bold">{Math.round(meal.carbs)}g</p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">Fat</p>
-            <p className="text-2xl font-bold">{meal.fat}g</p>
+            <p className="text-2xl font-bold">{Math.round(meal.fat)}g</p>
           </div>
         </div>
       </Card>

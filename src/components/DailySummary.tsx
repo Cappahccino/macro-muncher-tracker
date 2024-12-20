@@ -32,10 +32,10 @@ export function DailySummary({ meals, onDeleteMeal, onEditMeal }: DailySummaryPr
             <span className="font-medium">{meal.name}</span>
             <div className="flex items-center gap-4">
               <div className="flex gap-4 text-sm text-muted-foreground">
-                <span>{meal.calories} cal</span>
-                <span>{meal.protein}g P</span>
-                <span>{meal.carbs}g C</span>
-                <span>{meal.fat}g F</span>
+                <span>{Math.round(meal.calories)} cal</span>
+                <span>{Math.round(meal.protein)}g P</span>
+                <span>{Math.round(meal.carbs)}g C</span>
+                <span>{Math.round(meal.fat)}g F</span>
               </div>
               <div className="flex gap-2">
                 <Button

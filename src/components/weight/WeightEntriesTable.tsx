@@ -75,14 +75,14 @@ export const WeightEntriesTable = ({ entries }: WeightEntriesTableProps) => {
                     </CollapsibleTrigger>
                   </TableCell>
                   <TableCell>{entry.date}</TableCell>
-                  <TableCell>{entry.morningWeight}kg</TableCell>
-                  <TableCell>{entry.nightWeight}kg</TableCell>
-                  <TableCell>{entry.calories}</TableCell>
-                  <TableCell>{entry.protein}g</TableCell>
-                  <TableCell>{entry.carbs}g</TableCell>
-                  <TableCell>{entry.fat}g</TableCell>
+                  <TableCell>{Math.round(entry.morningWeight * 10) / 10}kg</TableCell>
+                  <TableCell>{Math.round(entry.nightWeight * 10) / 10}kg</TableCell>
+                  <TableCell>{Math.round(entry.calories)}</TableCell>
+                  <TableCell>{Math.round(entry.protein)}g</TableCell>
+                  <TableCell>{Math.round(entry.carbs)}g</TableCell>
+                  <TableCell>{Math.round(entry.fat)}g</TableCell>
                   <TableCell className={entry.weightChange > 0 ? "text-red-500" : "text-green-500"}>
-                    {entry.weightChange > 0 ? "+" : ""}{entry.weightChange}kg
+                    {entry.weightChange > 0 ? "+" : ""}{Math.round(entry.weightChange * 10) / 10}kg
                   </TableCell>
                 </TableRow>
                 <CollapsibleContent asChild>
@@ -95,10 +95,10 @@ export const WeightEntriesTable = ({ entries }: WeightEntriesTableProps) => {
                             <div key={mealIndex} className="pl-4 py-1">
                               <p className="font-medium">{meal.name}</p>
                               <p className="text-sm text-muted-foreground">
-                                Calories: {meal.calories} | 
-                                Protein: {meal.protein}g | 
-                                Carbs: {meal.carbs}g | 
-                                Fat: {meal.fat}g
+                                Calories: {Math.round(meal.calories)} | 
+                                Protein: {Math.round(meal.protein)}g | 
+                                Carbs: {Math.round(meal.carbs)}g | 
+                                Fat: {Math.round(meal.fat)}g
                               </p>
                             </div>
                           ))}

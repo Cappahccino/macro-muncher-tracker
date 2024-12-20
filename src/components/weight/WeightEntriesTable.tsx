@@ -54,14 +54,17 @@ export const WeightEntriesTable = ({ entries }: WeightEntriesTableProps) => {
           </TableHeader>
           <TableBody>
             {entries.map((entry, index) => (
-              <>
-                <TableRow key={index}>
+              <Collapsible
+                key={`${entry.date}-${index}`}
+                open={expandedDays.includes(entry.date)}
+                onOpenChange={() => toggleDay(entry.date)}
+              >
+                <TableRow>
                   <TableCell>
                     <CollapsibleTrigger asChild>
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => toggleDay(entry.date)}
                       >
                         {expandedDays.includes(entry.date) ? (
                           <ChevronDown className="h-4 w-4" />
@@ -82,10 +85,10 @@ export const WeightEntriesTable = ({ entries }: WeightEntriesTableProps) => {
                     {entry.weightChange > 0 ? "+" : ""}{entry.weightChange}kg
                   </TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell colSpan={9} className="p-0">
-                    <Collapsible open={expandedDays.includes(entry.date)}>
-                      <CollapsibleContent className="px-4 py-2 bg-muted/50">
+                <CollapsibleContent asChild>
+                  <TableRow>
+                    <TableCell colSpan={9} className="p-0">
+                      <div className="px-4 py-2 bg-muted/50">
                         <div className="space-y-2">
                           <h4 className="font-medium">Meals for {entry.date}</h4>
                           {getDailyMeals(entry.date).map((meal: any, mealIndex: number) => (
@@ -103,11 +106,11 @@ export const WeightEntriesTable = ({ entries }: WeightEntriesTableProps) => {
                             <p className="text-sm text-muted-foreground">No meals recorded for this day</p>
                           )}
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </TableCell>
-                </TableRow>
-              </>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                </CollapsibleContent>
+              </Collapsible>
             ))}
           </TableBody>
         </Table>

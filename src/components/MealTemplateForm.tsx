@@ -60,6 +60,19 @@ export function MealTemplateForm({
       components: updatedComponents,
       totalMacros
     });
+
+    // Update current meal in localStorage to reflect changes
+    const updatedMeal = {
+      name: currentTemplate.name,
+      ...totalMacros
+    };
+    localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));
+
+    // Dispatch event to update homepage
+    const event = new CustomEvent('templateSelected', { 
+      detail: updatedMeal
+    });
+    window.dispatchEvent(event);
   };
 
   const calculateTotalMacros = (components: FoodComponent[]) => {

@@ -67,6 +67,14 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
       });
       return;
     }
+
+    // Store the meal in daily history
+    const today = new Date().toISOString().split('T')[0];
+    const mealsHistory = JSON.parse(localStorage.getItem('dailyMealsHistory') || '{}');
+    mealsHistory[today] = mealsHistory[today] || [];
+    mealsHistory[today].push(meal);
+    localStorage.setItem('dailyMealsHistory', JSON.stringify(mealsHistory));
+
     onAddMeal(meal);
     const emptyMeal = { name: "", calories: 0, protein: 0, carbs: 0, fat: 0 };
     setMeal(emptyMeal);

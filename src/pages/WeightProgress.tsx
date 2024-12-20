@@ -5,14 +5,27 @@ import { WeightEntryCard } from "@/components/weight/WeightEntryCard";
 import { WeightProgressChart } from "@/components/weight/WeightProgressChart";
 import { WeightEntriesTable } from "@/components/weight/WeightEntriesTable";
 import { WeightEntry } from "@/components/weight/types";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const WeightProgress = () => {
   const [entries, setEntries] = useState<WeightEntry[]>(() => {
     const savedEntries = localStorage.getItem('weightEntries');
     return savedEntries ? JSON.parse(savedEntries) : [];
   });
+  const { toast } = useToast();
 
-  // Get daily macros from homepage
   const getDailyMacros = () => {
     const dailyMeals = JSON.parse(localStorage.getItem('dailyMeals') || '[]');
     return dailyMeals.reduce(
@@ -82,11 +95,45 @@ const WeightProgress = () => {
     setEntries([entryWithMacros, ...entries]);
   };
 
+  const handleClearEntries = () => {
+    setEntries([]);
+    localStorage.removeItem('weightEntries');
+    localStorage.removeItem('dailyMealsHistory');
+    toast({
+      title: "Entries cleared",
+      description: "All weight entries and meal history have been cleared.",
+    });
+  };
+
   return (
     <div className="container max-w-7xl mx-auto p-4 space-y-6">
       <Header />
       
       <div className="grid gap-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold tracking-tight">Weight Progress</h2>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">Clear All Entries</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all your weight entries
+                  and meal history data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearEntries}>
+                  Yes, clear everything
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+        
         <WeightProgressChart entries={entries} />
         <div className="grid md:grid-cols-2 gap-6">
           <WeightGoalCard onGoalSet={handleGoalSet} />

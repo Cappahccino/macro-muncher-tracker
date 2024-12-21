@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Header } from "@/components/Header";
+import { WeightInput } from "@/components/onboarding/WeightInput";
+import { HeightInput } from "@/components/onboarding/HeightInput";
 
 type WeightUnit = "kg" | "lbs" | "st";
 
@@ -96,7 +97,6 @@ const Onboarding = () => {
 
   return (
     <div className="container max-w-2xl mx-auto p-4 space-y-6">
-      <Header />
       <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -111,40 +111,21 @@ const Onboarding = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Current Weight</label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={userData.currentWeight || ""}
-                  onChange={(e) => setUserData({ ...userData, currentWeight: Number(e.target.value) })}
-                  placeholder={`Weight in ${userData.weightUnit}`}
-                />
-                <Select
-                  value={userData.weightUnit}
-                  onValueChange={(value: WeightUnit) => setUserData({ ...userData, weightUnit: value })}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue placeholder="Unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="lbs">lbs</SelectItem>
-                    <SelectItem value="st">st</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <WeightInput
+              label="Current Weight"
+              weight={userData.currentWeight}
+              weightUnit={userData.weightUnit}
+              onWeightChange={(weight) => setUserData({ ...userData, currentWeight: weight })}
+              onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Target Weight</label>
-              <Input
-                type="number"
-                value={userData.targetWeight || ""}
-                onChange={(e) => setUserData({ ...userData, targetWeight: Number(e.target.value) })}
-                placeholder={`Weight in ${userData.weightUnit}`}
-              />
-            </div>
+            <WeightInput
+              label="Target Weight"
+              weight={userData.targetWeight}
+              weightUnit={userData.weightUnit}
+              onWeightChange={(weight) => setUserData({ ...userData, targetWeight: weight })}
+              onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
+            />
           </div>
 
           <div>
@@ -172,15 +153,10 @@ const Onboarding = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Height (cm)</label>
-            <Input
-              type="number"
-              value={userData.height || ""}
-              onChange={(e) => setUserData({ ...userData, height: Number(e.target.value) })}
-              placeholder="Height in centimeters"
-            />
-          </div>
+          <HeightInput
+            height={userData.height}
+            onChange={(height) => setUserData({ ...userData, height })}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-1">Activity Level</label>

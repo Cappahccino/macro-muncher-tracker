@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, User } from "lucide-react";
 import { useState } from "react";
 
 export const Header = () => {
@@ -8,12 +8,14 @@ export const Header = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const showBackButton = !["/", "/dashboard"].includes(location.pathname);
+
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          {location.pathname !== "/" && (
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          {showBackButton && (
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
@@ -25,6 +27,12 @@ export const Header = () => {
           </Button>
         </div>
         <div className="hidden md:flex space-x-4">
+          {location.pathname !== "/profile" && (
+            <Button onClick={() => navigate("/profile")}>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+          )}
           {location.pathname !== "/food-list" && (
             <Button onClick={() => navigate("/food-list")}>Food List</Button>
           )}
@@ -39,6 +47,15 @@ export const Header = () => {
       
       {isMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 md:hidden">
+          {location.pathname !== "/profile" && (
+            <Button onClick={() => {
+              navigate("/profile");
+              setIsMenuOpen(false);
+            }}>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+          )}
           {location.pathname !== "/food-list" && (
             <Button onClick={() => {
               navigate("/food-list");

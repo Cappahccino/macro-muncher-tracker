@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Menu, User } from "lucide-react";
+import { ArrowLeft, Home, Menu, User } from "lucide-react";
 import { useState } from "react";
 
 export const Header = () => {
@@ -27,6 +27,12 @@ export const Header = () => {
           </Button>
         </div>
         <div className="hidden md:flex space-x-4">
+          {location.pathname !== "/dashboard" && (
+            <Button onClick={() => navigate("/dashboard")}>
+              <Home className="mr-2 h-4 w-4" />
+              Home
+            </Button>
+          )}
           {location.pathname !== "/profile" && (
             <Button onClick={() => navigate("/profile")}>
               <User className="mr-2 h-4 w-4" />
@@ -47,6 +53,15 @@ export const Header = () => {
       
       {isMenuOpen && (
         <div className="mt-4 flex flex-col space-y-2 md:hidden">
+          {location.pathname !== "/dashboard" && (
+            <Button onClick={() => {
+              navigate("/dashboard");
+              setIsMenuOpen(false);
+            }}>
+              <Home className="mr-2 h-4 w-4" />
+              Home
+            </Button>
+          )}
           {location.pathname !== "/profile" && (
             <Button onClick={() => {
               navigate("/profile");

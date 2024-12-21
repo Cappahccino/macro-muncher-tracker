@@ -19,7 +19,7 @@ export const Header = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           )}
-          <h1 className="text-2xl md:text-3xl font-bold">MyMacros</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Macro Muncher</h1>
         </div>
         <div className="md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>

@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 const WeightProgress = () => {
   const [entries, setEntries] = useState<WeightEntry[]>(() => {
@@ -106,17 +107,20 @@ const WeightProgress = () => {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="grid gap-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold tracking-tight">Weight Progress</h2>
+      <div className="container max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Weight Progress</h2>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">Clear All Entries</Button>
+              <Button variant="destructive" size="sm" className="w-full md:w-auto">
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All Entries
+              </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="sm:max-w-[425px]">
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -134,13 +138,15 @@ const WeightProgress = () => {
           </AlertDialog>
         </div>
         
-        <WeightProgressChart entries={entries} />
-        <div className="grid md:grid-cols-2 gap-6">
-          <WeightGoalCard onGoalSet={handleGoalSet} />
-          <WeightEntryCard onEntryAdd={handleAddEntry} />
-        </div>
-        <div className="overflow-x-auto">
-          <WeightEntriesTable entries={entries} />
+        <div className="grid gap-6">
+          <WeightProgressChart entries={entries} />
+          <div className="grid md:grid-cols-2 gap-6">
+            <WeightGoalCard onGoalSet={handleGoalSet} />
+            <WeightEntryCard onEntryAdd={handleAddEntry} />
+          </div>
+          <div className="overflow-x-auto rounded-lg border bg-card">
+            <WeightEntriesTable entries={entries} />
+          </div>
         </div>
       </div>
     </div>

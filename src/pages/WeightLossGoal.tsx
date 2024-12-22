@@ -48,7 +48,7 @@ const WeightLossGoal = () => {
       description: `Your goal is to lose ${selectedOption.value} kg per week`,
     });
 
-    navigate("/dashboard");
+    navigate("/diet-type");
   };
 
   if (!userData) return null;

@@ -54,7 +54,7 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
           </div>
           {template.components.length > 0 ? (
             <div className="space-y-2">
-              <h4 className="font-medium">Components:</h4>
+              <h4 className="font-medium">Ingredients:</h4>
               {template.components.map((component, idx) => (
                 <div key={idx} className="pl-4">
                   <p>{component.name} - {Math.round(component.amount)}g</p>
@@ -86,7 +86,7 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
               </div>
             </div>
           ) : (
-            <p className="text-muted-foreground">No components added yet</p>
+            <p className="text-muted-foreground">No ingredients added yet</p>
           )}
         </Card>
       ))}

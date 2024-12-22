@@ -27,7 +27,7 @@ interface MealTemplate {
   };
 }
 
-const MealsList = () => {
+const Recipes = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mealTemplates, setMealTemplates] = useState<MealTemplate[]>(() => {
@@ -54,13 +54,13 @@ const MealsList = () => {
       setEditingIndex(null);
       toast({
         title: "Success",
-        description: "Meal template updated successfully",
+        description: "Recipe updated successfully",
       });
     } else {
       setMealTemplates([...mealTemplates, template]);
       toast({
         title: "Success",
-        description: "Meal template added successfully",
+        description: "Recipe added successfully",
       });
     }
     setNewTemplate({
@@ -75,7 +75,7 @@ const MealsList = () => {
     setMealTemplates(updatedTemplates);
     toast({
       title: "Success",
-      description: "Meal template deleted successfully",
+      description: "Recipe deleted successfully",
     });
   };
 
@@ -109,4 +109,4 @@ const MealsList = () => {
   );
 };
 
-export default MealsList;
+export default Recipes;

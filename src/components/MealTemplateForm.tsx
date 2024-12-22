@@ -50,29 +50,10 @@ export function MealTemplateForm({
 }: MealTemplateFormProps) {
   const [currentTemplate, setCurrentTemplate] = useState<MealTemplate>(template);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>([]);
 
   const handleAddComponent = (component: FoodComponent) => {
-    const updatedComponents = [...currentTemplate.components, component];
-    const totalMacros = calculateTotalMacros(updatedComponents);
-    
-    setCurrentTemplate({
-      ...currentTemplate,
-      components: updatedComponents,
-      totalMacros
-    });
-
-    // Update current meal in localStorage to reflect changes
-    const updatedMeal = {
-      name: currentTemplate.name,
-      ...totalMacros
-    };
-    localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));
-
-    // Dispatch event to update homepage
-    const event = new CustomEvent('templateSelected', { 
-      detail: updatedMeal
-    });
-    window.dispatchEvent(event);
+    setPendingIngredients([...pendingIngredients, component]);
   };
 
   const calculateTotalMacros = (components: FoodComponent[]) => {
@@ -89,22 +70,32 @@ export function MealTemplateForm({
     if (!currentTemplate.name) {
       toast({
         title: "Error",
-        description: "Please enter a meal template name",
+        description: "Please enter a recipe name",
         variant: "destructive",
       });
       return;
     }
     
+    // Add pending ingredients and calculate total macros only when submitting
+    const updatedTemplate = {
+      ...currentTemplate,
+      components: pendingIngredients,
+      totalMacros: calculateTotalMacros(pendingIngredients)
+    };
+    
     if (editingIndex !== null) {
       setShowConfirmDialog(true);
+      setCurrentTemplate(updatedTemplate);
     } else {
-      onSave(currentTemplate);
+      onSave(updatedTemplate);
+      setPendingIngredients([]);
     }
   };
 
   const handleConfirmEdit = () => {
     onSave(currentTemplate);
     setShowConfirmDialog(false);
+    setPendingIngredients([]);
   };
 
   return (
@@ -112,16 +103,16 @@ export function MealTemplateForm({
       <Card className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            placeholder="Template name"
+            placeholder="Recipe name"
             value={currentTemplate.name}
             onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
           />
           <FoodSelect onAddComponent={handleAddComponent} />
           
-          {currentTemplate.components.length > 0 && (
+          {pendingIngredients.length > 0 && (
             <div className="mt-4 space-y-2">
-              <h4 className="font-medium">Components:</h4>
-              {currentTemplate.components.map((component, idx) => (
+              <h4 className="font-medium">Pending Ingredients:</h4>
+              {pendingIngredients.map((component, idx) => (
                 <div key={idx} className="pl-4">
                   <p>{component.name} - {component.amount}g</p>
                   <p className="text-sm text-muted-foreground">
@@ -132,29 +123,11 @@ export function MealTemplateForm({
                   </p>
                 </div>
               ))}
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Calories</p>
-                  <p className="font-medium">{currentTemplate.totalMacros.calories.toFixed(1)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Protein</p>
-                  <p className="font-medium">{currentTemplate.totalMacros.protein.toFixed(1)}g</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Carbs</p>
-                  <p className="font-medium">{currentTemplate.totalMacros.carbs.toFixed(1)}g</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Fat</p>
-                  <p className="font-medium">{currentTemplate.totalMacros.fat.toFixed(1)}g</p>
-                </div>
-              </div>
             </div>
           )}
           
           <Button type="submit" className="w-full">
-            {editingIndex !== null ? "Save Changes" : "Add Template"}
+            {editingIndex !== null ? "Save Changes" : "Add Recipe"}
           </Button>
           {editingIndex !== null && (
             <Button type="button" variant="outline" className="w-full" onClick={onCancel}>
@@ -167,9 +140,9 @@ export function MealTemplateForm({
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Template Update</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Recipe Update</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this meal template? This will overwrite the existing template with the new information.
+              Are you sure you want to update this recipe? This will overwrite the existing recipe with the new information.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -177,7 +150,7 @@ export function MealTemplateForm({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmEdit}>
-              Update Template
+              Update Recipe
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

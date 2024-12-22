@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Home, Menu, User } from "lucide-react";
+import { Home, Menu, User } from "lucide-react";
 import { useState } from "react";
 
 export const Header = () => {
@@ -8,19 +8,10 @@ export const Header = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const showBackButton = !["/", "/dashboard"].includes(location.pathname);
-
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          {showBackButton && (
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          )}
-          <h1 className="text-2xl md:text-3xl font-bold">Macro Muncher</h1>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold">Macro Muncher</h1>
         <div className="md:hidden">
           <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <Menu className="h-6 w-6" />

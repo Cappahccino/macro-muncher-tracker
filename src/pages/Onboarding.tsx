@@ -89,10 +89,10 @@ const Onboarding = () => {
 
     toast({
       title: "Profile Created",
-      description: "Welcome to Macro Muncher!",
+      description: "Let's set your weight loss goal!",
     });
 
-    navigate("/dashboard");
+    navigate("/weight-loss-goal");
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +48,10 @@ const Login = () => {
     }
   };
 
+  const handleGetStarted = () => {
+    navigate("/onboarding");
+  };
+
   return (
     <div className="container max-w-lg mx-auto p-4">
       <Card>
@@ -80,7 +84,7 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <Button variant="link" onClick={() => navigate("/onboarding")}>
+            <Button variant="link" onClick={handleGetStarted}>
               Don't have an account? Get Started
             </Button>
           </div>

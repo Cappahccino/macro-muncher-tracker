@@ -80,7 +80,7 @@ const Login = () => {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <Button variant="link" onClick={() => navigate("/")}>
+            <Button variant="link" onClick={() => navigate("/onboarding")}>
               Don't have an account? Get Started
             </Button>
           </div>

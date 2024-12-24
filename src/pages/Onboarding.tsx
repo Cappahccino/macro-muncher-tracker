@@ -179,7 +179,7 @@ const Onboarding = () => {
         </div>
 
         <Button type="submit" className="w-full">
-          Complete Profile
+          Continue
         </Button>
       </form>
     </div>

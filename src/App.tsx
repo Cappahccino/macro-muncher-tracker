@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
 import WeightLossGoal from "./pages/WeightLossGoal";
 import DietType from "./pages/DietType";
+import SignUp from "./pages/SignUp";
 import UserProfile from "./pages/UserProfile";
 import Index from "./pages/Index";
 import FoodList from "./pages/FoodList";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/weight-loss-goal" element={<WeightLossGoal />} />
           <Route path="/diet-type" element={<DietType />} />
+          <Route path="/sign-up" element={<SignUp />} />
           <Route path="/dashboard" element={<Index />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/food-list" element={<FoodList />} />

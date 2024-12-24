@@ -48,9 +48,9 @@ const DietType = () => {
     // Calculate macros based on selected diet type
     const macroTargets = {
       calories: targetCalories,
-      protein: Math.round((targetCalories * selectedDietType.macros.protein) / 4), // 4 calories per gram of protein
-      carbs: Math.round((targetCalories * selectedDietType.macros.carbs) / 4), // 4 calories per gram of carbs
-      fat: Math.round((targetCalories * selectedDietType.macros.fat) / 9), // 9 calories per gram of fat
+      protein: Math.round((targetCalories * selectedDietType.macros.protein) / 4),
+      carbs: Math.round((targetCalories * selectedDietType.macros.carbs) / 4),
+      fat: Math.round((targetCalories * selectedDietType.macros.fat) / 9),
     };
 
     // Save macro targets to localStorage
@@ -61,7 +61,7 @@ const DietType = () => {
       description: `Your macros have been calculated based on ${selectedDietType.label}`,
     });
 
-    navigate("/dashboard");
+    navigate("/sign-up");
   };
 
   return (

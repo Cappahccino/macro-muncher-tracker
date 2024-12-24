@@ -13,9 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { WeightInput } from "@/components/onboarding/WeightInput";
 import { HeightInput } from "@/components/onboarding/HeightInput";
 import { AuthButton } from "@/components/AuthButton";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
+import RegistrationForm from "@/components/onboarding/RegistrationForm";
 import { Card } from "@/components/ui/card";
 
 type WeightUnit = "kg" | "lbs" | "st";
@@ -99,40 +97,13 @@ const Onboarding = () => {
   if (showRegistration) {
     return (
       <div className="container max-w-lg mx-auto p-4">
-        <Card className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Create Your Account</h2>
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ 
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#0f172a',
-                    brandAccent: '#334155'
-                  }
-                }
-              }
-            }}
-            providers={[]}
-            redirectTo={`${window.location.origin}/dashboard`}
-            view="sign_up"
-          />
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={() => setShowRegistration(false)}
-          >
-            Back to Profile
-          </Button>
-        </Card>
+        <RegistrationForm />
       </div>
     );
   }
 
   return (
     <div className="container max-w-2xl mx-auto p-4 space-y-6 relative">
-      <AuthButton />
       <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">

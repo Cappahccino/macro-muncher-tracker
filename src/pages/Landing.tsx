@@ -11,7 +11,7 @@ const Landing = () => {
       if (session) {
         navigate("/dashboard");
       } else {
-        navigate("/login");
+        navigate("/onboarding");
       }
     };
 

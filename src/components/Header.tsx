@@ -33,8 +33,8 @@ export const Header = () => {
           {location.pathname !== "/food-list" && (
             <Button onClick={() => navigate("/food-list")}>Food List</Button>
           )}
-          {location.pathname !== "/meals-list" && (
-            <Button onClick={() => navigate("/meals-list")}>Meals List</Button>
+          {location.pathname !== "/recipes" && (
+            <Button onClick={() => navigate("/recipes")}>Meals List</Button>
           )}
           {location.pathname !== "/weight-progress" && (
             <Button onClick={() => navigate("/weight-progress")}>Weight Progress</Button>
@@ -68,9 +68,9 @@ export const Header = () => {
               setIsMenuOpen(false);
             }}>Food List</Button>
           )}
-          {location.pathname !== "/meals-list" && (
+          {location.pathname !== "/recipes" && (
             <Button onClick={() => {
-              navigate("/meals-list");
+              navigate("/recipes");
               setIsMenuOpen(false);
             }}>Meals List</Button>
           )}

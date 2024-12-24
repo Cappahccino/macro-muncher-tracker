@@ -52,18 +52,21 @@ const SignUp = () => {
 
       // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      const weightLossGoal = JSON.parse(localStorage.getItem("weightLossGoal") || "{}");
-      const macroTargets = JSON.parse(localStorage.getItem("macroTargets") || "{}");
-
-      // Store the data in the database
-      // Note: The RLS policies will handle the user_id automatically
+      
+      // Create the user profile with the correct column names
       const { error: profileError } = await supabase
         .from("users")
         .insert([
           {
             email: values.email,
-            username: values.email.split("@")[0], // Default username from email
-            ...userData,
+            username: values.email.split("@")[0],
+            date_of_birth: userData.dob,
+            gender: userData.gender,
+            height_cm: userData.height,
+            weight_kg: userData.currentWeight,
+            activity_level: userData.activityLevel,
+            preferred_weight_unit: userData.weightUnit,
+            preferred_height_unit: "cm",
           },
         ]);
 

@@ -1,32 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Menu, User, LogOut } from "lucide-react";
+import { Home, Menu, User } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "You have been logged out.",
-      });
-      navigate("/login");
-    }
-  };
 
   return (
     <div className="mb-8">
@@ -59,10 +39,6 @@ export const Header = () => {
           {location.pathname !== "/weight-progress" && (
             <Button onClick={() => navigate("/weight-progress")}>Weight Progress</Button>
           )}
-          <Button onClick={handleLogout} variant="destructive">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
         </div>
       </div>
       
@@ -104,10 +80,6 @@ export const Header = () => {
               setIsMenuOpen(false);
             }}>Weight Progress</Button>
           )}
-          <Button onClick={handleLogout} variant="destructive">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
         </div>
       )}
     </div>

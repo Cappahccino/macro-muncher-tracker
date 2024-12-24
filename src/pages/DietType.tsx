@@ -5,7 +5,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { AuthButton } from "@/components/AuthButton";
 
 const DietType = () => {
   const navigate = useNavigate();
@@ -66,8 +65,7 @@ const DietType = () => {
   };
 
   return (
-    <div className="container max-w-2xl mx-auto p-4 relative">
-      <AuthButton />
+    <div className="container max-w-2xl mx-auto p-4">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Choose Your Diet Type</CardTitle>

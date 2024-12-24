@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { WeightInput } from "@/components/onboarding/WeightInput";
 import { HeightInput } from "@/components/onboarding/HeightInput";
+import { LogIn } from "lucide-react";
 
 type WeightUnit = "kg" | "lbs" | "st";
 
@@ -97,7 +98,13 @@ const Onboarding = () => {
 
   return (
     <div className="container max-w-2xl mx-auto p-4 space-y-6">
-      <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
+        <Button variant="outline" onClick={() => navigate("/sign-in")}>
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign In
+        </Button>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">

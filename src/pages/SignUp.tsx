@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { LogIn } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -109,6 +110,12 @@ const SignUp = () => {
 
   return (
     <div className="container max-w-md mx-auto p-4">
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" onClick={() => navigate("/sign-in")}>
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign In
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Create your account</CardTitle>

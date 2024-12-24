@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { LogIn } from "lucide-react";
 
 const WeightLossGoal = () => {
   const navigate = useNavigate();
@@ -55,6 +56,12 @@ const WeightLossGoal = () => {
 
   return (
     <div className="container max-w-2xl mx-auto p-4">
+      <div className="flex justify-end mb-4">
+        <Button variant="outline" onClick={() => navigate("/sign-in")}>
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign In
+        </Button>
+      </div>
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Set Your Weight Loss Goal</CardTitle>

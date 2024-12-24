@@ -65,10 +65,11 @@ const SignUp = () => {
       // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
       
-      // Create the user profile
+      // Create the user profile with the auth user's ID
       const { error: profileError } = await supabase
         .from("users")
         .insert({
+          user_id: authData.user.id, // Set the user_id to match the auth user's ID
           email: values.email,
           username: values.email.split("@")[0],
           date_of_birth: userData.dob,

@@ -39,13 +39,25 @@ const SignIn = () => {
       });
 
       if (error) {
-        // Check specifically for email not confirmed error
-        if (error.message.includes("Email not confirmed")) {
-          toast({
-            variant: "destructive",
-            title: "Email Not Verified",
-            description: "Please check your email and verify your account before signing in. If you haven't received the verification email, you can request a new one.",
+        if (error.message.toLowerCase().includes("email not confirmed")) {
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: values.email,
           });
+
+          if (resendError) {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to resend verification email. Please try again later.",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Email Not Verified",
+              description: "A new verification email has been sent. Please check your inbox and verify your account before signing in.",
+            });
+          }
         } else {
           toast({
             variant: "destructive",

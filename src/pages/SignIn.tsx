@@ -39,11 +39,20 @@ const SignIn = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        });
+        // Check specifically for email not confirmed error
+        if (error.message.includes("Email not confirmed")) {
+          toast({
+            variant: "destructive",
+            title: "Email Not Verified",
+            description: "Please check your email and verify your account before signing in. If you haven't received the verification email, you can request a new one.",
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message,
+          });
+        }
         return;
       }
 

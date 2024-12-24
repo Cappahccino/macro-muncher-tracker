@@ -1,24 +1,24 @@
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 const Landing = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
-      } else {
-        navigate("/login");
-      }
-    };
+  const handleGetStarted = () => {
+    navigate("/onboarding");
+  };
 
-    checkSession();
-  }, [navigate]);
-
-  return null;
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <h1 className="text-4xl font-bold mb-4">Welcome to Macro Muncher</h1>
+      <p className="text-lg mb-8 text-center max-w-md">
+        Your personal nutrition tracker that helps you achieve your health goals
+      </p>
+      <Button onClick={handleGetStarted} size="lg">
+        Get Started
+      </Button>
+    </div>
+  );
 };
 
 export default Landing;

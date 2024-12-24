@@ -12,24 +12,103 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { WeightInput } from "@/components/onboarding/WeightInput";
 import { HeightInput } from "@/components/onboarding/HeightInput";
-import { AuthButton } from "@/components/AuthButton";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 
-type WeightUnit = "kg" | "lbs" | "st";
-
+// Move types to a separate file to reduce file size
 interface UserData {
   name: string;
   currentWeight: number;
   targetWeight: number;
-  weightUnit: WeightUnit;
+  weightUnit: "kg" | "lbs" | "st";
   gender: string;
   dob: string;
   height: number;
   activityLevel: string;
 }
+
+interface RegistrationData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const Onboarding = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [step, setStep] = useState(1);
+  const [userData, setUserData] = useState<UserData>({
+    name: "",
+    currentWeight: 0,
+    targetWeight: 0,
+    weightUnit: "kg",
+    gender: "",
+    dob: "",
+    height: 0,
+    activityLevel: "",
+  });
+  const [registrationData, setRegistrationData] = useState<RegistrationData>({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!Object.values(userData).every(value => value)) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Calculate BMR and TDEE
+    const bmr = calculateBMR(userData);
+    const tdee = calculateTDEE(bmr, userData.activityLevel);
+
+    localStorage.setItem("userData", JSON.stringify({
+      ...userData,
+      bmr,
+      tdee,
+    }));
+
+    setStep(2);
+  };
+
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (registrationData.password !== registrationData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: registrationData.email,
+      password: registrationData.password,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Check your email to confirm your account",
+      });
+      navigate("/dashboard");
+    }
+  };
 
 const calculateBMR = (userData: UserData) => {
   const age = new Date().getFullYear() - new Date(userData.dob).getFullYear();
@@ -57,85 +136,58 @@ const calculateTDEE = (bmr: number, activityLevel: string) => {
   return Math.round(bmr * multipliers[activityLevel as keyof typeof multipliers]);
 };
 
-const Onboarding = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [showRegistration, setShowRegistration] = useState(false);
-  const [userData, setUserData] = useState<UserData>({
-    name: "",
-    currentWeight: 0,
-    targetWeight: 0,
-    weightUnit: "kg",
-    gender: "",
-    dob: "",
-    height: 0,
-    activityLevel: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!Object.values(userData).every(value => value)) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const bmr = calculateBMR(userData);
-    const tdee = calculateTDEE(bmr, userData.activityLevel);
-
-    localStorage.setItem("userData", JSON.stringify({
-      ...userData,
-      bmr,
-      tdee,
-    }));
-
-    setShowRegistration(true);
-  };
-
-  if (showRegistration) {
+  if (step === 2) {
     return (
       <div className="container max-w-lg mx-auto p-4">
         <Card className="p-6">
           <h2 className="text-2xl font-bold mb-4">Create Your Account</h2>
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ 
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#0f172a',
-                    brandAccent: '#334155'
-                  }
-                }
-              }
-            }}
-            providers={[]}
-            redirectTo={`${window.location.origin}/dashboard`}
-            view="sign_up"
-          />
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={() => setShowRegistration(false)}
-          >
-            Back to Profile
-          </Button>
+          <form onSubmit={handleRegistrationSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={registrationData.email}
+                onChange={(e) => setRegistrationData({ ...registrationData, email: e.target.value })}
+                className="text-white"
+              />
+            </div>
+            <div>
+              <Input
+                type="password"
+                placeholder="Password"
+                value={registrationData.password}
+                onChange={(e) => setRegistrationData({ ...registrationData, password: e.target.value })}
+                className="text-white"
+              />
+            </div>
+            <div>
+              <Input
+                type="password"
+                placeholder="Confirm Password"
+                value={registrationData.confirmPassword}
+                onChange={(e) => setRegistrationData({ ...registrationData, confirmPassword: e.target.value })}
+                className="text-white"
+              />
+            </div>
+            <div className="flex gap-4">
+              <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">
+                Back
+              </Button>
+              <Button type="submit" className="flex-1">
+                Sign Up
+              </Button>
+            </div>
+          </form>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-2xl mx-auto p-4 space-y-6 relative">
-      <AuthButton />
-      <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
+    <div className="container max-w-2xl mx-auto p-4 space-y-6">
+      <h1 className="text-3xl font-bold">Tell Us About Yourself</h1>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleProfileSubmit} className="space-y-6">
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>

@@ -36,16 +36,27 @@ const SignUp = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({
+      
+      // First sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
       });
 
-      if (error) {
+      if (authError) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.message,
+          description: authError.message,
+        });
+        return;
+      }
+
+      if (!authData.user) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to create user account",
         });
         return;
       }
@@ -53,24 +64,23 @@ const SignUp = () => {
       // Get user data from localStorage
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
       
-      // Create the user profile with the correct column names
+      // Create the user profile
       const { error: profileError } = await supabase
         .from("users")
-        .insert([
-          {
-            email: values.email,
-            username: values.email.split("@")[0],
-            date_of_birth: userData.dob,
-            gender: userData.gender,
-            height_cm: userData.height,
-            weight_kg: userData.currentWeight,
-            activity_level: userData.activityLevel,
-            preferred_weight_unit: userData.weightUnit,
-            preferred_height_unit: "cm",
-          },
-        ]);
+        .insert({
+          email: values.email,
+          username: values.email.split("@")[0],
+          date_of_birth: userData.dob,
+          gender: userData.gender,
+          height_cm: userData.height,
+          weight_kg: userData.currentWeight,
+          activity_level: userData.activityLevel,
+          preferred_weight_unit: userData.weightUnit,
+          preferred_height_unit: "cm",
+        });
 
       if (profileError) {
+        console.error("Profile creation error:", profileError);
         toast({
           variant: "destructive",
           title: "Error",
@@ -86,6 +96,7 @@ const SignUp = () => {
 
       navigate("/dashboard");
     } catch (error) {
+      console.error("Signup error:", error);
       toast({
         variant: "destructive",
         title: "Error",

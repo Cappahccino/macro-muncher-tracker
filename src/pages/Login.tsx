@@ -29,7 +29,7 @@ const Login = () => {
   }, [navigate]);
 
   const handleGetStarted = () => {
-    navigate("/onboarding");
+    navigate("/weight-loss-goal");
   };
 
   return (

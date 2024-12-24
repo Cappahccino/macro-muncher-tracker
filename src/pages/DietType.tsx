@@ -16,19 +16,19 @@ const DietType = () => {
     {
       id: "weightLoss",
       label: "Weight Loss",
-      description: "Higher protein (25-35) to preserve muscle, moderate carbs (30-50) and fats (20-30)",
+      description: "Higher protein to preserve muscle, moderate carbs and fats",
       macros: { protein: 0.30, carbs: 0.40, fat: 0.30 }
     },
     {
       id: "muscleBuilding",
       label: "Muscle Building",
-      description: "Higher protein (25-30) and carbs (40-60) for muscle repair, moderate fats (20-25)",
+      description: "Higher protein and carbs for muscle repair, moderate fats",
       macros: { protein: 0.275, carbs: 0.50, fat: 0.225 }
     },
     {
       id: "lowCarb",
       label: "Low-Carb",
-      description: "Reduced carbs (10-30), higher fats (40-60) for energy needs",
+      description: "Reduced carbs, higher fats for energy needs",
       macros: { protein: 0.30, carbs: 0.20, fat: 0.50 }
     }
   ];

@@ -82,6 +82,14 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   };
 
   const handleMealChange = (updates: Partial<Meal>) => {
+    // If the name is being cleared, reset all values
+    if ('name' in updates && !updates.name) {
+      const emptyMeal = { name: "", calories: 0, protein: 0, carbs: 0, fat: 0 };
+      setMeal(emptyMeal);
+      localStorage.setItem('currentMeal', JSON.stringify(emptyMeal));
+      return;
+    }
+
     const updatedMeal = { ...meal, ...updates };
     setMeal(updatedMeal);
     localStorage.setItem('currentMeal', JSON.stringify(updatedMeal));

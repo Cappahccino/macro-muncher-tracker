@@ -12,7 +12,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { WeightInput } from "@/components/onboarding/WeightInput";
 import { HeightInput } from "@/components/onboarding/HeightInput";
-import { LogIn } from "lucide-react";
+import { LogIn, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
 
 type WeightUnit = "kg" | "lbs" | "st";
 
@@ -96,99 +98,142 @@ const Onboarding = () => {
     navigate("/weight-loss-goal");
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="container max-w-2xl mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Welcome to Macro Muncher</h1>
-        <Button variant="outline" onClick={() => navigate("/sign-in")}>
-          <LogIn className="mr-2 h-4 w-4" />
-          Sign In
-        </Button>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <Input
-              value={userData.name}
-              onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-              placeholder="Enter your name"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <WeightInput
-              label="Current Weight"
-              weight={userData.currentWeight}
-              weightUnit={userData.weightUnit}
-              onWeightChange={(weight) => setUserData({ ...userData, currentWeight: weight })}
-              onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
-            />
-
-            <WeightInput
-              label="Target Weight"
-              weight={userData.targetWeight}
-              weightUnit={userData.weightUnit}
-              onWeightChange={(weight) => setUserData({ ...userData, targetWeight: weight })}
-              onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Gender</label>
-            <Select
-              value={userData.gender}
-              onValueChange={(value) => setUserData({ ...userData, gender: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Date of Birth</label>
-            <Input
-              type="date"
-              value={userData.dob}
-              onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
-            />
-          </div>
-
-          <HeightInput
-            height={userData.height}
-            onChange={(height) => setUserData({ ...userData, height })}
-          />
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Activity Level</label>
-            <Select
-              value={userData.activityLevel}
-              onValueChange={(value) => setUserData({ ...userData, activityLevel: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select activity level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sedentary">Sedentary (BMR × 1.2)</SelectItem>
-                <SelectItem value="lightly active">Lightly Active (BMR × 1.375)</SelectItem>
-                <SelectItem value="moderately active">Moderately Active (BMR × 1.55)</SelectItem>
-                <SelectItem value="very active">Very Active (BMR × 1.725)</SelectItem>
-                <SelectItem value="extremely active">Extremely Active (BMR × 1.9)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted py-8 px-4">
+      <motion.div
+        className="container max-w-2xl mx-auto space-y-8"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="flex justify-between items-center">
+          <motion.h1 
+            className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
+            variants={itemVariants}
+          >
+            Welcome to Macro Muncher
+          </motion.h1>
+          <motion.div variants={itemVariants}>
+            <Button variant="outline" onClick={() => navigate("/sign-in")}>
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          </motion.div>
         </div>
+        
+        <Card className="backdrop-blur-sm bg-card/50">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <motion.div className="space-y-6" variants={itemVariants}>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-primary">Name</label>
+                  <Input
+                    value={userData.name}
+                    onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+                    placeholder="Enter your name"
+                    className="border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
 
-        <Button type="submit" className="w-full">
-          Continue
-        </Button>
-      </form>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <WeightInput
+                    label="Current Weight"
+                    weight={userData.currentWeight}
+                    weightUnit={userData.weightUnit}
+                    onWeightChange={(weight) => setUserData({ ...userData, currentWeight: weight })}
+                    onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
+                  />
+
+                  <WeightInput
+                    label="Target Weight"
+                    weight={userData.targetWeight}
+                    weightUnit={userData.weightUnit}
+                    onWeightChange={(weight) => setUserData({ ...userData, targetWeight: weight })}
+                    onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-primary">Gender</label>
+                  <Select
+                    value={userData.gender}
+                    onValueChange={(value) => setUserData({ ...userData, gender: value })}
+                  >
+                    <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-primary">Date of Birth</label>
+                  <Input
+                    type="date"
+                    value={userData.dob}
+                    onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
+                    className="border-primary/20 focus:border-primary transition-colors"
+                  />
+                </div>
+
+                <HeightInput
+                  height={userData.height}
+                  onChange={(height) => setUserData({ ...userData, height })}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-primary">Activity Level</label>
+                  <Select
+                    value={userData.activityLevel}
+                    onValueChange={(value) => setUserData({ ...userData, activityLevel: value })}
+                  >
+                    <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
+                      <SelectValue placeholder="Select activity level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sedentary">Sedentary</SelectItem>
+                      <SelectItem value="lightly active">Lightly Active</SelectItem>
+                      <SelectItem value="moderately active">Moderately Active</SelectItem>
+                      <SelectItem value="very active">Very Active</SelectItem>
+                      <SelectItem value="extremely active">Extremely Active</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity group"
+                >
+                  Continue
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </motion.div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

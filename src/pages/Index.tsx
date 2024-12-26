@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { MacroCircle } from "@/components/MacroCircle";
 import { AddMealForm } from "@/components/AddMealForm";
 import { DailySummary } from "@/components/DailySummary";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
+import { MacroCirclesGrid } from "@/components/MacroCirclesGrid";
+import { motion } from "framer-motion";
 
 interface Meal {
   name: string;
@@ -32,12 +32,10 @@ const Index = () => {
     };
   });
 
-  // Save meals whenever they change
   useEffect(() => {
     localStorage.setItem('dailyMeals', JSON.stringify(meals));
   }, [meals]);
 
-  // Save targets whenever they change
   useEffect(() => {
     localStorage.setItem('macroTargets', JSON.stringify(targets));
   }, [targets]);
@@ -118,96 +116,34 @@ const Index = () => {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto p-4 space-y-8">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="container max-w-4xl mx-auto p-4 space-y-8"
+    >
       <Header />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="space-y-4">
-          <MacroCircle
-            label="Calories"
-            current={totals.calories}
-            target={targets.calories}
-            color="stroke-primary"
-          />
-          <div className="px-2">
-            <Input
-              type="number"
-              value={targets.calories}
-              onChange={(e) => handleTargetChange(e.target.value, "calories")}
-              className="text-center"
-              min="0"
-              max="10000"
-            />
-          </div>
-        </div>
+      <MacroCirclesGrid
+        totals={totals}
+        targets={targets}
+        onTargetChange={handleTargetChange}
+      />
 
-        <div className="space-y-4">
-          <MacroCircle
-            label="Protein"
-            current={totals.protein}
-            target={targets.protein}
-            color="stroke-secondary"
-          />
-          <div className="px-2">
-            <Input
-              type="number"
-              value={targets.protein}
-              onChange={(e) => handleTargetChange(e.target.value, "protein")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <MacroCircle
-            label="Carbs"
-            current={totals.carbs}
-            target={targets.carbs}
-            color="stroke-accent"
-          />
-          <div className="px-2">
-            <Input
-              type="number"
-              value={targets.carbs}
-              onChange={(e) => handleTargetChange(e.target.value, "carbs")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <MacroCircle
-            label="Fat"
-            current={totals.fat}
-            target={targets.fat}
-            color="stroke-destructive"
-          />
-          <div className="px-2">
-            <Input
-              type="number"
-              value={targets.fat}
-              onChange={(e) => handleTargetChange(e.target.value, "fat")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid md:grid-cols-2 gap-8"
+      >
         <AddMealForm onAddMeal={handleAddMeal} initialMeal={editingMeal?.meal} />
         <DailySummary 
           meals={meals} 
           onDeleteMeal={handleDeleteMeal}
           onEditMeal={handleEditMeal}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChefHat, Clock, Utensils, Save, Printer, Trash2 } from "lucide-react";
+import { ChefHat, Clock, Utensils, Save, Printer, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -94,6 +94,77 @@ export const RecipeListItem = ({ recipe, onDelete }: RecipeListItemProps) => {
     }
   };
 
+  const handleAddToMeals = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      // Get recipe ingredients
+      const { data: ingredients, error: ingredientsError } = await supabase
+        .from('recipe_ingredients')
+        .select(`
+          quantity_g,
+          calories,
+          protein,
+          fat,
+          carbs,
+          fiber,
+          ingredients (
+            name
+          )
+        `)
+        .eq('recipe_id', recipe.recipe_id);
+
+      if (ingredientsError) throw ingredientsError;
+
+      // Create a new recipe with the same data
+      const { data: newRecipe, error: recipeError } = await supabase
+        .from('recipes')
+        .insert([{
+          title: recipe.title,
+          description: recipe.description,
+          instructions: recipe.instructions,
+          dietary_tags: recipe.dietary_tags
+        }])
+        .select()
+        .single();
+
+      if (recipeError) throw recipeError;
+
+      // Add ingredients to the new recipe
+      if (newRecipe && ingredients) {
+        const ingredientPromises = ingredients.map(async (ingredient) => {
+          const { error: ingredientError } = await supabase
+            .from('recipe_ingredients')
+            .insert([{
+              recipe_id: newRecipe.recipe_id,
+              ingredient_id: ingredient.ingredients?.id,
+              quantity_g: ingredient.quantity_g,
+              calories: ingredient.calories,
+              protein: ingredient.protein,
+              fat: ingredient.fat,
+              carbs: ingredient.carbs,
+              fiber: ingredient.fiber
+            }]);
+
+          if (ingredientError) throw ingredientError;
+        });
+
+        await Promise.all(ingredientPromises);
+      }
+
+      toast({
+        title: "Success",
+        description: "Recipe has been added to your meals",
+      });
+    } catch (error) {
+      console.error('Error adding to meals:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add recipe to meals. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
@@ -118,6 +189,15 @@ export const RecipeListItem = ({ recipe, onDelete }: RecipeListItemProps) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleAddToMeals}
+              className="shrink-0"
+              title="Add to Meals"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"

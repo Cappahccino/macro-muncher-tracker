@@ -7,6 +7,7 @@ import { useState } from "react";
 import { DietaryFilters } from "@/components/recipe/DietaryFilters";
 import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
 import { RecipeCard } from "@/components/recipe/RecipeCard";
+import { HealthyAlternative } from "@/components/recipe/HealthyAlternative";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,60 +107,69 @@ const RecipeVault = () => {
           Recipe Vault
         </h2>
 
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <div className="flex-1 w-full md:w-auto">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Search recipes with AI (e.g., 'healthy breakfast under 500 calories')"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleSearch}
-                disabled={isSearching}
-                className="w-[100px]"
-              >
-                {isSearching ? (
-                  "Searching..."
-                ) : (
-                  <>
-                    <Search className="h-4 w-4 mr-2" />
-                    Search
-                  </>
-                )}
-              </Button>
+        <div className="space-y-6">
+          {/* Healthy Alternative Section */}
+          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3">Find Healthy Alternatives</h3>
+            <HealthyAlternative />
+          </div>
+
+          {/* Existing Search Section */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div className="flex-1 w-full md:w-auto">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search recipes with AI (e.g., 'healthy breakfast under 500 calories')"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="w-[100px]"
+                >
+                  {isSearching ? (
+                    "Searching..."
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
+
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <DietaryFilters 
+              activeFilter={activeFilter} 
+              onFilterChange={setActiveFilter} 
+            />
+            <QuickSuggestions />
+          </div>
+
+          <ScrollArea className="h-[600px] rounded-md border p-4">
+            <motion.div 
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              {filteredRecipes?.map((recipe) => (
+                <RecipeCard key={recipe.recipe_id} recipe={recipe} />
+              ))}
+
+              {filteredRecipes?.length === 0 && (
+                <div className="col-span-2 text-center py-8 text-muted-foreground">
+                  No recipes found. Start creating some delicious meals!
+                </div>
+              )}
+            </motion.div>
+          </ScrollArea>
         </div>
-
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <DietaryFilters 
-            activeFilter={activeFilter} 
-            onFilterChange={setActiveFilter} 
-          />
-          <QuickSuggestions />
-        </div>
-
-        <ScrollArea className="h-[600px] rounded-md border p-4">
-          <motion.div 
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            {filteredRecipes?.map((recipe) => (
-              <RecipeCard key={recipe.recipe_id} recipe={recipe} />
-            ))}
-
-            {filteredRecipes?.length === 0 && (
-              <div className="col-span-2 text-center py-8 text-muted-foreground">
-                No recipes found. Start creating some delicious meals!
-              </div>
-            )}
-          </motion.div>
-        </ScrollArea>
       </div>
     </div>
   );

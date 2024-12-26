@@ -41,10 +41,23 @@ export function HealthyAlternative() {
     if (!alternative) return;
     
     try {
-      // Create a new recipe entry
+      // Get the current user's session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save recipes",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a new recipe entry with user_id
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
         .insert([{
+          user_id: session.user.id, // Set the user_id
           title: alternative.title,
           description: alternative.description,
           instructions: alternative.instructions,

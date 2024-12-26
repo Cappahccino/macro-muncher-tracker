@@ -23,6 +23,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [invalidCredentials, setInvalidCredentials] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,6 +79,7 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       setEmailNotVerified(false);
+      setInvalidCredentials(false);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -87,6 +89,15 @@ const SignIn = () => {
       if (error) {
         if (error.message.toLowerCase().includes("email not confirmed")) {
           setEmailNotVerified(true);
+          return;
+        }
+        
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
+          setInvalidCredentials(true);
+          form.setError("password", {
+            type: "manual",
+            message: "Invalid email or password",
+          });
           return;
         }
         
@@ -138,6 +149,14 @@ const SignIn = () => {
                 >
                   {resendingEmail ? "Sending..." : "Resend verification email"}
                 </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {invalidCredentials && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription>
+                The email or password you entered is incorrect. Please try again.
               </AlertDescription>
             </Alert>
           )}

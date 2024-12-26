@@ -79,6 +79,7 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
           carbs,
           fiber,
           ingredients (
+            ingredient_id,
             name
           )
         `)

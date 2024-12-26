@@ -14,6 +14,10 @@ export function MacroCircle({ label, current, target, color }: MacroCircleProps)
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
+  // Round the values to 2 decimal places
+  const roundedCurrent = Number(current.toFixed(2));
+  const roundedTarget = Number(target.toFixed(2));
+
   return (
     <Card className="p-4 flex flex-col items-center justify-center">
       <div className="relative w-28 h-28">
@@ -39,8 +43,8 @@ export function MacroCircle({ label, current, target, color }: MacroCircleProps)
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold">{current}</span>
-          <span className="text-xs text-muted-foreground">/ {target}</span>
+          <span className="text-2xl font-bold">{roundedCurrent}</span>
+          <span className="text-xs text-muted-foreground">/ {roundedTarget}</span>
         </div>
       </div>
       <span className="mt-2 font-medium">{label}</span>

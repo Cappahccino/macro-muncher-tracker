@@ -83,19 +83,25 @@ serve(async (req) => {
             - Reduces calories and unhealthy fats
             - Increases protein and fiber content where possible
             - Uses whole, unprocessed ingredients
+            - All measurements MUST be in grams
             
             Return ONLY a JSON object with these exact fields:
             - title (string): name of the healthy alternative
             - description (string): brief explanation of why this is healthier
-            - instructions (array of strings): step-by-step cooking instructions
+            - instructions (array of strings): step-by-step cooking instructions with all measurements in grams
             - dietaryTags (array of strings): relevant tags like "high-protein", "low-carb", etc.
             - macronutrients (object): {
-                calories (number),
-                protein (number),
-                carbs (number),
-                fat (number),
-                fiber (number)
+                calories (number): total calories per serving,
+                protein (number): grams of protein per serving,
+                carbs (number): grams of carbs per serving,
+                fat (number): grams of fat per serving,
+                fiber (number): grams of fiber per serving,
+                servings (number): number of servings this recipe makes
               }
+            - ingredients (array of objects): [{
+                name (string): ingredient name,
+                amount (number): amount in grams
+              }]
             
             Do not include any markdown formatting or additional text.`
           },
@@ -130,7 +136,11 @@ serve(async (req) => {
           user_id: userId,
           title: recipe.title,
           description: recipe.description,
-          instructions: recipe.instructions,
+          instructions: {
+            steps: recipe.instructions,
+            ingredients: recipe.ingredients,
+            macros: recipe.macronutrients
+          },
           dietary_tags: recipe.dietaryTags,
         })
         .select()

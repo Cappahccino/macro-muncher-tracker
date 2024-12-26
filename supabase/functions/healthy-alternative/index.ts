@@ -46,7 +46,22 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a nutritionist and chef specialized in creating healthy alternatives to popular junk food. Generate a healthy recipe that captures the essence of the requested food but with better nutritional value. Return ONLY a JSON object with these exact fields: title (string), description (string), instructions (array of steps), and dietaryTags (array of tags like "healthy", "low-fat", etc). Do not include any markdown formatting or additional text.'
+            content: `You are a nutritionist and chef specialized in creating healthy alternatives to popular junk food. Generate a healthy recipe that captures the essence of the requested food but with better nutritional value. 
+            
+            Important guidelines:
+            - Use ONLY metric measurements (grams, milliliters)
+            - NO cups, tablespoons, or other imperial measurements
+            - Include precise macronutrient information per serving
+            - Keep instructions clear and concise
+            
+            Return ONLY a JSON object with these exact fields:
+            - title (string)
+            - description (string)
+            - instructions (array of steps)
+            - dietaryTags (array of tags like "healthy", "low-fat", etc)
+            - macronutrients (object with calories, protein, carbs, fat, and fiber in grams)
+            
+            Do not include any markdown formatting or additional text.`
           },
           {
             role: 'user',

@@ -106,15 +106,6 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
             </div>
           </div>
         </div>
-
-        <DialogClose asChild>
-          <Button
-            variant="outline"
-            className="absolute right-4 top-4 hover:bg-gray-700 text-gray-300 border-gray-600"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );

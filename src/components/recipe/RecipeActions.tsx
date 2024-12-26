@@ -1,6 +1,5 @@
-import { Save, Printer, Trash2, Plus } from "lucide-react";
+import { Save, Printer, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,7 +131,7 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
       <Button
         variant="ghost"
         size="icon"
@@ -158,15 +157,6 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
       >
         <Printer className="h-4 w-4" />
       </Button>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0"
-        >
-          <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
-      </AlertDialogTrigger>
       <DeleteRecipeDialog recipe={recipe} onDelete={onDelete} />
     </div>
   );

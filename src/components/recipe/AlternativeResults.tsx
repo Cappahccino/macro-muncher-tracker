@@ -7,6 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MacroNutrient } from "../meal/MacroNutrient";
 
 interface AlternativeResultsProps {
   showResults: boolean;
@@ -34,30 +35,57 @@ export function AlternativeResults({
                 <h4 className="font-semibold text-lg">{alternative.title}</h4>
                 <p className="text-muted-foreground">{alternative.description}</p>
                 
-                <div className="mt-4">
-                  <h5 className="font-medium mb-2">Nutritional Information (per serving):</h5>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Calories</p>
-                      <p className="font-medium">{Math.round(alternative.calories || 0)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Protein</p>
-                      <p className="font-medium">{Math.round(alternative.protein || 0)}g</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Carbs</p>
-                      <p className="font-medium">{Math.round(alternative.carbs || 0)}g</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Fat</p>
-                      <p className="font-medium">{Math.round(alternative.fat || 0)}g</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Fiber</p>
-                      <p className="font-medium">{Math.round(alternative.fiber || 0)}g</p>
+                {alternative.servingSize && (
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <p className="text-sm font-medium">
+                      Makes {alternative.servingSize.servings} servings 
+                      ({alternative.servingSize.gramsPerServing}g per serving)
+                    </p>
+                  </div>
+                )}
+
+                {alternative.macronutrients?.perServing && (
+                  <div className="mt-4">
+                    <h5 className="font-medium mb-2">Nutrition (per serving):</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <MacroNutrient 
+                        label="Calories" 
+                        value={alternative.macronutrients.perServing.calories} 
+                        unit="" 
+                      />
+                      <MacroNutrient 
+                        label="Protein" 
+                        value={alternative.macronutrients.perServing.protein} 
+                        unit="g" 
+                      />
+                      <MacroNutrient 
+                        label="Carbs" 
+                        value={alternative.macronutrients.perServing.carbs} 
+                        unit="g" 
+                      />
+                      <MacroNutrient 
+                        label="Fat" 
+                        value={alternative.macronutrients.perServing.fat} 
+                        unit="g" 
+                      />
+                      <MacroNutrient 
+                        label="Fiber" 
+                        value={alternative.macronutrients.perServing.fiber} 
+                        unit="g" 
+                      />
                     </div>
                   </div>
+                )}
+
+                <div className="mt-4">
+                  <h5 className="font-medium mb-2">Ingredients:</h5>
+                  <ul className="space-y-1">
+                    {alternative.ingredients?.map((ingredient: any, index: number) => (
+                      <li key={index} className="text-sm">
+                        {ingredient.name} - {ingredient.amount}g
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </>
             )}

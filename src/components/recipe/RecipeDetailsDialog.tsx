@@ -4,16 +4,32 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ChefHat, Clock, Utensils, X } from "lucide-react";
+import { ChefHat, Clock, Utensils } from "lucide-react";
+import { MacroNutrient } from "../meal/MacroNutrient";
 
 interface Recipe {
   recipe_id: string;
   title: string;
   description: string | null;
-  instructions: any | null;
+  instructions: {
+    ingredients: Array<{ name: string; amount: number }>;
+    steps: string[];
+    servingSize: {
+      servings: number;
+      gramsPerServing: number;
+    };
+    macronutrients: {
+      totalCalories: number;
+      perServing: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        fiber: number;
+      };
+    };
+  } | null;
   created_at: string;
   dietary_tags?: string[];
 }
@@ -27,24 +43,10 @@ interface RecipeDetailsDialogProps {
 export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDialogProps) {
   if (!recipe) return null;
 
-  const formatInstructions = (instructions: any) => {
-    if (typeof instructions === 'string') {
-      // Split by newlines and create bullet points
-      return instructions.split('\n').filter(line => line.trim()).map(line => `• ${line.trim()}`).join('\n');
-    } else if (Array.isArray(instructions)) {
-      // If it's an array, add bullet points
-      return instructions.map(item => `• ${item}`).join('\n');
-    } else {
-      // For objects or other types, stringify but remove brackets
-      return JSON.stringify(instructions, null, 2)
-        .replace(/[\[\]]/g, '')
-        .split(',')
-        .map(line => line.trim())
-        .filter(line => line)
-        .map(line => `• ${line}`)
-        .join('\n');
-    }
-  };
+  const macros = recipe.instructions?.macronutrients?.perServing;
+  const servingInfo = recipe.instructions?.servingSize;
+  const ingredients = recipe.instructions?.ingredients || [];
+  const steps = recipe.instructions?.steps || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -73,6 +75,65 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
         </DialogHeader>
         
         <div className="mt-6 space-y-6">
+          {/* Serving Information */}
+          {servingInfo && (
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-300 mb-2">Serving Information</h4>
+              <p className="text-gray-200">
+                Makes {servingInfo.servings} servings ({servingInfo.gramsPerServing}g per serving)
+              </p>
+            </div>
+          )}
+
+          {/* Macronutrients per serving */}
+          {macros && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+                Nutrition (per serving)
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-800/50 rounded-lg p-4">
+                <MacroNutrient label="Calories" value={macros.calories} unit="" />
+                <MacroNutrient label="Protein" value={macros.protein} unit="g" />
+                <MacroNutrient label="Carbs" value={macros.carbs} unit="g" />
+                <MacroNutrient label="Fat" value={macros.fat} unit="g" />
+                <MacroNutrient label="Fiber" value={macros.fiber} unit="g" />
+              </div>
+            </div>
+          )}
+
+          {/* Ingredients */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+              Ingredients
+            </h3>
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <ul className="space-y-2">
+                {ingredients.map((ingredient, index) => (
+                  <li key={index} className="text-gray-200">
+                    {ingredient.name} - {ingredient.amount}g
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Instructions */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+              Instructions
+            </h3>
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <ol className="space-y-2 list-decimal list-inside">
+                {steps.map((step, index) => (
+                  <li key={index} className="text-gray-200">
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          {/* Dietary Tags */}
           {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-300 mb-2">Dietary Tags</h4>
@@ -88,23 +149,6 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
               </div>
             </div>
           )}
-
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-              Instructions
-            </h3>
-            <div className="prose prose-sm prose-invert max-w-none">
-              {recipe.instructions ? (
-                <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
-                  <p className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-200">
-                    {formatInstructions(recipe.instructions)}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-gray-400 italic">No instructions available</p>
-              )}
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

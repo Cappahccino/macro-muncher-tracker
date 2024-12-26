@@ -86,16 +86,21 @@ serve(async (req) => {
             
             Return ONLY a JSON object with these exact fields:
             - title (string): name of the healthy alternative
-            - description (string): brief explanation of why this is healthier
-            - instructions (array of strings): step-by-step cooking instructions
-            - dietaryTags (array of strings): relevant tags like "high-protein", "low-carb", etc.
+            - description (string): detailed explanation of why this is healthier and what makes it nutritious
+            - ingredients (array): [{ name: string, amount: number (in grams) }]
+            - instructions (array of strings): detailed step-by-step cooking instructions with all measurements in grams
+            - servingSize (object): { servings: number, gramsPerServing: number }
             - macronutrients (object): {
-                calories (number),
-                protein (number),
-                carbs (number),
-                fat (number),
-                fiber (number)
+                totalCalories: number,
+                perServing: {
+                  calories: number,
+                  protein: number,
+                  carbs: number,
+                  fat: number,
+                  fiber: number
+                }
               }
+            - dietaryTags (array of strings): relevant tags like "high-protein", "low-carb", etc.
             
             Do not include any markdown formatting or additional text.`
           },
@@ -130,7 +135,12 @@ serve(async (req) => {
           user_id: userId,
           title: recipe.title,
           description: recipe.description,
-          instructions: recipe.instructions,
+          instructions: {
+            ingredients: recipe.ingredients,
+            steps: recipe.instructions,
+            servingSize: recipe.servingSize,
+            macronutrients: recipe.macronutrients
+          },
           dietary_tags: recipe.dietaryTags,
         })
         .select()

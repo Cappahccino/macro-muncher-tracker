@@ -1,18 +1,10 @@
 import { Save, Printer, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Recipe {
   recipe_id: string;
@@ -29,6 +21,8 @@ interface RecipeActionsProps {
 }
 
 export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
+  const queryClient = useQueryClient();
+
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
     toast({
@@ -121,6 +115,8 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
         await Promise.all(ingredientPromises);
       }
 
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+
       toast({
         title: "Success",
         description: "Recipe has been added to your meals",
@@ -130,30 +126,6 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
       toast({
         title: "Error",
         description: "Failed to add recipe to meals. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      const { error } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('recipe_id', recipe.recipe_id);
-
-      if (error) throw error;
-
-      onDelete();
-      toast({
-        title: "Recipe Deleted",
-        description: "The recipe has been successfully deleted.",
-      });
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the recipe. Please try again.",
         variant: "destructive",
       });
     }
@@ -186,29 +158,16 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
       >
         <Printer className="h-4 w-4" />
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Recipe</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this recipe? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+        >
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </AlertDialogTrigger>
+      <DeleteRecipeDialog recipe={recipe} onDelete={onDelete} />
     </div>
   );
 }

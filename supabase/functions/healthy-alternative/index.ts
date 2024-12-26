@@ -1,176 +1,67 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "std/server";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const { query } = await req.json();
 
-  try {
-    const { query, userId } = await req.json();
-    console.log('Processing query for healthier alternative:', query);
+  const prompt = generatePrompt(query);
 
-    // First, validate if the input is a valid meal
-    const validationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a meal validation assistant. Your task is to determine if the input is a valid meal or food item.
-            Return ONLY a JSON object with these fields:
-            - isValid (boolean): true if it's a recognizable meal/food item
-            - mealType (string): breakfast/lunch/dinner/snack/dessert or null if not valid
-            - category (string): e.g., "fast food", "pasta", "sandwich" or null if not valid
-            - reasoning (string): brief explanation of why it's valid/invalid`
-          },
-          {
-            role: 'user',
-            content: query
-          }
-        ],
-        temperature: 0.3,
-      }),
-    });
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
 
-    const validationData = await validationResponse.json();
-    const validation = JSON.parse(validationData.choices[0].message.content);
-    console.log('Validation result:', validation);
+  const data = await response.json();
 
-    if (!validation.isValid) {
-      return new Response(
-        JSON.stringify({
-          error: 'Invalid input',
-          details: validation.reasoning
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // If valid, generate a healthy alternative
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a nutritionist and chef specialized in creating healthy alternatives to popular meals. 
-            Given a ${validation.category} typically eaten for ${validation.mealType}, generate a healthier version that:
-            - Maintains similar flavors and textures
-            - Reduces calories and unhealthy fats
-            - Increases protein and fiber content where possible
-            - Uses whole, unprocessed ingredients
-            
-            Return ONLY a JSON object with these exact fields:
-            - title (string): name of the healthy alternative
-            - description (string): detailed explanation of why this is healthier and what makes it nutritious
-            - ingredients (array): [{ name: string, amount: number (in grams) }]
-            - instructions (array of strings): detailed step-by-step cooking instructions with all measurements in grams
-            - servingSize (object): { servings: number, gramsPerServing: number }
-            - macronutrients (object): {
-                totalCalories: number,
-                perServing: {
-                  calories: number,
-                  protein: number,
-                  carbs: number,
-                  fat: number,
-                  fiber: number
-                }
-              }
-            - dietaryTags (array of strings): relevant tags like "high-protein", "low-carb", etc.
-            
-            Do not include any markdown formatting or additional text.`
-          },
-          {
-            role: 'user',
-            content: `Create a healthy alternative recipe for: ${query}`
-          }
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    const alternativeData = await response.json();
-    console.log('Generated alternative recipe');
-
-    let recipe;
-    try {
-      recipe = JSON.parse(alternativeData.choices[0].message.content.trim());
-    } catch (error) {
-      console.error('Failed to parse recipe:', error);
-      console.log('Raw response:', alternativeData.choices[0].message.content);
-      throw new Error('Failed to generate recipe');
-    }
-
-    // Save to database if user is authenticated
-    if (userId) {
-      const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-      
-      const { data, error } = await supabase
-        .from('recipes')
-        .insert({
-          user_id: userId,
-          title: recipe.title,
-          description: recipe.description,
-          instructions: {
-            ingredients: recipe.ingredients,
-            steps: recipe.instructions,
-            servingSize: recipe.servingSize,
-            macronutrients: recipe.macronutrients
-          },
-          dietary_tags: recipe.dietaryTags,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error saving recipe:', error);
-        throw error;
-      }
-      recipe.id = data.recipe_id;
-    }
-
-    return new Response(
-      JSON.stringify(recipe),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-
-  } catch (error) {
-    console.error('Error in healthy-alternative function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.toString()
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-  }
+  return new Response(JSON.stringify(data), {
+    headers: { "Content-Type": "application/json" },
+  });
 });
+
+const generatePrompt = (query: string) => `
+Generate a healthy alternative recipe based on this request: "${query}"
+
+Provide the response in the following JSON format:
+{
+  "title": "Recipe Name",
+  "description": "Brief description of the dish",
+  "servingSize": {
+    "servings": number,
+    "gramsPerServing": number
+  },
+  "ingredients": [
+    {
+      "name": "Ingredient name",
+      "amount": number (in grams)
+    }
+  ],
+  "instructions": {
+    "steps": [
+      "Step 1 with precise measurements in grams",
+      "Step 2 with precise measurements in grams"
+    ]
+  },
+  "macronutrients": {
+    "totalCalories": number,
+    "perServing": {
+      "calories": number,
+      "protein": number,
+      "carbs": number,
+      "fat": number,
+      "fiber": number
+    }
+  }
+}
+
+IMPORTANT:
+1. ALL measurements MUST be in grams
+2. Include detailed cooking instructions with precise measurements
+3. Provide complete macronutrient information per serving
+4. Make sure the recipe is healthy and nutritious
+`;

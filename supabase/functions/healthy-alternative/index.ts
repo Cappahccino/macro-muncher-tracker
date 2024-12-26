@@ -17,24 +17,55 @@ serve(async (req) => {
   }
 
   try {
-    const { junkFood, userId } = await req.json();
-    console.log('Generating healthy alternative for:', junkFood);
+    const { query, userId } = await req.json();
+    console.log('Processing query for healthier alternative:', query);
 
-    // First verify the user exists
-    if (userId) {
-      const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('user_id', userId)
-        .single();
+    // First, validate if the input is a valid meal
+    const validationResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a meal validation assistant. Your task is to determine if the input is a valid meal or food item.
+            Return ONLY a JSON object with these fields:
+            - isValid (boolean): true if it's a recognizable meal/food item
+            - mealType (string): breakfast/lunch/dinner/snack/dessert or null if not valid
+            - category (string): e.g., "fast food", "pasta", "sandwich" or null if not valid
+            - reasoning (string): brief explanation of why it's valid/invalid`
+          },
+          {
+            role: 'user',
+            content: query
+          }
+        ],
+        temperature: 0.3,
+      }),
+    });
 
-      if (userError || !userData) {
-        console.error('User not found:', userError);
-        throw new Error('User not found');
-      }
+    const validationData = await validationResponse.json();
+    const validation = JSON.parse(validationData.choices[0].message.content);
+    console.log('Validation result:', validation);
+
+    if (!validation.isValid) {
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid input',
+          details: validation.reasoning
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
+    // If valid, generate a healthy alternative
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -46,52 +77,51 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a nutritionist and chef specialized in creating healthy alternatives to popular junk food. Generate a healthy recipe that captures the essence of the requested food but with better nutritional value. 
-            
-            Important guidelines:
-            - Use ONLY metric measurements (grams, milliliters)
-            - NO cups, tablespoons, or other imperial measurements
-            - Include precise macronutrient information per serving
-            - Keep instructions clear and concise
+            content: `You are a nutritionist and chef specialized in creating healthy alternatives to popular meals. 
+            Given a ${validation.category} typically eaten for ${validation.mealType}, generate a healthier version that:
+            - Maintains similar flavors and textures
+            - Reduces calories and unhealthy fats
+            - Increases protein and fiber content where possible
+            - Uses whole, unprocessed ingredients
             
             Return ONLY a JSON object with these exact fields:
-            - title (string)
-            - description (string)
-            - instructions (array of steps)
-            - dietaryTags (array of tags like "healthy", "low-fat", etc)
-            - macronutrients (object with calories, protein, carbs, fat, and fiber in grams)
+            - title (string): name of the healthy alternative
+            - description (string): brief explanation of why this is healthier
+            - instructions (array of strings): step-by-step cooking instructions
+            - dietaryTags (array of strings): relevant tags like "high-protein", "low-carb", etc.
+            - macronutrients (object): {
+                calories (number),
+                protein (number),
+                carbs (number),
+                fat (number),
+                fiber (number)
+              }
             
             Do not include any markdown formatting or additional text.`
           },
           {
             role: 'user',
-            content: `Create a healthy alternative recipe for: ${junkFood}`
+            content: `Create a healthy alternative recipe for: ${query}`
           }
         ],
         temperature: 0.7,
-        max_tokens: 1000,
       }),
     });
 
-    const aiData = await response.json();
-    console.log('AI response received:', aiData);
-
-    if (!aiData.choices?.[0]?.message?.content) {
-      throw new Error('Invalid AI response format');
-    }
+    const alternativeData = await response.json();
+    console.log('Generated alternative recipe');
 
     let recipe;
     try {
-      recipe = JSON.parse(aiData.choices[0].message.content.trim());
+      recipe = JSON.parse(alternativeData.choices[0].message.content.trim());
     } catch (error) {
-      console.error('Failed to parse AI response:', error);
-      console.log('Raw AI response:', aiData.choices[0].message.content);
-      throw new Error('Failed to parse recipe data');
+      console.error('Failed to parse recipe:', error);
+      console.log('Raw response:', alternativeData.choices[0].message.content);
+      throw new Error('Failed to generate recipe');
     }
-    
-    // Only save the recipe if we have a valid user ID
+
+    // Save to database if user is authenticated
     if (userId) {
-      // Create Supabase client
       const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
       
       const { data, error } = await supabase

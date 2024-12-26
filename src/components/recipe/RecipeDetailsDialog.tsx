@@ -4,25 +4,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
-import { ChefHat, Clock, Utensils } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChefHat, Clock, Utensils, X } from "lucide-react";
 
 interface Recipe {
   recipe_id: string;
   title: string;
   description: string | null;
-  instructions: {
-    steps: string[];
-    ingredients?: { name: string; amount: number }[];
-    macros?: {
-      calories: number;
-      protein: number;
-      carbs: number;
-      fat: number;
-      fiber: number;
-      servings: number;
-    };
-  } | null;
+  instructions: any | null;
   created_at: string;
   dietary_tags?: string[];
 }
@@ -37,10 +28,22 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
   if (!recipe) return null;
 
   const formatInstructions = (instructions: any) => {
-    if (Array.isArray(instructions.steps)) {
-      return instructions.steps.map(step => `• ${step}`).join('\n');
+    if (typeof instructions === 'string') {
+      // Split by newlines and create bullet points
+      return instructions.split('\n').filter(line => line.trim()).map(line => `• ${line.trim()}`).join('\n');
+    } else if (Array.isArray(instructions)) {
+      // If it's an array, add bullet points
+      return instructions.map(item => `• ${item}`).join('\n');
+    } else {
+      // For objects or other types, stringify but remove brackets
+      return JSON.stringify(instructions, null, 2)
+        .replace(/[\[\]]/g, '')
+        .split(',')
+        .map(line => line.trim())
+        .filter(line => line)
+        .map(line => `• ${line}`)
+        .join('\n');
     }
-    return 'No instructions available';
   };
 
   return (
@@ -70,65 +73,6 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
         </DialogHeader>
         
         <div className="mt-6 space-y-6">
-          {recipe.instructions?.macros && (
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-3">Nutritional Information (per serving)</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-400">Calories</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {Math.round(recipe.instructions.macros.calories)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Protein</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {Math.round(recipe.instructions.macros.protein)}g
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Carbs</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {Math.round(recipe.instructions.macros.carbs)}g
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Fat</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {Math.round(recipe.instructions.macros.fat)}g
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Fiber</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {Math.round(recipe.instructions.macros.fiber)}g
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Servings</p>
-                  <p className="text-lg font-semibold text-gray-200">
-                    {recipe.instructions.macros.servings}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {recipe.instructions?.ingredients && (
-            <div>
-              <h4 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent mb-3">
-                Ingredients
-              </h4>
-              <div className="bg-gray-800/50 rounded-lg p-4 space-y-2">
-                {recipe.instructions.ingredients.map((ingredient, index) => (
-                  <p key={index} className="text-sm text-gray-200">
-                    • {ingredient.name}: {Math.round(ingredient.amount)}g
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
-
           {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-gray-300 mb-2">Dietary Tags</h4>

@@ -5,6 +5,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
 import { MacroCirclesGrid } from "@/components/MacroCirclesGrid";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface Meal {
   name: string;
@@ -16,6 +18,7 @@ interface Meal {
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [meals, setMeals] = useState<Meal[]>(() => {
     const savedMeals = localStorage.getItem('dailyMeals');
     return savedMeals ? JSON.parse(savedMeals) : [];
@@ -31,6 +34,51 @@ const Index = () => {
       fat: 70,
     };
   });
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to access the dashboard",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
+
+  // Save meals to activity_logs table
+  const saveMealToDatabase = async (meal: Meal) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase
+        .from('activity_logs')
+        .insert({
+          user_id: session.user.id,
+          date: new Date().toISOString().split('T')[0],
+          calories: meal.calories,
+          protein: meal.protein,
+          carbs: meal.carbs,
+          fat: meal.fat,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving meal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save meal to database",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('dailyMeals', JSON.stringify(meals));
@@ -50,18 +98,20 @@ const Index = () => {
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
 
-  const handleAddMeal = (meal: Meal) => {
+  const handleAddMeal = async (meal: Meal) => {
     if (editingMeal !== null) {
       const updatedMeals = [...meals];
       updatedMeals[editingMeal.index] = meal;
       setMeals(updatedMeals);
       setEditingMeal(null);
+      await saveMealToDatabase(meal);
       toast({
         title: "Success",
         description: "Meal updated successfully",
       });
     } else {
       setMeals([...meals, meal]);
+      await saveMealToDatabase(meal);
       toast({
         title: "Success",
         description: "Meal added successfully",

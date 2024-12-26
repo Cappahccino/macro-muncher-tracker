@@ -67,6 +67,7 @@ export type Database = {
           name: string
           protein_per_100g: number | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           calories_per_100g?: number | null
@@ -78,6 +79,7 @@ export type Database = {
           name: string
           protein_per_100g?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           calories_per_100g?: number | null
@@ -89,8 +91,17 @@ export type Database = {
           name?: string
           protein_per_100g?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ingredients_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       recipe_ingredients: {
         Row: {

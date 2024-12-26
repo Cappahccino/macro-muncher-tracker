@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -27,8 +27,9 @@ const RecipeVault = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: recipes, isLoading, refetch } = useQuery({
+  const { data: recipes, isLoading } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -43,7 +44,7 @@ const RecipeVault = () => {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      await refetch();
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       return;
     }
     
@@ -77,7 +78,9 @@ const RecipeVault = () => {
   };
 
   const handleDelete = async () => {
-    await refetch();
+    // Invalidate and refetch recipes after deletion
+    await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+    
     // Reset search if there was an active search
     if (searchQuery) {
       setSearchQuery("");

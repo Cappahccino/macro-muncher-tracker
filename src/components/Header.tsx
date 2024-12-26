@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Menu, User } from "lucide-react";
+import { Home, Menu, User, BookCopy } from "lucide-react";
 import { useState } from "react";
 
 export const Header = () => {
@@ -35,6 +35,12 @@ export const Header = () => {
           )}
           {location.pathname !== "/recipes" && (
             <Button onClick={() => navigate("/recipes")}>Meals List</Button>
+          )}
+          {location.pathname !== "/recipe-vault" && (
+            <Button onClick={() => navigate("/recipe-vault")}>
+              <BookCopy className="mr-2 h-4 w-4" />
+              Recipe Vault
+            </Button>
           )}
           {location.pathname !== "/weight-progress" && (
             <Button onClick={() => navigate("/weight-progress")}>Weight Progress</Button>
@@ -73,6 +79,15 @@ export const Header = () => {
               navigate("/recipes");
               setIsMenuOpen(false);
             }}>Meals List</Button>
+          )}
+          {location.pathname !== "/recipe-vault" && (
+            <Button onClick={() => {
+              navigate("/recipe-vault");
+              setIsMenuOpen(false);
+            }}>
+              <BookCopy className="mr-2 h-4 w-4" />
+              Recipe Vault
+            </Button>
           )}
           {location.pathname !== "/weight-progress" && (
             <Button onClick={() => {

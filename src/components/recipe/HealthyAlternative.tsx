@@ -1,18 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChefHat, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
+import { AlternativeSearchInput } from "./AlternativeSearchInput";
+import { AlternativeResults } from "./AlternativeResults";
 
 export function HealthyAlternative() {
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +58,7 @@ export function HealthyAlternative() {
       // Add ingredients
       if (recipe && alternative.ingredients) {
         const ingredientPromises = alternative.ingredients.map(async (ingredient: any) => {
-          const { data: ingredientData, error: ingredientError } = await supabase
+          const { error: ingredientError } = await supabase
             .from('recipe_ingredients')
             .insert([{
               recipe_id: recipe.recipe_id,
@@ -81,7 +72,6 @@ export function HealthyAlternative() {
             }]);
 
           if (ingredientError) throw ingredientError;
-          return ingredientData;
         });
 
         await Promise.all(ingredientPromises);
@@ -108,98 +98,26 @@ export function HealthyAlternative() {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="p-6 bg-gradient-to-r from-purple-50/50 to-blue-50/50 rounded-lg border shadow-sm"
+      className="p-6 bg-gradient-to-br from-purple-600/5 via-blue-600/5 to-purple-600/5 rounded-lg border border-purple-500/20 shadow-lg backdrop-blur-sm"
     >
-      <div className="flex items-center gap-2 mb-3">
-        <ChefHat className="h-5 w-5 text-purple-500" />
-        <h3 className="text-lg font-semibold">Find Healthy Alternatives</h3>
-      </div>
+      <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+        Use AI to Find Healthy Meal Alternatives
+      </h3>
       
-      <div className="flex gap-2">
-        <Input
-          placeholder="Enter a dish (e.g., 'mac and cheese')"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-          className="flex-1"
-        />
-        <Button 
-          onClick={handleSearch}
-          disabled={isLoading}
-          className="w-[100px]"
-        >
-          {isLoading ? (
-            "Searching..."
-          ) : (
-            <>
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </>
-          )}
-        </Button>
-      </div>
+      <AlternativeSearchInput
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        handleSearch={handleSearch}
+        isLoading={isLoading}
+      />
 
-      <AlertDialog open={showResults} onOpenChange={setShowResults}>
-        <AlertDialogContent className="max-w-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Healthy Alternative Found!</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              {alternative && (
-                <>
-                  <h4 className="font-semibold text-lg">{alternative.title}</h4>
-                  <p className="text-muted-foreground">{alternative.description}</p>
-                  
-                  <div className="mt-4">
-                    <h5 className="font-medium mb-2">Nutritional Information (per serving):</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Calories</p>
-                        <p className="font-medium">{Math.round(alternative.calories || 0)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Protein</p>
-                        <p className="font-medium">{Math.round(alternative.protein || 0)}g</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Carbs</p>
-                        <p className="font-medium">{Math.round(alternative.carbs || 0)}g</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Fat</p>
-                        <p className="font-medium">{Math.round(alternative.fat || 0)}g</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Fiber</p>
-                        <p className="font-medium">{Math.round(alternative.fiber || 0)}g</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowResults(false)}
-            >
-              Close
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowResults(false);
-                handleSearch();
-              }}
-            >
-              Research
-            </Button>
-            <Button onClick={handleAddToMeals}>
-              Add to Meals
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlternativeResults
+        showResults={showResults}
+        setShowResults={setShowResults}
+        alternative={alternative}
+        handleSearch={handleSearch}
+        handleAddToMeals={handleAddToMeals}
+      />
     </motion.div>
   );
 }

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
-import { WeightGoalCard } from "@/components/weight/WeightGoalCard";
 import { WeightEntryCard } from "@/components/weight/WeightEntryCard";
 import { WeightProgressChart } from "@/components/weight/WeightProgressChart";
 import { WeightEntriesTable } from "@/components/weight/WeightEntriesTable";
+import { WeightGauge } from "@/components/weight/WeightGauge";
 import { WeightEntry } from "@/components/weight/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,28 @@ const WeightProgress = () => {
     const savedEntries = localStorage.getItem('weightEntries');
     return savedEntries ? JSON.parse(savedEntries) : [];
   });
+  
+  const [weightGoals, setWeightGoals] = useState({
+    currentWeight: 0,
+    targetWeight: 0,
+    initialWeight: 0,
+  });
+
   const { toast } = useToast();
+
+  useEffect(() => {
+    const savedGoals = localStorage.getItem('weightGoals');
+    const savedUserData = localStorage.getItem('userData');
+    if (savedGoals && savedUserData) {
+      const goals = JSON.parse(savedGoals);
+      const userData = JSON.parse(savedUserData);
+      setWeightGoals({
+        currentWeight: entries.length > 0 ? entries[0].morningWeight : userData.currentWeight,
+        targetWeight: goals.targetWeight || userData.targetWeight,
+        initialWeight: userData.currentWeight,
+      });
+    }
+  }, [entries]);
 
   const getDailyMacros = () => {
     const dailyMeals = JSON.parse(localStorage.getItem('dailyMeals') || '[]');
@@ -68,11 +89,6 @@ const WeightProgress = () => {
     localStorage.setItem('weightEntries', JSON.stringify(entries));
   }, [entries]);
 
-  const handleGoalSet = (current: number, target: number) => {
-    console.log("Goal set:", { current, target });
-    localStorage.setItem('weightGoals', JSON.stringify({ current, target }));
-  };
-
   const handleAddEntry = (newEntry: WeightEntry) => {
     const lastEntry = entries[0];
     const weightChange = lastEntry 
@@ -90,6 +106,10 @@ const WeightProgress = () => {
     };
 
     setEntries([entryWithMacros, ...entries]);
+    setWeightGoals(prev => ({
+      ...prev,
+      currentWeight: newEntry.morningWeight,
+    }));
   };
 
   const handleClearEntries = () => {
@@ -156,7 +176,11 @@ const WeightProgress = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <WeightGoalCard onGoalSet={handleGoalSet} />
+              <WeightGauge 
+                currentWeight={weightGoals.currentWeight}
+                targetWeight={weightGoals.targetWeight}
+                initialWeight={weightGoals.initialWeight}
+              />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}

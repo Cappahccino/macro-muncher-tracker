@@ -31,24 +31,33 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a nutritionist and chef specialized in creating healthy alternatives to popular junk food. Generate a healthy recipe that captures the essence of the requested food but with better nutritional value. Return a JSON object with: title (string), description (string), instructions (array of steps), and dietaryTags (array of tags like "healthy", "low-fat", etc).'
+            content: 'You are a nutritionist and chef specialized in creating healthy alternatives to popular junk food. Generate a healthy recipe that captures the essence of the requested food but with better nutritional value. Return ONLY a JSON object with these exact fields: title (string), description (string), instructions (array of steps), and dietaryTags (array of tags like "healthy", "low-fat", etc). Do not include any markdown formatting or additional text.'
           },
           {
             role: 'user',
             content: `Create a healthy alternative recipe for: ${junkFood}`
           }
         ],
+        temperature: 0.7,
+        max_tokens: 1000,
       }),
     });
 
     const aiData = await response.json();
-    console.log('AI response received');
+    console.log('AI response received:', aiData);
 
     if (!aiData.choices?.[0]?.message?.content) {
       throw new Error('Invalid AI response format');
     }
 
-    const recipe = JSON.parse(aiData.choices[0].message.content);
+    let recipe;
+    try {
+      recipe = JSON.parse(aiData.choices[0].message.content.trim());
+    } catch (error) {
+      console.error('Failed to parse AI response:', error);
+      console.log('Raw AI response:', aiData.choices[0].message.content);
+      throw new Error('Failed to parse recipe data');
+    }
     
     // Create Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
@@ -67,7 +76,10 @@ serve(async (req) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving recipe:', error);
+        throw error;
+      }
       recipe.id = data.recipe_id;
     }
 

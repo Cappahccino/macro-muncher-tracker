@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, Mail } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -20,6 +21,8 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -29,9 +32,52 @@ const SignIn = () => {
     },
   });
 
+  const handleResendVerification = async () => {
+    const email = form.getValues("email");
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter your email address",
+      });
+      return;
+    }
+
+    try {
+      setResendingEmail(true);
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to resend verification email. Please try again later.",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Verification email has been resent. Please check your inbox.",
+        });
+      }
+    } catch (error) {
+      console.error("Error resending verification:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
+      setEmailNotVerified(false);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -40,31 +86,15 @@ const SignIn = () => {
 
       if (error) {
         if (error.message.toLowerCase().includes("email not confirmed")) {
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email: values.email,
-          });
-
-          if (resendError) {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: "Failed to resend verification email. Please try again later.",
-            });
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Email Not Verified",
-              description: "A new verification email has been sent. Please check your inbox and verify your account before signing in.",
-            });
-          }
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error.message,
-          });
+          setEmailNotVerified(true);
+          return;
         }
+        
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
         return;
       }
 
@@ -97,6 +127,21 @@ const SignIn = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {emailNotVerified && (
+            <Alert className="mb-6">
+              <AlertDescription className="flex flex-col gap-3">
+                <p>Please verify your email address before signing in.</p>
+                <Button 
+                  variant="outline" 
+                  onClick={handleResendVerification}
+                  disabled={resendingEmail}
+                >
+                  {resendingEmail ? "Sending..." : "Resend verification email"}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField

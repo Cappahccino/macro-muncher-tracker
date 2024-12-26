@@ -38,10 +38,27 @@ const SignUp = () => {
     try {
       setIsLoading(true);
       
+      // Get user data from localStorage
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      if (!userData.name) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please complete the onboarding process first",
+        });
+        navigate("/onboarding");
+        return;
+      }
+
       // First sign up the user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
+        options: {
+          data: {
+            name: userData.name,
+          },
+        },
       });
 
       if (authError) {
@@ -62,20 +79,21 @@ const SignUp = () => {
         return;
       }
 
-      // Get user data from localStorage
-      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      
-      // Create the user profile with the auth user's ID
+      // Create the user profile
       const { error: profileError } = await supabase
         .from("users")
         .insert({
-          user_id: authData.user.id, // Set the user_id to match the auth user's ID
+          user_id: authData.user.id,
           email: values.email,
           username: values.email.split("@")[0],
           date_of_birth: userData.dob,
           gender: userData.gender,
           height_cm: userData.height,
-          weight_kg: userData.currentWeight,
+          weight_kg: userData.weightUnit === "kg" 
+            ? userData.currentWeight 
+            : userData.weightUnit === "lbs"
+            ? userData.currentWeight * 0.453592
+            : userData.currentWeight * 6.35029,
           activity_level: userData.activityLevel,
           preferred_weight_unit: userData.weightUnit,
           preferred_height_unit: "cm",
@@ -95,6 +113,22 @@ const SignUp = () => {
         title: "Success",
         description: "Your account has been created. Please check your email to verify your account.",
       });
+
+      // Sign in the user immediately after signup
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (signInError) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Account created but couldn't sign in automatically. Please sign in manually.",
+        });
+        navigate("/sign-in");
+        return;
+      }
 
       navigate("/dashboard");
     } catch (error) {

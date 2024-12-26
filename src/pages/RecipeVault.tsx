@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { DietaryFilters } from "@/components/recipe/DietaryFilters";
 import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
-import { RecipeCard } from "@/components/recipe/RecipeCard";
+import { RecipeListItem } from "@/components/recipe/RecipeListItem";
 import { HealthyAlternative } from "@/components/recipe/HealthyAlternative";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -28,7 +28,7 @@ const RecipeVault = () => {
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
 
-  const { data: recipes, isLoading } = useQuery({
+  const { data: recipes, isLoading, refetch } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,7 +52,6 @@ const RecipeVault = () => {
 
       if (error) throw error;
       
-      // Update the active filter if dietary preferences were detected
       if (data.analysis.dietaryTags?.length > 0) {
         setActiveFilter(data.analysis.dietaryTags[0]);
       }
@@ -108,14 +107,12 @@ const RecipeVault = () => {
         </h2>
 
         <div className="space-y-6">
-          {/* Healthy Alternative Section */}
-          <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
+          <div className="p-6 bg-gradient-to-r from-purple-50/50 to-blue-50/50 rounded-lg border shadow-sm">
             <h3 className="text-lg font-semibold mb-3">Find Healthy Alternatives</h3>
             <HealthyAlternative />
           </div>
 
-          {/* Existing Search Section */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex-1 w-full md:w-auto">
               <div className="flex gap-2">
                 <Input
@@ -143,7 +140,7 @@ const RecipeVault = () => {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <DietaryFilters 
               activeFilter={activeFilter} 
               onFilterChange={setActiveFilter} 
@@ -156,14 +153,18 @@ const RecipeVault = () => {
               variants={container}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              className="space-y-4"
             >
               {filteredRecipes?.map((recipe) => (
-                <RecipeCard key={recipe.recipe_id} recipe={recipe} />
+                <RecipeListItem 
+                  key={recipe.recipe_id} 
+                  recipe={recipe}
+                  onDelete={() => refetch()}
+                />
               ))}
 
               {filteredRecipes?.length === 0 && (
-                <div className="col-span-2 text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground">
                   No recipes found. Start creating some delicious meals!
                 </div>
               )}

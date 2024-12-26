@@ -16,20 +16,17 @@ const DietType = () => {
     {
       id: "weightLoss",
       label: "Weight Loss",
-      description: "Higher protein to preserve muscle, moderate carbs and fats",
-      macros: { protein: 0.30, carbs: 0.40, fat: 0.30 }
+      description: "Higher protein to preserve muscle, moderate carbs and fats"
     },
     {
       id: "muscleBuilding",
       label: "Muscle Building",
-      description: "Higher protein and carbs for muscle repair, moderate fats",
-      macros: { protein: 0.275, carbs: 0.50, fat: 0.225 }
+      description: "Higher protein and carbs for muscle repair, moderate fats"
     },
     {
       id: "lowCarb",
       label: "Low-Carb",
-      description: "Reduced carbs, higher fats for energy needs",
-      macros: { protein: 0.30, carbs: 0.20, fat: 0.50 }
+      description: "Reduced carbs, higher fats for energy needs"
     }
   ];
 
@@ -37,32 +34,15 @@ const DietType = () => {
     const selectedDietType = dietTypes.find(diet => diet.id === selectedDiet);
     if (!selectedDietType) return;
 
-    // Get TDEE and weight loss goal from localStorage
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const weightLossGoal = JSON.parse(localStorage.getItem("weightLossGoal") || "{}");
-    const tdee = userData.tdee || 2000;
-    const dailyCalorieDeficit = weightLossGoal.dailyCalorieDeficit || 0;
-    
-    // Calculate target calories
-    const targetCalories = tdee - dailyCalorieDeficit;
-    
-    // Calculate macros based on selected diet type
-    const macroTargets = {
-      calories: targetCalories,
-      protein: Math.round((targetCalories * selectedDietType.macros.protein) / 4),
-      carbs: Math.round((targetCalories * selectedDietType.macros.carbs) / 4),
-      fat: Math.round((targetCalories * selectedDietType.macros.fat) / 9),
-    };
-
-    // Save macro targets to localStorage
-    localStorage.setItem("macroTargets", JSON.stringify(macroTargets));
+    // Save selected diet type to localStorage
+    localStorage.setItem("selectedDiet", JSON.stringify(selectedDiet));
 
     toast({
       title: "Diet type set",
-      description: `Your macros have been calculated based on ${selectedDietType.label}`,
+      description: `Your diet type has been set to ${selectedDietType.label}`,
     });
 
-    navigate("/sign-up");
+    navigate("/weight-loss-summary");
   };
 
   return (

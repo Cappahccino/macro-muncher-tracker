@@ -42,7 +42,10 @@ const RecipeVault = () => {
   });
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      await refetch();
+      return;
+    }
     
     setIsSearching(true);
     try {
@@ -69,6 +72,15 @@ const RecipeVault = () => {
         variant: "destructive",
       });
     } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    await refetch();
+    // Reset search if there was an active search
+    if (searchQuery) {
+      setSearchQuery("");
       setIsSearching(false);
     }
   };
@@ -159,7 +171,7 @@ const RecipeVault = () => {
                 <RecipeListItem 
                   key={recipe.recipe_id} 
                   recipe={recipe}
-                  onDelete={() => refetch()}
+                  onDelete={handleDelete}
                 />
               ))}
 

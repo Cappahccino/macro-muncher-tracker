@@ -20,6 +20,21 @@ serve(async (req) => {
     const { junkFood, userId } = await req.json();
     console.log('Generating healthy alternative for:', junkFood);
 
+    // First verify the user exists
+    if (userId) {
+      const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (userError || !userData) {
+        console.error('User not found:', userError);
+        throw new Error('User not found');
+      }
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -59,11 +74,11 @@ serve(async (req) => {
       throw new Error('Failed to parse recipe data');
     }
     
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-    
-    // Save the recipe if userId is provided
+    // Only save the recipe if we have a valid user ID
     if (userId) {
+      // Create Supabase client
+      const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+      
       const { data, error } = await supabase
         .from('recipes')
         .insert({

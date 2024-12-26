@@ -20,7 +20,7 @@ serve(async (req) => {
     const { searchQuery } = await req.json();
     console.log('Received search query:', searchQuery);
 
-    // First, use GPT to understand the search query and extract key terms
+    // First, use GPT to understand the search query
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -32,7 +32,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that analyzes recipe search queries. Extract key terms and dietary preferences from the query. Return a JSON object with "terms" (array of search terms) and "dietaryTags" (array of dietary preferences like "vegan", "vegetarian", "gluten-free").'
+            content: 'You are a helpful assistant that analyzes recipe search queries. Extract key terms and dietary preferences. Return a JSON object with "searchTerms" (array of individual words relevant for recipe search) and "dietaryTags" (array of dietary preferences like "vegan", "vegetarian", "gluten-free"). Only include actual words, no special characters.'
           },
           {
             role: 'user',
@@ -43,35 +43,72 @@ serve(async (req) => {
     });
 
     const aiData = await openAIResponse.json();
-    const analysisResult = JSON.parse(aiData.choices[0].message.content);
-    console.log('AI analysis result:', analysisResult);
+    console.log('AI response:', aiData);
 
-    // Use Supabase to search recipes based on AI analysis
+    if (!aiData.choices?.[0]?.message?.content) {
+      throw new Error('Invalid AI response format');
+    }
+
+    const analysisResult = JSON.parse(aiData.choices[0].message.content);
+    console.log('Parsed analysis result:', analysisResult);
+
+    // Create Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
     
+    // Format search terms for text search
+    const searchTermsQuery = analysisResult.searchTerms
+      .map((term: string) => term.trim())
+      .filter((term: string) => term.length > 0)
+      .join(' | ');
+
+    console.log('Formatted search terms:', searchTermsQuery);
+
+    // Build the query
     let query = supabase
       .from('recipes')
-      .select('*')
-      .textSearch('title', analysisResult.terms.join(' | '))
-      .order('created_at', { ascending: false });
+      .select('*');
+
+    // Only add text search if we have search terms
+    if (searchTermsQuery) {
+      query = query.textSearch('title', searchTermsQuery);
+    }
 
     // Apply dietary filters if present
-    if (analysisResult.dietaryTags && analysisResult.dietaryTags.length > 0) {
+    if (analysisResult.dietaryTags?.length > 0) {
       query = query.contains('dietary_tags', analysisResult.dietaryTags);
     }
 
-    const { data: recipes, error } = await query;
+    // Execute the query
+    const { data: recipes, error: dbError } = await query.order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (dbError) {
+      console.error('Database error:', dbError);
+      throw dbError;
+    }
 
-    return new Response(JSON.stringify({ recipes, analysis: analysisResult }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.log(`Found ${recipes?.length || 0} matching recipes`);
+
+    return new Response(
+      JSON.stringify({ 
+        recipes: recipes || [], 
+        analysis: analysisResult 
+      }), 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+
   } catch (error) {
     console.error('Error in search-recipes function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });

@@ -168,6 +168,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          dietary_tags: string[] | null
           instructions: Json | null
           recipe_id: string
           title: string
@@ -177,6 +178,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          dietary_tags?: string[] | null
           instructions?: Json | null
           recipe_id?: string
           title: string
@@ -186,6 +188,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          dietary_tags?: string[] | null
           instructions?: Json | null
           recipe_id?: string
           title?: string

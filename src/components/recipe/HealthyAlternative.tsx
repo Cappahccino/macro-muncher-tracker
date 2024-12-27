@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 import { AlternativeSearchInput } from "./AlternativeSearchInput";
 import { AlternativeResults } from "./AlternativeResults";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function HealthyAlternative() {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,6 +13,7 @@ export function HealthyAlternative() {
   const [searchQuery, setSearchQuery] = useState("");
   const [alternative, setAlternative] = useState<any>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -29,52 +31,11 @@ export function HealthyAlternative() {
         return;
       }
 
-      // First verify the user exists in the users table
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (userError) {
-        console.error('User profile error:', userError);
-        toast({
-          title: "Profile Error",
-          description: "There was an issue with your profile. Please try signing out and back in.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!userData) {
-        // If user doesn't exist in the users table, create their profile
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([{ 
-            user_id: session.user.id,
-            email: session.user.email,
-            username: session.user.email 
-          }]);
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError);
-          toast({
-            title: "Profile Error",
-            description: "Failed to create your profile. Please try signing out and back in.",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
       const { data, error } = await supabase.functions.invoke('healthy-alternative', {
         body: { query: searchQuery }
       });
 
-      if (error) {
-        console.error('Search error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       setAlternative(data);
       setShowResults(true);
@@ -105,43 +66,6 @@ export function HealthyAlternative() {
         });
         navigate("/sign-in");
         return;
-      }
-
-      // Verify user exists before inserting recipe
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (userError) {
-        toast({
-          title: "Profile Error",
-          description: "There was an issue with your profile. Please try signing out and back in.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!userData) {
-        // If user doesn't exist in the users table, create their profile
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([{ 
-            user_id: session.user.id,
-            email: session.user.email,
-            username: session.user.email 
-          }]);
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError);
-          toast({
-            title: "Profile Error",
-            description: "Failed to create your profile. Please try signing out and back in.",
-            variant: "destructive",
-          });
-          return;
-        }
       }
 
       const { data: recipe, error: recipeError } = await supabase
@@ -178,6 +102,9 @@ export function HealthyAlternative() {
 
         await Promise.all(ingredientPromises);
       }
+
+      // Invalidate the recipes query to trigger a refresh
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
 
       toast({
         title: "Success",

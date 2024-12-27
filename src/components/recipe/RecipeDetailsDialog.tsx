@@ -13,25 +13,30 @@ interface Recipe {
   title: string;
   description: string | null;
   instructions: {
-    ingredients: Array<{ name: string; amount: number }>;
-    steps: string[];
-    servingSize: {
+    steps?: string[];
+    servingSize?: {
       servings: number;
       gramsPerServing: number;
-    };
-    macronutrients: {
-      totalCalories: number;
-      perServing: {
-        calories: number;
-        protein: number;
-        carbs: number;
-        fat: number;
-        fiber: number;
-      };
     };
   } | null;
   created_at: string;
   dietary_tags?: string[];
+  ingredients?: Array<{
+    name: string;
+    amount: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  }>;
+  totalMacros?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
 }
 
 interface RecipeDetailsDialogProps {
@@ -43,14 +48,12 @@ interface RecipeDetailsDialogProps {
 export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDialogProps) {
   if (!recipe) return null;
 
-  const macros = recipe.instructions?.macronutrients?.perServing;
   const servingInfo = recipe.instructions?.servingSize;
-  const ingredients = recipe.instructions?.ingredients || [];
   const steps = recipe.instructions?.steps || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700">
+      <DialogContent className="max-w-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <ChefHat className="h-6 w-6 text-purple-500" />
@@ -85,53 +88,65 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
             </div>
           )}
 
-          {/* Macronutrients per serving */}
-          {macros && (
+          {/* Total Macronutrients */}
+          {recipe.totalMacros && (
             <div className="space-y-3">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-                Nutrition (per serving)
+                Total Nutrition
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-800/50 rounded-lg p-4">
-                <MacroNutrient label="Calories" value={macros.calories} unit="" />
-                <MacroNutrient label="Protein" value={macros.protein} unit="g" />
-                <MacroNutrient label="Carbs" value={macros.carbs} unit="g" />
-                <MacroNutrient label="Fat" value={macros.fat} unit="g" />
-                <MacroNutrient label="Fiber" value={macros.fiber} unit="g" />
+                <MacroNutrient label="Calories" value={recipe.totalMacros.calories} unit="" />
+                <MacroNutrient label="Protein" value={recipe.totalMacros.protein} unit="g" />
+                <MacroNutrient label="Carbs" value={recipe.totalMacros.carbs} unit="g" />
+                <MacroNutrient label="Fat" value={recipe.totalMacros.fat} unit="g" />
+                <MacroNutrient label="Fiber" value={recipe.totalMacros.fiber} unit="g" />
               </div>
             </div>
           )}
 
           {/* Ingredients */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-              Ingredients
-            </h3>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <ul className="space-y-2">
-                {ingredients.map((ingredient, index) => (
-                  <li key={index} className="text-gray-200">
-                    {ingredient.name} - {ingredient.amount}g
-                  </li>
-                ))}
-              </ul>
+          {recipe.ingredients && recipe.ingredients.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+                Ingredients
+              </h3>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <ul className="space-y-2">
+                  {recipe.ingredients.map((ingredient, index) => (
+                    <li key={index} className="text-gray-200">
+                      <div className="flex flex-col">
+                        <span>{ingredient.name} - {Math.round(ingredient.amount)}g</span>
+                        <span className="text-sm text-gray-400">
+                          Calories: {Math.round(ingredient.calories)} | 
+                          Protein: {Math.round(ingredient.protein)}g | 
+                          Carbs: {Math.round(ingredient.carbs)}g | 
+                          Fat: {Math.round(ingredient.fat)}g
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Instructions */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-              Instructions
-            </h3>
-            <div className="bg-gray-800/50 rounded-lg p-4">
-              <ol className="space-y-2 list-decimal list-inside">
-                {steps.map((step, index) => (
-                  <li key={index} className="text-gray-200">
-                    {step}
-                  </li>
-                ))}
-              </ol>
+          {steps.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+                Instructions
+              </h3>
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <ol className="space-y-2 list-decimal list-inside">
+                  {steps.map((step, index) => (
+                    <li key={index} className="text-gray-200">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Dietary Tags */}
           {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (

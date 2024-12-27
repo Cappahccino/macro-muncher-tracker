@@ -23,14 +23,56 @@ export function useRecipes() {
         throw new Error('Authentication required');
       }
 
-      const { data, error } = await supabase
+      const { data: recipesData, error: recipesError } = await supabase
         .from('recipes')
-        .select('*')
+        .select(`
+          *,
+          recipe_ingredients (
+            *,
+            ingredients (
+              name,
+              calories_per_100g,
+              protein_per_100g,
+              carbs_per_100g,
+              fat_per_100g,
+              fiber_per_100g
+            )
+          )
+        `)
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Recipe[];
+      if (recipesError) throw recipesError;
+
+      // Process the recipes to include ingredient details
+      const processedRecipes = recipesData.map(recipe => {
+        const ingredients = recipe.recipe_ingredients?.map(ri => ({
+          name: ri.ingredients.name,
+          amount: ri.quantity_g,
+          calories: ri.calories,
+          protein: ri.protein,
+          carbs: ri.carbs,
+          fat: ri.fat,
+          fiber: ri.fiber
+        })) || [];
+
+        // Calculate total macros
+        const totalMacros = ingredients.reduce((acc, curr) => ({
+          calories: acc.calories + (curr.calories || 0),
+          protein: acc.protein + (curr.protein || 0),
+          carbs: acc.carbs + (curr.carbs || 0),
+          fat: acc.fat + (curr.fat || 0),
+          fiber: acc.fiber + (curr.fiber || 0)
+        }), { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
+
+        return {
+          ...recipe,
+          ingredients,
+          totalMacros
+        };
+      });
+
+      return processedRecipes as Recipe[];
     },
     retry: false,
     meta: {

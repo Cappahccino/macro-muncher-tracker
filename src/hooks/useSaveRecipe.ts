@@ -12,6 +12,7 @@ interface Ingredient {
   carbs: number;
   fat: number;
   fiber: number;
+  ingredient_id?: string; // Updated from 'id' to 'ingredient_id' to match Supabase schema
 }
 
 interface Recipe {
@@ -64,7 +65,7 @@ export function useSaveRecipe() {
             .from('recipe_ingredients')
             .insert([{
               recipe_id: newRecipe.recipe_id,
-              ingredient_id: ingredient.id,
+              ingredient_id: ingredient.ingredient_id, // Updated from 'id' to 'ingredient_id'
               quantity_g: ingredient.amount,
               custom_calories: ingredient.calories,
               custom_protein: ingredient.protein,

@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DietaryFilters } from "@/components/recipe/DietaryFilters";
 import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
 import { HealthyAlternative } from "@/components/recipe/HealthyAlternative";
@@ -17,29 +17,6 @@ const RecipeVault = () => {
   const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
   const { recipes, isLoading, queryClient } = useRecipes();
-
-  // Set up real-time subscription for recipe changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('recipe-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'recipes'
-        },
-        () => {
-          // Invalidate and refetch recipes when changes occur
-          queryClient.invalidateQueries({ queryKey: ['recipes'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {

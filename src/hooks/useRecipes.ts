@@ -74,7 +74,7 @@ export function useRecipes() {
 
       return processedRecipes as Recipe[];
     },
-    staleTime: 0, // Always fetch fresh data
+    retry: false,
     meta: {
       onSettled: (data, error) => {
         if (error) {

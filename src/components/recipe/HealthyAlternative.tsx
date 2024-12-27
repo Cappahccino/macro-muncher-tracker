@@ -4,23 +4,39 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { AlternativeSearchInput } from "./AlternativeSearchInput";
 import { AlternativeResults } from "./AlternativeResults";
+import { useNavigate } from "react-router-dom";
 
 export function HealthyAlternative() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [alternative, setAlternative] = useState<any>(null);
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
     setIsLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to search for recipes",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('healthy-alternative', {
         body: { query: searchQuery }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Search error:', error);
+        throw error;
+      }
       
       setAlternative(data);
       setShowResults(true);
@@ -41,7 +57,6 @@ export function HealthyAlternative() {
     if (!alternative) return;
     
     try {
-      // Get the current user's session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -50,14 +65,14 @@ export function HealthyAlternative() {
           description: "Please sign in to save recipes",
           variant: "destructive",
         });
+        navigate("/sign-in");
         return;
       }
 
-      // Create a new recipe entry with user_id
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
         .insert([{
-          user_id: session.user.id, // Set the user_id
+          user_id: session.user.id,
           title: alternative.title,
           description: alternative.description,
           instructions: alternative.instructions,
@@ -68,7 +83,6 @@ export function HealthyAlternative() {
 
       if (recipeError) throw recipeError;
 
-      // Add ingredients
       if (recipe && alternative.ingredients) {
         const ingredientPromises = alternative.ingredients.map(async (ingredient: any) => {
           const { error: ingredientError } = await supabase

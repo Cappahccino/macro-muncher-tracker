@@ -32,14 +32,29 @@ const RecipeVault = () => {
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Authentication required');
+      }
+
       const { data, error } = await supabase
         .from('recipes')
         .select('*')
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as Recipe[];
     },
+    retry: false,
+    onError: (error) => {
+      console.error('Query error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load recipes. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleSearch = async () => {
@@ -50,19 +65,31 @@ const RecipeVault = () => {
     
     setIsSearching(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to search recipes",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('search-recipes', {
-        body: { searchQuery },
+        body: { searchQuery }
       });
 
       if (error) throw error;
       
-      if (data.analysis.dietaryTags?.length > 0) {
+      if (data.analysis?.dietaryTags?.length > 0) {
         setActiveFilter(data.analysis.dietaryTags[0]);
       }
 
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+
       toast({
         title: "Search Results",
-        description: `Found ${data.recipes.length} recipes matching your search.`,
+        description: `Found ${data.recipes?.length || 0} recipes matching your search.`,
       });
 
     } catch (error) {
@@ -78,10 +105,7 @@ const RecipeVault = () => {
   };
 
   const handleDelete = async () => {
-    // Invalidate and refetch recipes after deletion
     await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-    
-    // Reset search if there was an active search
     if (searchQuery) {
       setSearchQuery("");
       setIsSearching(false);

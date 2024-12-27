@@ -47,13 +47,17 @@ const RecipeVault = () => {
       return data as Recipe[];
     },
     retry: false,
-    onError: (error) => {
-      console.error('Query error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load recipes. Please try again.",
-        variant: "destructive",
-      });
+    meta: {
+      onSettled: (data, error) => {
+        if (error) {
+          console.error('Query error:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load recipes. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
     }
   });
 

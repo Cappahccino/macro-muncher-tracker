@@ -34,9 +34,9 @@ export function HealthyAlternative() {
         .from('users')
         .select('user_id')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (userError || !userData) {
+      if (userError) {
         console.error('User profile error:', userError);
         toast({
           title: "Profile Error",
@@ -44,6 +44,27 @@ export function HealthyAlternative() {
           variant: "destructive",
         });
         return;
+      }
+
+      if (!userData) {
+        // If user doesn't exist in the users table, create their profile
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{ 
+            user_id: session.user.id,
+            email: session.user.email,
+            username: session.user.email 
+          }]);
+
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          toast({
+            title: "Profile Error",
+            description: "Failed to create your profile. Please try signing out and back in.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       const { data, error } = await supabase.functions.invoke('healthy-alternative', {
@@ -91,15 +112,36 @@ export function HealthyAlternative() {
         .from('users')
         .select('user_id')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
-      if (userError || !userData) {
+      if (userError) {
         toast({
           title: "Profile Error",
           description: "There was an issue with your profile. Please try signing out and back in.",
           variant: "destructive",
         });
         return;
+      }
+
+      if (!userData) {
+        // If user doesn't exist in the users table, create their profile
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{ 
+            user_id: session.user.id,
+            email: session.user.email,
+            username: session.user.email 
+          }]);
+
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          toast({
+            title: "Profile Error",
+            description: "Failed to create your profile. Please try signing out and back in.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       const { data: recipe, error: recipeError } = await supabase

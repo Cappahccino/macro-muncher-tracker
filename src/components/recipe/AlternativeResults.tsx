@@ -44,6 +44,28 @@ export function AlternativeResults({
                   </div>
                 )}
 
+                <div className="mt-4">
+                  <h5 className="font-medium mb-2">Ingredients:</h5>
+                  <ul className="space-y-1">
+                    {alternative.ingredients?.map((ingredient: any, index: number) => (
+                      <li key={index} className="text-sm">
+                        {ingredient.name} - {ingredient.amount}g
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-4">
+                  <h5 className="font-medium mb-2">Instructions:</h5>
+                  <ol className="list-decimal list-inside space-y-2">
+                    {alternative.instructions?.steps?.map((step: string, index: number) => (
+                      <li key={index} className="text-sm">
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
                 {alternative.macronutrients?.perServing && (
                   <div className="mt-4">
                     <h5 className="font-medium mb-2">Nutrition (per serving):</h5>
@@ -76,17 +98,6 @@ export function AlternativeResults({
                     </div>
                   </div>
                 )}
-
-                <div className="mt-4">
-                  <h5 className="font-medium mb-2">Ingredients:</h5>
-                  <ul className="space-y-1">
-                    {alternative.ingredients?.map((ingredient: any, index: number) => (
-                      <li key={index} className="text-sm">
-                        {ingredient.name} - {ingredient.amount}g
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </>
             )}
           </AlertDialogDescription>
@@ -105,10 +116,10 @@ export function AlternativeResults({
               handleSearch();
             }}
           >
-            Research
+            Search Again
           </Button>
           <Button onClick={handleAddToMeals}>
-            Add to Meals
+            Add to Recipe Vault
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

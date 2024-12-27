@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,15 +6,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { query } = await req.json();
-
-    const prompt = generatePrompt(query);
+    console.log('Received query:', query);
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -24,14 +21,62 @@ serve(async (req) => {
         "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a helpful nutritionist that provides healthy recipe alternatives. Always provide measurements in grams.`
+          },
+          {
+            role: "user",
+            content: `Generate a healthy alternative recipe for: ${query}. 
+            Return the response in this exact JSON format:
+            {
+              "title": "Recipe Name",
+              "description": "Brief description of why this is a healthier alternative",
+              "servingSize": {
+                "servings": number,
+                "gramsPerServing": number
+              },
+              "ingredients": [
+                {
+                  "name": "Ingredient name",
+                  "amount": number (in grams)
+                }
+              ],
+              "instructions": {
+                "steps": [
+                  "Step 1 with precise measurements in grams",
+                  "Step 2 with precise measurements in grams"
+                ]
+              },
+              "macronutrients": {
+                "totalCalories": number,
+                "perServing": {
+                  "calories": number,
+                  "protein": number,
+                  "carbs": number,
+                  "fat": number,
+                  "fiber": number
+                }
+              }
+            }`
+          }
+        ],
       }),
     });
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
 
-    return new Response(JSON.stringify(data), {
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid AI response format');
+    }
+
+    const recipe = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed recipe:', recipe);
+
+    return new Response(JSON.stringify(recipe), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
@@ -45,45 +90,3 @@ serve(async (req) => {
     );
   }
 });
-
-const generatePrompt = (query: string) => `
-Generate a healthy alternative recipe based on this request: "${query}"
-
-Provide the response in the following JSON format:
-{
-  "title": "Recipe Name",
-  "description": "Brief description of the dish",
-  "servingSize": {
-    "servings": number,
-    "gramsPerServing": number
-  },
-  "ingredients": [
-    {
-      "name": "Ingredient name",
-      "amount": number (in grams)
-    }
-  ],
-  "instructions": {
-    "steps": [
-      "Step 1 with precise measurements in grams",
-      "Step 2 with precise measurements in grams"
-    ]
-  },
-  "macronutrients": {
-    "totalCalories": number,
-    "perServing": {
-      "calories": number,
-      "protein": number,
-      "carbs": number,
-      "fat": number,
-      "fiber": number
-    }
-  }
-}
-
-IMPORTANT:
-1. ALL measurements MUST be in grams
-2. Include detailed cooking instructions with precise measurements
-3. Provide complete macronutrient information per serving
-4. Make sure the recipe is healthy and nutritious
-`;

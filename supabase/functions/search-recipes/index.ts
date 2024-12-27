@@ -17,10 +17,11 @@ serve(async (req) => {
   }
 
   try {
-    const { searchQuery } = await req.json();
+    const { searchQuery, userGoals } = await req.json();
     console.log('Received search query:', searchQuery);
+    console.log('User goals:', userGoals);
 
-    // First, use GPT to understand the search query
+    // Use GPT to generate a recipe based on the search query and user goals
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -32,67 +33,59 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that analyzes recipe search queries. Extract key terms and dietary preferences. Return a JSON object with "searchTerms" (array of individual words relevant for recipe search) and "dietaryTags" (array of dietary preferences like "vegan", "vegetarian", "gluten-free"). Only include actual words, no special characters.'
+            content: `You are a helpful nutritionist and chef that provides healthy recipes. Always provide measurements in grams. Consider the following health goals: ${userGoals || 'balanced nutrition'}`
           },
           {
             role: 'user',
-            content: searchQuery
+            content: `Generate a healthy recipe for: ${searchQuery}. 
+            Return the response in this exact JSON format:
+            {
+              "title": "Recipe Name",
+              "description": "Brief description of why this recipe aligns with the user's health goals",
+              "servingSize": {
+                "servings": number,
+                "gramsPerServing": number
+              },
+              "ingredients": [
+                {
+                  "name": "Ingredient name",
+                  "amount": number (in grams)
+                }
+              ],
+              "instructions": {
+                "steps": [
+                  "Step 1 with precise measurements in grams",
+                  "Step 2 with precise measurements in grams"
+                ]
+              },
+              "macronutrients": {
+                "totalCalories": number,
+                "perServing": {
+                  "calories": number,
+                  "protein": number,
+                  "carbs": number,
+                  "fat": number,
+                  "fiber": number
+                }
+              }
+            }`
           }
         ],
       }),
     });
 
-    const aiData = await openAIResponse.json();
-    console.log('AI response:', aiData);
+    const data = await openAIResponse.json();
+    console.log('OpenAI response:', data);
 
-    if (!aiData.choices?.[0]?.message?.content) {
+    if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid AI response format');
     }
 
-    const analysisResult = JSON.parse(aiData.choices[0].message.content);
-    console.log('Parsed analysis result:', analysisResult);
-
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-    
-    // Format search terms for text search
-    const searchTermsQuery = analysisResult.searchTerms
-      .map((term: string) => term.trim())
-      .filter((term: string) => term.length > 0)
-      .join(' | ');
-
-    console.log('Formatted search terms:', searchTermsQuery);
-
-    // Build the query
-    let query = supabase
-      .from('recipes')
-      .select('*');
-
-    // Only add text search if we have search terms
-    if (searchTermsQuery) {
-      query = query.textSearch('title', searchTermsQuery);
-    }
-
-    // Apply dietary filters if present
-    if (analysisResult.dietaryTags?.length > 0) {
-      query = query.contains('dietary_tags', analysisResult.dietaryTags);
-    }
-
-    // Execute the query
-    const { data: recipes, error: dbError } = await query.order('created_at', { ascending: false });
-
-    if (dbError) {
-      console.error('Database error:', dbError);
-      throw dbError;
-    }
-
-    console.log(`Found ${recipes?.length || 0} matching recipes`);
+    const recipe = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed recipe:', recipe);
 
     return new Response(
-      JSON.stringify({ 
-        recipes: recipes || [], 
-        analysis: analysisResult 
-      }), 
+      JSON.stringify(recipe),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

@@ -5,7 +5,6 @@ import { toast } from "@/components/ui/use-toast";
 import { AlternativeSearchInput } from "./AlternativeSearchInput";
 import { AlternativeResults } from "./AlternativeResults";
 import { useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 
 export function HealthyAlternative() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +12,6 @@ export function HealthyAlternative() {
   const [searchQuery, setSearchQuery] = useState("");
   const [alternative, setAlternative] = useState<any>(null);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -180,9 +178,6 @@ export function HealthyAlternative() {
 
         await Promise.all(ingredientPromises);
       }
-
-      // Invalidate the recipes query to trigger a refresh
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
 
       toast({
         title: "Success",

@@ -8,6 +8,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MacroNutrient } from "../meal/MacroNutrient";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AlternativeResultsProps {
   showResults: boolean;
@@ -26,9 +27,12 @@ export function AlternativeResults({
 }: AlternativeResultsProps) {
   return (
     <AlertDialog open={showResults} onOpenChange={setShowResults}>
-      <AlertDialogContent className="max-w-2xl">
+      <AlertDialogContent className="max-w-2xl max-h-[90vh]">
         <AlertDialogHeader>
           <AlertDialogTitle>Healthy Alternative Found!</AlertDialogTitle>
+        </AlertDialogHeader>
+        
+        <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
           <AlertDialogDescription className="space-y-4">
             {alternative && (
               <>
@@ -101,8 +105,9 @@ export function AlternativeResults({
               </>
             )}
           </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="flex gap-2">
+        </ScrollArea>
+
+        <AlertDialogFooter className="flex gap-2 mt-4">
           <Button
             variant="outline"
             onClick={() => setShowResults(false)}

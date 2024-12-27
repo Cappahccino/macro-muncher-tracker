@@ -29,6 +29,23 @@ export function HealthyAlternative() {
         return;
       }
 
+      // First verify the user exists in the users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (userError || !userData) {
+        console.error('User profile error:', userError);
+        toast({
+          title: "Profile Error",
+          description: "There was an issue with your profile. Please try signing out and back in.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('healthy-alternative', {
         body: { query: searchQuery }
       });
@@ -66,6 +83,22 @@ export function HealthyAlternative() {
           variant: "destructive",
         });
         navigate("/sign-in");
+        return;
+      }
+
+      // Verify user exists before inserting recipe
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (userError || !userData) {
+        toast({
+          title: "Profile Error",
+          description: "There was an issue with your profile. Please try signing out and back in.",
+          variant: "destructive",
+        });
         return;
       }
 

@@ -74,6 +74,7 @@ export function useRecipes() {
 
       return processedRecipes as Recipe[];
     },
+    staleTime: 0, // Consider all data stale immediately
     meta: {
       onSettled: (data, error) => {
         if (error) {

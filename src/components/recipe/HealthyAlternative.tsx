@@ -68,6 +68,7 @@ export function HealthyAlternative() {
         return;
       }
 
+      // Insert the recipe
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
         .insert([{
@@ -82,6 +83,7 @@ export function HealthyAlternative() {
 
       if (recipeError) throw recipeError;
 
+      // If we have ingredients, add them to the recipe
       if (recipe && alternative.ingredients) {
         const ingredientPromises = alternative.ingredients.map(async (ingredient: any) => {
           const { error: ingredientError } = await supabase
@@ -103,8 +105,9 @@ export function HealthyAlternative() {
         await Promise.all(ingredientPromises);
       }
 
-      // Invalidate the recipes query to trigger a refresh
+      // Invalidate and refetch the recipes query
       await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      await queryClient.refetchQueries({ queryKey: ['recipes'] });
 
       toast({
         title: "Success",

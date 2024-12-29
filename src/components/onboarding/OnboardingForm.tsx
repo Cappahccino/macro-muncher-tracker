@@ -1,20 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { WeightInput } from "@/components/onboarding/WeightInput";
 import { HeightInput } from "@/components/onboarding/HeightInput";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { PersonalInfoInputs } from "./PersonalInfoInputs";
+import { WeightInputs } from "./WeightInputs";
+import { ActivityLevelSelect } from "./ActivityLevelSelect";
 
 interface UserData {
   name: string;
@@ -106,83 +100,33 @@ export const OnboardingForm = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div>
-              <label className="block text-sm font-medium mb-2 text-primary">Name</label>
-              <Input
-                value={userData.name}
-                onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                placeholder="Enter your name"
-                className="border-primary/20 focus:border-primary transition-colors"
-              />
-            </div>
+            <PersonalInfoInputs
+              name={userData.name}
+              gender={userData.gender}
+              dob={userData.dob}
+              onNameChange={(value) => setUserData({ ...userData, name: value })}
+              onGenderChange={(value) => setUserData({ ...userData, gender: value })}
+              onDobChange={(value) => setUserData({ ...userData, dob: value })}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <WeightInput
-                label="Current Weight"
-                weight={userData.currentWeight}
-                weightUnit={userData.weightUnit}
-                onWeightChange={(weight) => setUserData({ ...userData, currentWeight: weight })}
-                onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
-              />
-
-              <WeightInput
-                label="Target Weight"
-                weight={userData.targetWeight}
-                weightUnit={userData.weightUnit}
-                onWeightChange={(weight) => setUserData({ ...userData, targetWeight: weight })}
-                onUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-primary">Gender</label>
-              <Select
-                value={userData.gender}
-                onValueChange={(value) => setUserData({ ...userData, gender: value })}
-              >
-                <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-primary">Date of Birth</label>
-              <Input
-                type="date"
-                value={userData.dob}
-                onChange={(e) => setUserData({ ...userData, dob: e.target.value })}
-                className="border-primary/20 focus:border-primary transition-colors"
-              />
-            </div>
+            <WeightInputs
+              currentWeight={userData.currentWeight}
+              targetWeight={userData.targetWeight}
+              weightUnit={userData.weightUnit}
+              onCurrentWeightChange={(weight) => setUserData({ ...userData, currentWeight: weight })}
+              onTargetWeightChange={(weight) => setUserData({ ...userData, targetWeight: weight })}
+              onWeightUnitChange={(unit) => setUserData({ ...userData, weightUnit: unit })}
+            />
 
             <HeightInput
               height={userData.height}
               onChange={(height) => setUserData({ ...userData, height })}
             />
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-primary">Activity Level</label>
-              <Select
-                value={userData.activityLevel}
-                onValueChange={(value) => setUserData({ ...userData, activityLevel: value })}
-              >
-                <SelectTrigger className="border-primary/20 focus:border-primary transition-colors">
-                  <SelectValue placeholder="Select activity level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sedentary">Sedentary</SelectItem>
-                  <SelectItem value="lightly active">Lightly Active</SelectItem>
-                  <SelectItem value="moderately active">Moderately Active</SelectItem>
-                  <SelectItem value="very active">Very Active</SelectItem>
-                  <SelectItem value="extremely active">Extremely Active</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <ActivityLevelSelect
+              activityLevel={userData.activityLevel}
+              onActivityLevelChange={(value) => setUserData({ ...userData, activityLevel: value })}
+            />
           </motion.div>
 
           <motion.div

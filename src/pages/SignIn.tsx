@@ -24,6 +24,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,6 +74,7 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       setEmailNotVerified(false);
+      setSignInError(null);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -86,11 +88,7 @@ const SignIn = () => {
           return;
         }
         
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: errorMessage,
-        });
+        setSignInError(errorMessage);
         return;
       }
 
@@ -103,11 +101,7 @@ const SignIn = () => {
       }
     } catch (error) {
       console.error("Sign in error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-      });
+      setSignInError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -135,6 +129,12 @@ const SignIn = () => {
                   {resendingEmail ? "Sending..." : "Resend verification email"}
                 </Button>
               </AlertDescription>
+            </Alert>
+          )}
+
+          {signInError && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription>{signInError}</AlertDescription>
             </Alert>
           )}
           

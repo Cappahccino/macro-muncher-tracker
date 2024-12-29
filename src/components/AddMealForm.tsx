@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { MealFormInput } from "./MealFormInput";
 import { MacroInputsGrid } from "./MacroInputsGrid";
+import { motion } from "framer-motion";
 
 interface Meal {
   name: string;
@@ -68,7 +69,6 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
       return;
     }
 
-    // Store the meal in daily history
     const today = new Date().toISOString().split('T')[0];
     const mealsHistory = JSON.parse(localStorage.getItem('dailyMealsHistory') || '{}');
     mealsHistory[today] = mealsHistory[today] || [];
@@ -82,7 +82,6 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   };
 
   const handleMealChange = (updates: Partial<Meal>) => {
-    // If the name is being cleared, reset all values
     if ('name' in updates && !updates.name) {
       const emptyMeal = { name: "", calories: 0, protein: 0, carbs: 0, fat: 0 };
       setMeal(emptyMeal);
@@ -96,19 +95,25 @@ export function AddMealForm({ onAddMeal, initialMeal }: AddMealFormProps) {
   };
 
   return (
-    <Card className="p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <MealFormInput
-          placeholder="Meal name"
-          value={meal.name}
-          onChange={(value) => handleMealChange({ name: String(value) })}
-          isMealName={true}
-        />
-        <MacroInputsGrid meal={meal} onMealChange={handleMealChange} />
-        <Button type="submit" className="w-full">
-          {initialMeal ? "Update Meal" : "Add Meal"}
-        </Button>
-      </form>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="p-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <MealFormInput
+            placeholder="Meal name"
+            value={meal.name}
+            onChange={(value) => handleMealChange({ name: String(value) })}
+            isMealName={true}
+          />
+          <MacroInputsGrid meal={meal} onMealChange={handleMealChange} />
+          <Button type="submit" className="w-full">
+            {initialMeal ? "Update Meal" : "Add Meal"}
+          </Button>
+        </form>
+      </Card>
+    </motion.div>
   );
 }

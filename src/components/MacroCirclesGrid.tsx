@@ -32,96 +32,42 @@ export function MacroCirclesGrid({ totals, targets, onTargetChange }: MacroCircl
     show: { opacity: 1, y: 0 }
   };
 
+  const macros = [
+    { label: "Calories", key: "calories" as const, color: "stroke-primary", max: 10000 },
+    { label: "Protein", key: "protein" as const, color: "stroke-secondary", max: 1000 },
+    { label: "Carbs", key: "carbs" as const, color: "stroke-accent", max: 1000 },
+    { label: "Fat", key: "fat" as const, color: "stroke-destructive", max: 1000 }
+  ];
+
   return (
     <motion.div 
       variants={container}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+      className="grid grid-cols-2 lg:grid-cols-4 gap-4"
     >
-      <motion.div variants={item} className="space-y-4">
-        <Card className="p-4 hover:shadow-lg transition-shadow duration-300">
-          <MacroCircle
-            label="Calories"
-            current={totals.calories}
-            target={targets.calories}
-            color="stroke-primary"
-          />
-          <div className="px-2 mt-4">
-            <Input
-              type="number"
-              value={targets.calories}
-              onChange={(e) => onTargetChange(e.target.value, "calories")}
-              className="text-center"
-              min="0"
-              max="10000"
+      {macros.map((macro) => (
+        <motion.div key={macro.key} variants={item}>
+          <Card className="p-4 hover:shadow-lg transition-shadow duration-300">
+            <MacroCircle
+              label={macro.label}
+              current={totals[macro.key]}
+              target={targets[macro.key]}
+              color={macro.color}
             />
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={item} className="space-y-4">
-        <Card className="p-4 hover:shadow-lg transition-shadow duration-300">
-          <MacroCircle
-            label="Protein"
-            current={totals.protein}
-            target={targets.protein}
-            color="stroke-secondary"
-          />
-          <div className="px-2 mt-4">
-            <Input
-              type="number"
-              value={targets.protein}
-              onChange={(e) => onTargetChange(e.target.value, "protein")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={item} className="space-y-4">
-        <Card className="p-4 hover:shadow-lg transition-shadow duration-300">
-          <MacroCircle
-            label="Carbs"
-            current={totals.carbs}
-            target={targets.carbs}
-            color="stroke-accent"
-          />
-          <div className="px-2 mt-4">
-            <Input
-              type="number"
-              value={targets.carbs}
-              onChange={(e) => onTargetChange(e.target.value, "carbs")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div variants={item} className="space-y-4">
-        <Card className="p-4 hover:shadow-lg transition-shadow duration-300">
-          <MacroCircle
-            label="Fat"
-            current={totals.fat}
-            target={targets.fat}
-            color="stroke-destructive"
-          />
-          <div className="px-2 mt-4">
-            <Input
-              type="number"
-              value={targets.fat}
-              onChange={(e) => onTargetChange(e.target.value, "fat")}
-              className="text-center"
-              min="0"
-              max="1000"
-            />
-          </div>
-        </Card>
-      </motion.div>
+            <div className="px-2 mt-4">
+              <Input
+                type="number"
+                value={targets[macro.key]}
+                onChange={(e) => onTargetChange(e.target.value, macro.key)}
+                className="text-center"
+                min="0"
+                max={macro.max}
+              />
+            </div>
+          </Card>
+        </motion.div>
+      ))}
     </motion.div>
   );
 }

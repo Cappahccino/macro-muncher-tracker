@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, Mail } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { handleAuthError } from "@/utils/authErrors";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,7 +24,6 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
-  const [invalidCredentials, setInvalidCredentials] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,24 +51,18 @@ const SignIn = () => {
         email: email,
       });
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to resend verification email. Please try again later.",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Verification email has been resent. Please check your inbox.",
-        });
-      }
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Verification email has been resent. Please check your inbox.",
+      });
     } catch (error) {
       console.error("Error resending verification:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: "Failed to resend verification email. Please try again later.",
       });
     } finally {
       setResendingEmail(false);
@@ -79,7 +73,6 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       setEmailNotVerified(false);
-      setInvalidCredentials(false);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -87,24 +80,16 @@ const SignIn = () => {
       });
 
       if (error) {
-        if (error.message.toLowerCase().includes("email not confirmed")) {
+        const errorMessage = handleAuthError(error);
+        if (errorMessage === "Email not confirmed") {
           setEmailNotVerified(true);
-          return;
-        }
-        
-        if (error.message.toLowerCase().includes("invalid login credentials")) {
-          setInvalidCredentials(true);
-          form.setError("password", {
-            type: "manual",
-            message: "Invalid email or password",
-          });
           return;
         }
         
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.message,
+          description: errorMessage,
         });
         return;
       }
@@ -149,14 +134,6 @@ const SignIn = () => {
                 >
                   {resendingEmail ? "Sending..." : "Resend verification email"}
                 </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {invalidCredentials && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>
-                The email or password you entered is incorrect. Please try again.
               </AlertDescription>
             </Alert>
           )}

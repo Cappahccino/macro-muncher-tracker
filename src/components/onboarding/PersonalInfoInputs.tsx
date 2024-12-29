@@ -6,9 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { calculateAge } from "@/utils/ageCalculation";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 interface PersonalInfoInputsProps {
   name: string;
@@ -27,23 +24,6 @@ export const PersonalInfoInputs = ({
   onGenderChange,
   onDobChange,
 }: PersonalInfoInputsProps) => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const handleDobChange = (value: string) => {
-    const age = calculateAge(value);
-    if (age < 18) {
-      toast({
-        title: "Age Restriction",
-        description: "You must be at least 18 years old to use this app.",
-        variant: "destructive",
-      });
-      navigate("/onboarding");
-      return;
-    }
-    onDobChange(value);
-  };
-
   return (
     <>
       <div>
@@ -77,7 +57,7 @@ export const PersonalInfoInputs = ({
         <Input
           type="date"
           value={dob}
-          onChange={(e) => handleDobChange(e.target.value)}
+          onChange={(e) => onDobChange(e.target.value)}
           className="border-primary/20 focus:border-primary transition-colors"
         />
       </div>

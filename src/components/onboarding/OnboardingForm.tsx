@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PersonalInfoInputs } from "./PersonalInfoInputs";
 import { WeightInputs } from "./WeightInputs";
 import { ActivityLevelSelect } from "./ActivityLevelSelect";
+import { calculateAge } from "@/utils/ageCalculation";
 
 interface UserData {
   name: string;
@@ -70,6 +71,17 @@ export const OnboardingForm = () => {
         description: "Please fill in all fields",
         variant: "destructive",
       });
+      return;
+    }
+
+    const age = calculateAge(userData.dob);
+    if (age < 18) {
+      toast({
+        title: "Age Restriction",
+        description: "You must be at least 18 years old to use this app.",
+        variant: "destructive",
+      });
+      navigate("/onboarding");
       return;
     }
 

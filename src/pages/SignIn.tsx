@@ -16,9 +16,10 @@ const SignIn = () => {
   const [emailNotVerified, setEmailNotVerified] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
+  const [currentEmail, setCurrentEmail] = useState<string>("");
 
-  const handleResendVerification = async (email: string) => {
-    if (!email) {
+  const handleResendVerification = async () => {
+    if (!currentEmail) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -31,7 +32,7 @@ const SignIn = () => {
       setResendingEmail(true);
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email,
+        email: currentEmail,
       });
 
       if (error) throw error;
@@ -57,6 +58,7 @@ const SignIn = () => {
       setIsLoading(true);
       setEmailNotVerified(false);
       setSignInError(null);
+      setCurrentEmail(values.email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -101,7 +103,7 @@ const SignIn = () => {
         <CardContent>
           {emailNotVerified && (
             <EmailVerificationAlert
-              onResend={() => handleResendVerification(email)}
+              onResend={handleResendVerification}
               isResending={resendingEmail}
             />
           )}

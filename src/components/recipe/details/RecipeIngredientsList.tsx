@@ -1,4 +1,4 @@
-import { ExpandableIngredient } from "./ExpandableIngredient";
+import { ExpandableIngredient } from "../ingredients/ExpandableIngredient";
 
 interface Ingredient {
   name: string;

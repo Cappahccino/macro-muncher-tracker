@@ -1,13 +1,7 @@
-import { Header } from "@/components/Header";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { DietaryFilters } from "@/components/recipe/DietaryFilters";
-import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
 import { useToast } from "@/components/ui/use-toast";
 import { SearchBar } from "@/components/recipe/SearchBar";
-import { RecipeList } from "@/components/recipe/RecipeList";
-import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
-import { useRecipes } from "@/hooks/useRecipes";
+import { AlternativeResults } from "@/components/recipe/AlternativeResults";
 import { supabase } from "@/integrations/supabase/client";
 
 export function HealthyAlternative() {
@@ -114,7 +108,7 @@ export function HealthyAlternative() {
         isLoading={isLoading}
       />
 
-      <AlternativeSearchResults
+      <AlternativeResults
         showResults={showResults}
         setShowResults={setShowResults}
         alternative={alternative}

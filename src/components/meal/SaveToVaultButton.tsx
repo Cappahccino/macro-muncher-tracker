@@ -11,6 +11,7 @@ interface SaveToVaultButtonProps {
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number;
   };
 }
 
@@ -42,13 +43,15 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
               calories: meal.calories,
               protein: meal.protein,
               carbs: meal.carbs,
-              fat: meal.fat
+              fat: meal.fat,
+              fiber: meal.fiber || 0
             }
           },
           total_calories: meal.calories,
           total_protein: meal.protein,
           total_carbs: meal.carbs,
-          total_fat: meal.fat
+          total_fat: meal.fat,
+          total_fiber: meal.fiber || 0
         });
 
       if (error) throw error;

@@ -32,20 +32,25 @@ export function SearchBar({
 
       const savedIngredients = await Promise.all(
         ingredients.map(async (ingredient) => {
-          // Check if ingredient already exists
-          const { data: existingIngredients } = await supabase
+          // Check if ingredient already exists using maybeSingle() instead of single()
+          const { data: existingIngredient, error: searchError } = await supabase
             .from('ingredients')
             .select('ingredient_id, name')
             .eq('name', ingredient.name)
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
 
-          if (existingIngredients) {
-            return existingIngredients;
+          if (searchError) {
+            console.error('Error searching for ingredient:', searchError);
+            throw searchError;
+          }
+
+          if (existingIngredient) {
+            return existingIngredient;
           }
 
           // Create new ingredient if it doesn't exist
-          const { data: newIngredient, error } = await supabase
+          const { data: newIngredient, error: insertError } = await supabase
             .from('ingredients')
             .insert({
               name: ingredient.name,
@@ -53,12 +58,17 @@ export function SearchBar({
               protein_per_100g: (ingredient.protein / ingredient.amount) * 100,
               fat_per_100g: (ingredient.fat / ingredient.amount) * 100,
               carbs_per_100g: (ingredient.carbs / ingredient.amount) * 100,
-              fiber_per_100g: (ingredient.fiber / ingredient.amount) * 100
+              fiber_per_100g: (ingredient.fiber / ingredient.amount) * 100,
+              user_id: session.user.id
             })
             .select()
             .single();
 
-          if (error) throw error;
+          if (insertError) {
+            console.error('Error creating ingredient:', insertError);
+            throw insertError;
+          }
+
           return newIngredient;
         })
       );

@@ -1,39 +1,21 @@
-import { ChefHat, Clock, Utensils } from "lucide-react";
-import {
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ChefHat, Clock } from "lucide-react";
 
 interface RecipeHeaderProps {
   title: string;
-  description: string | null;
-  created_at: string;
+  createdAt: string;
 }
 
-export function RecipeHeader({ title, description, created_at }: RecipeHeaderProps) {
+export const RecipeHeader = ({ title, createdAt }: RecipeHeaderProps) => {
   return (
-    <DialogHeader>
-      <div className="flex items-center gap-2 mb-2">
-        <ChefHat className="h-6 w-6 text-purple-500" />
-        <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-          {title}
-        </DialogTitle>
+    <div>
+      <div className="flex items-center gap-2 mb-1">
+        <ChefHat className="h-5 w-5 text-purple-500" />
+        <h3 className="font-semibold text-lg">{title}</h3>
       </div>
-      
-      <div className="flex items-center gap-2 text-sm text-gray-300 mb-4">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
         <Clock className="h-4 w-4" />
-        {new Date(created_at).toLocaleDateString()}
+        {new Date(createdAt).toLocaleDateString()}
       </div>
-
-      {description && (
-        <div className="flex items-start gap-2 mt-2">
-          <Utensils className="h-4 w-4 text-gray-400 mt-1" />
-          <DialogDescription className="text-base leading-relaxed text-gray-300">
-            {description}
-          </DialogDescription>
-        </div>
-      )}
-    </DialogHeader>
+    </div>
   );
-}
+};

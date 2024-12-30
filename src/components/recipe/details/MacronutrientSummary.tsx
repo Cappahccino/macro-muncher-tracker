@@ -1,34 +1,73 @@
-import { MacroNutrient } from "@/components/meal/MacroNutrient";
+import { Activity, Flame, Package, Carrot, Droplet, Leaf } from "lucide-react";
+import { MacroRatios } from "@/components/meal/MacroRatios";
 
 interface MacronutrientSummaryProps {
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
 }
 
-export function MacronutrientSummary({ 
+export const MacronutrientSummary = ({ 
   calories, 
   protein, 
   carbs, 
   fat, 
   fiber 
-}: MacronutrientSummaryProps) {
-  if (!calories && !protein && !carbs && !fat && !fiber) return null;
-
+}: MacronutrientSummaryProps) => {
   return (
-    <div className="space-y-3">
-      <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-        Total Nutrition
-      </h3>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-800/50 rounded-lg p-4">
-        <MacroNutrient label="Calories" value={calories || 0} unit="" />
-        <MacroNutrient label="Protein" value={protein || 0} unit="g" />
-        <MacroNutrient label="Carbs" value={carbs || 0} unit="g" />
-        <MacroNutrient label="Fat" value={fat || 0} unit="g" />
-        <MacroNutrient label="Fiber" value={fiber || 0} unit="g" />
+    <div className="mt-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <Activity className="h-4 w-4 text-purple-500" />
+        <span className="text-sm font-medium">Nutritional Information</span>
       </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+        <div className="bg-background/50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Flame className="h-3 w-3" />
+            <p>Calories</p>
+          </div>
+          <p className="font-semibold">{Math.round(calories)}</p>
+        </div>
+        <div className="bg-background/50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Package className="h-3 w-3" />
+            <p>Protein</p>
+          </div>
+          <p className="font-semibold">{Math.round(protein)}g</p>
+        </div>
+        <div className="bg-background/50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Carrot className="h-3 w-3" />
+            <p>Carbs</p>
+          </div>
+          <p className="font-semibold">{Math.round(carbs)}g</p>
+        </div>
+        <div className="bg-background/50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Droplet className="h-3 w-3" />
+            <p>Fat</p>
+          </div>
+          <p className="font-semibold">{Math.round(fat)}g</p>
+        </div>
+        <div className="bg-background/50 rounded-lg p-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <Leaf className="h-3 w-3" />
+            <p>Fiber</p>
+          </div>
+          <p className="font-semibold">{Math.round(fiber)}g</p>
+        </div>
+      </div>
+      
+      {calories > 0 && (
+        <MacroRatios
+          calories={calories}
+          protein={protein}
+          carbs={carbs}
+          fat={fat}
+        />
+      )}
     </div>
   );
-}
+};

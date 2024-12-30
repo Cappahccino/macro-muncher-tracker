@@ -18,11 +18,24 @@ export function useRecipes() {
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // First check if we have an authenticated session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
         throw new Error('Authentication required');
       }
 
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to view your recipes",
+          variant: "destructive",
+        });
+        throw new Error('Authentication required');
+      }
+
+      // Fetch recipes with their ingredients
       const { data: recipesData, error: recipesError } = await supabase
         .from('recipes')
         .select(`
@@ -42,7 +55,15 @@ export function useRecipes() {
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
-      if (recipesError) throw recipesError;
+      if (recipesError) {
+        console.error('Error fetching recipes:', recipesError);
+        toast({
+          title: "Error",
+          description: "Failed to load recipes. Please try again.",
+          variant: "destructive",
+        });
+        throw recipesError;
+      }
 
       // Process the recipes to include ingredient details
       const processedRecipes = recipesData.map(recipe => {

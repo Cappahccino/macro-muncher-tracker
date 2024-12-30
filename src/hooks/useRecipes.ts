@@ -40,14 +40,7 @@ export function useRecipes() {
       // Fetch recipes for the authenticated user
       const { data: recipesData, error: recipesError } = await supabase
         .from('recipes')
-        .select(`
-          recipe_id,
-          title,
-          description,
-          instructions,
-          created_at,
-          dietary_tags
-        `)
+        .select('*')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 

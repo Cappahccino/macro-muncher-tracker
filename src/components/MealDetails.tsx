@@ -9,19 +9,21 @@ import { SaveToVaultButton } from "./meal/SaveToVaultButton";
 interface Ingredient {
   name: string;
   amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
+  macros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
 }
 
 interface Meal {
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+  name?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
   title: string;
   description: string;
   instructions: {

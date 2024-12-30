@@ -35,7 +35,8 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Generate a healthy recipe for: ${searchQuery}. 
+            content: `Please give me a healthy alternative for ${searchQuery}. Give me step by step instructions on how I can make the alternative dish and also list the ingredients with their measurements. You must provide ingredients and steps in grams. You must provide the total macros for the alternative dish and macros for the individual ingredients in grams.
+
             Return the response in this exact JSON format:
             {
               "title": "Recipe Name",

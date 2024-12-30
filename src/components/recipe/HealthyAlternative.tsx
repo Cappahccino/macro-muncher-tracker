@@ -1,17 +1,21 @@
+import { Header } from "@/components/Header";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { DietaryFilters } from "@/components/recipe/DietaryFilters";
+import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
+import { useToast } from "@/components/ui/use-toast";
+import { SearchBar } from "@/components/recipe/SearchBar";
+import { RecipeList } from "@/components/recipe/RecipeList";
+import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
+import { useRecipes } from "@/hooks/useRecipes";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
-import { AlternativeSearchInput } from "./AlternativeSearchInput";
-import { AlternativeSearchResults } from "./AlternativeSearchResults";
-import { useNavigate } from "react-router-dom";
 
 export function HealthyAlternative() {
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [alternative, setAlternative] = useState<any>(null);
-  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -25,7 +29,6 @@ export function HealthyAlternative() {
           description: "Please sign in to search for recipes",
           variant: "destructive",
         });
-        navigate("/sign-in");
         return;
       }
 
@@ -50,18 +53,61 @@ export function HealthyAlternative() {
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-      className="p-6 bg-gradient-to-br from-purple-600/5 via-blue-600/5 to-purple-600/5 rounded-lg border border-purple-500/20 shadow-lg backdrop-blur-sm"
-    >
-      <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-        Use AI to Find Healthy Meal Alternatives
-      </h3>
+  const saveIngredients = async (ingredients: any[]) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    for (const ingredient of ingredients) {
+      const { data: existingIngredient } = await supabase
+        .from('ingredients')
+        .select('ingredient_id')
+        .eq('name', ingredient.name)
+        .single();
+
+      if (!existingIngredient) {
+        await supabase.from('ingredients').insert({
+          name: ingredient.name,
+          calories_per_100g: ingredient.calories,
+          protein_per_100g: ingredient.protein,
+          carbs_per_100g: ingredient.carbs,
+          fat_per_100g: ingredient.fat,
+          fiber_per_100g: ingredient.fiber,
+          user_id: session.user.id
+        });
+      }
+    }
+  };
+
+  const handleAddToMeals = async () => {
+    if (!alternative) return;
+
+    try {
+      // Save ingredients first
+      if (alternative.ingredients) {
+        await saveIngredients(alternative.ingredients);
+      }
+
+      toast({
+        title: "Success",
+        description: "Recipe and ingredients have been saved",
+      });
       
-      <AlternativeSearchInput
+      setShowResults(false);
+      setSearchQuery("");
+      setAlternative(null);
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <SearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleSearch={handleSearch}
@@ -73,7 +119,8 @@ export function HealthyAlternative() {
         setShowResults={setShowResults}
         alternative={alternative}
         handleSearch={handleSearch}
+        handleAddToMeals={handleAddToMeals}
       />
-    </motion.div>
+    </div>
   );
 }

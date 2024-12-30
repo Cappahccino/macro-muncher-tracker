@@ -21,16 +21,16 @@ serve(async (req) => {
         "Authorization": `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
-            content: `You are a helpful nutritionist that provides healthy recipe alternatives. Always provide measurements in grams.`
+            content: "You are a helpful nutritionist that provides healthy recipe alternatives. Always provide measurements in grams."
           },
           {
             role: "user",
             content: `Generate a healthy alternative recipe for: ${query}. 
-            Return the response in this exact JSON format:
+            Return a JSON object with the following structure:
             {
               "title": "Recipe Name",
               "description": "Brief description of why this is a healthier alternative",
@@ -41,7 +41,7 @@ serve(async (req) => {
               "ingredients": [
                 {
                   "name": "Ingredient name",
-                  "amount": number (in grams)
+                  "amount": number
                 }
               ],
               "instructions": {
@@ -63,6 +63,8 @@ serve(async (req) => {
             }`
           }
         ],
+        temperature: 0.7,
+        max_tokens: 1000,
       }),
     });
 
@@ -73,16 +75,25 @@ serve(async (req) => {
       throw new Error('Invalid AI response format');
     }
 
-    const recipe = JSON.parse(data.choices[0].message.content);
-    console.log('Parsed recipe:', recipe);
+    try {
+      const recipe = JSON.parse(data.choices[0].message.content.trim());
+      console.log('Parsed recipe:', recipe);
 
-    return new Response(JSON.stringify(recipe), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      return new Response(JSON.stringify(recipe), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      console.log('Raw content:', data.choices[0].message.content);
+      throw new Error('Failed to parse recipe JSON from OpenAI response');
+    }
   } catch (error) {
     console.error('Error in healthy-alternative function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }), 
       { 
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

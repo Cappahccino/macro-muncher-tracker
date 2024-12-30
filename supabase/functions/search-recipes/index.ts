@@ -1,6 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +20,6 @@ serve(async (req) => {
     console.log('Received search query:', searchQuery);
     console.log('User goals:', userGoals);
 
-    // Use GPT to generate a recipe based on the search query and user goals
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -33,7 +31,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful nutritionist and chef that provides healthy recipes. Always provide measurements in grams. Consider the following health goals: ${userGoals || 'balanced nutrition'}`
+            content: `You are a helpful nutritionist and chef that provides healthy recipes. Always provide measurements in grams and include detailed nutritional information for each ingredient. Consider the following health goals: ${userGoals || 'balanced nutrition'}`
           },
           {
             role: 'user',
@@ -49,7 +47,14 @@ serve(async (req) => {
               "ingredients": [
                 {
                   "name": "Ingredient name",
-                  "amount": number (in grams)
+                  "amount": number (in grams),
+                  "macros": {
+                    "calories": number (per specified amount),
+                    "protein": number (in grams per specified amount),
+                    "carbs": number (in grams per specified amount),
+                    "fat": number (in grams per specified amount),
+                    "fiber": number (in grams per specified amount)
+                  }
                 }
               ],
               "instructions": {

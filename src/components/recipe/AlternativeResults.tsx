@@ -31,7 +31,8 @@ export function AlternativeResults({
     protein: macros.protein,
     carbs: macros.carbs,
     fat: macros.fat,
-    fiber: macros.fiber
+    fiber: macros.fiber,
+    ingredients: alternative.ingredients
   } : null;
 
   return (
@@ -59,10 +60,36 @@ export function AlternativeResults({
 
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Ingredients:</h5>
-                  <ul className="space-y-1">
+                  <ul className="space-y-4">
                     {alternative.ingredients?.map((ingredient: any, index: number) => (
                       <li key={index} className="text-sm">
-                        {ingredient.name} - {ingredient.amount}g
+                        <div className="space-y-2">
+                          <p>{ingredient.name} - {ingredient.amount}g</p>
+                          {ingredient.macros && (
+                            <div className="grid grid-cols-5 gap-2 pl-4 text-xs bg-muted/50 p-2 rounded">
+                              <div>
+                                <p className="text-muted-foreground">Calories</p>
+                                <p>{Math.round(ingredient.macros.calories)}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Protein</p>
+                                <p>{Math.round(ingredient.macros.protein)}g</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Carbs</p>
+                                <p>{Math.round(ingredient.macros.carbs)}g</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Fat</p>
+                                <p>{Math.round(ingredient.macros.fat)}g</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Fiber</p>
+                                <p>{Math.round(ingredient.macros.fiber)}g</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -81,7 +108,7 @@ export function AlternativeResults({
 
                 {macros && (
                   <div className="mt-4">
-                    <h5 className="font-medium mb-2">Nutrition (per serving):</h5>
+                    <h5 className="font-medium mb-2">Total Nutrition (per serving):</h5>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <MacroNutrient 
                         label="Calories" 

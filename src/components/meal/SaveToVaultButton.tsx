@@ -47,6 +47,7 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
               fiber: meal.fiber || 0
             }
           },
+          // Explicitly set all total_* columns
           total_calories: meal.calories,
           total_protein: meal.protein,
           total_carbs: meal.carbs,
@@ -54,7 +55,10 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
           total_fiber: meal.fiber || 0
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving recipe:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",

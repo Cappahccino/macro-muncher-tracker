@@ -33,15 +33,15 @@ export function RecipeList({ recipes, onDelete }: RecipeListProps) {
       animate="show"
       className="space-y-4"
     >
-      {recipes?.map((recipe) => (
-        <RecipeListItem 
-          key={recipe.recipe_id} 
-          recipe={recipe}
-          onDelete={onDelete}
-        />
-      ))}
-
-      {recipes?.length === 0 && (
+      {recipes && recipes.length > 0 ? (
+        recipes.map((recipe) => (
+          <RecipeListItem 
+            key={recipe.recipe_id} 
+            recipe={recipe}
+            onDelete={onDelete}
+          />
+        ))
+      ) : (
         <div className="text-center py-8 text-muted-foreground">
           No recipes found. Start creating some delicious meals!
         </div>

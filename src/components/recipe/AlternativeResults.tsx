@@ -34,13 +34,16 @@ export function AlternativeResults({
   };
 
   const macros = alternative?.macronutrients?.perServing;
-  const meal = macros ? {
-    name: alternative.title,
-    calories: macros.calories,
-    protein: macros.protein,
-    carbs: macros.carbs,
-    fat: macros.fat,
-    fiber: macros.fiber,
+  const recipe = alternative ? {
+    title: alternative.title,
+    description: alternative.description,
+    instructions: alternative.instructions,
+    dietary_tags: [],
+    total_calories: macros?.calories,
+    total_protein: macros?.protein,
+    total_carbs: macros?.carbs,
+    total_fat: macros?.fat,
+    total_fiber: macros?.fiber,
     ingredients: alternative.ingredients
   } : null;
 
@@ -179,7 +182,7 @@ export function AlternativeResults({
             Search Again
           </Button>
           <Button 
-            onClick={() => saveRecipe(meal)}
+            onClick={() => saveRecipe(recipe)}
             disabled={isSaving}
           >
             {isSaving ? "Adding..." : "Add to Recipe Vault"}

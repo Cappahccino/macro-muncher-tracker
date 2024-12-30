@@ -183,6 +183,11 @@ export type Database = {
           instructions: Json | null
           recipe_id: string
           title: string
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_fiber: number | null
+          total_protein: number | null
           updated_at: string | null
           user_id: string | null
         }
@@ -193,6 +198,11 @@ export type Database = {
           instructions?: Json | null
           recipe_id?: string
           title: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_fiber?: number | null
+          total_protein?: number | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -203,6 +213,11 @@ export type Database = {
           instructions?: Json | null
           recipe_id?: string
           title?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_fiber?: number | null
+          total_protein?: number | null
           updated_at?: string | null
           user_id?: string | null
         }

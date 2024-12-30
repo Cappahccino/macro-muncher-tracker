@@ -30,13 +30,11 @@ interface Recipe {
     fat: number;
     fiber: number;
   }>;
-  totalMacros?: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+  total_fiber?: number;
 }
 
 interface RecipeDetailsDialogProps {
@@ -89,17 +87,17 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
           )}
 
           {/* Total Macronutrients */}
-          {recipe.totalMacros && (
+          {(recipe.total_calories || recipe.total_protein || recipe.total_carbs || recipe.total_fat || recipe.total_fiber) && (
             <div className="space-y-3">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
                 Total Nutrition
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-800/50 rounded-lg p-4">
-                <MacroNutrient label="Calories" value={recipe.totalMacros.calories} unit="" />
-                <MacroNutrient label="Protein" value={recipe.totalMacros.protein} unit="g" />
-                <MacroNutrient label="Carbs" value={recipe.totalMacros.carbs} unit="g" />
-                <MacroNutrient label="Fat" value={recipe.totalMacros.fat} unit="g" />
-                <MacroNutrient label="Fiber" value={recipe.totalMacros.fiber} unit="g" />
+                <MacroNutrient label="Calories" value={recipe.total_calories || 0} unit="" />
+                <MacroNutrient label="Protein" value={recipe.total_protein || 0} unit="g" />
+                <MacroNutrient label="Carbs" value={recipe.total_carbs || 0} unit="g" />
+                <MacroNutrient label="Fat" value={recipe.total_fat || 0} unit="g" />
+                <MacroNutrient label="Fiber" value={recipe.total_fiber || 0} unit="g" />
               </div>
             </div>
           )}

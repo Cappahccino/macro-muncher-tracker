@@ -44,7 +44,11 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
               carbs: meal.carbs,
               fat: meal.fat
             }
-          }
+          },
+          total_calories: meal.calories,
+          total_protein: meal.protein,
+          total_carbs: meal.carbs,
+          total_fat: meal.fat
         });
 
       if (error) throw error;

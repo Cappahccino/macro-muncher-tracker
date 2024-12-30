@@ -11,12 +11,14 @@ import { useRecipes } from "@/hooks/useRecipes";
 import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const RecipeVault = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const { recipes, isLoading, queryClient } = useRecipes();
+  const { toast } = useToast();
 
   const handleDelete = async () => {
     await queryClient.invalidateQueries({ queryKey: ['recipes'] });
@@ -24,11 +26,28 @@ const RecipeVault = () => {
       setSearchQuery("");
       setIsSearching(false);
     }
+    toast({
+      title: "Success",
+      description: "Recipe deleted successfully",
+    });
   };
 
   const filteredRecipes = recipes?.filter(recipe => {
-    if (activeFilter === "all") return true;
-    return recipe.dietary_tags?.includes(activeFilter);
+    // First apply dietary filter
+    if (activeFilter !== "all" && !recipe.dietary_tags?.includes(activeFilter)) {
+      return false;
+    }
+    
+    // Then apply search filter if there's a search query
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        recipe.title.toLowerCase().includes(searchLower) ||
+        recipe.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return true;
   });
 
   return (
@@ -67,7 +86,9 @@ const RecipeVault = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">Your Recipes</h2>
+            <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+              Your Recipes
+            </h2>
             
             {isLoading ? (
               <div className="flex items-center justify-center py-8">

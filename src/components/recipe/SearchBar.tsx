@@ -4,7 +4,8 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
-import { AlternativeSearchResults } from "./AlternativeSearchResults";
+import { AlternativeResults } from "./AlternativeResults";
+import { useNavigate } from "react-router-dom";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -20,8 +21,121 @@ export function SearchBar({
   setIsSearching 
 }: SearchBarProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showResults, setShowResults] = useState(false);
   const [alternative, setAlternative] = useState<any>(null);
+
+  const saveIngredients = async (ingredients: any[]) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+
+      const savedIngredients = await Promise.all(
+        ingredients.map(async (ingredient) => {
+          // Check if ingredient already exists
+          const { data: existingIngredients } = await supabase
+            .from('ingredients')
+            .select('ingredient_id, name')
+            .eq('name', ingredient.name)
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (existingIngredients) {
+            return existingIngredients;
+          }
+
+          // Create new ingredient if it doesn't exist
+          const { data: newIngredient, error } = await supabase
+            .from('ingredients')
+            .insert({
+              name: ingredient.name,
+              calories_per_100g: (ingredient.calories / ingredient.amount) * 100,
+              protein_per_100g: (ingredient.protein / ingredient.amount) * 100,
+              fat_per_100g: (ingredient.fat / ingredient.amount) * 100,
+              carbs_per_100g: (ingredient.carbs / ingredient.amount) * 100,
+              fiber_per_100g: (ingredient.fiber / ingredient.amount) * 100
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          return newIngredient;
+        })
+      );
+
+      return savedIngredients;
+    } catch (error) {
+      console.error('Error saving ingredients:', error);
+      return null;
+    }
+  };
+
+  const handleAddToMeals = async () => {
+    if (!alternative) return;
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save recipes",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+        return;
+      }
+
+      // Save ingredients first
+      const savedIngredients = await saveIngredients(alternative.ingredients || []);
+      if (!savedIngredients) throw new Error('Failed to save ingredients');
+
+      // Save the recipe
+      const { data: recipe, error: recipeError } = await supabase
+        .from('recipes')
+        .insert({
+          user_id: session.user.id,
+          title: alternative.title,
+          description: alternative.description,
+          instructions: alternative.instructions,
+          dietary_tags: []
+        })
+        .select()
+        .single();
+
+      if (recipeError) throw recipeError;
+
+      // Link ingredients to recipe
+      const recipeIngredients = alternative.ingredients.map((ingredient: any, index: number) => ({
+        recipe_id: recipe.recipe_id,
+        ingredient_id: savedIngredients[index].ingredient_id,
+        quantity_g: ingredient.amount,
+        calories: ingredient.calories,
+        protein: ingredient.protein,
+        carbs: ingredient.carbs,
+        fat: ingredient.fat,
+        fiber: ingredient.fiber
+      }));
+
+      const { error: ingredientsError } = await supabase
+        .from('recipe_ingredients')
+        .insert(recipeIngredients);
+
+      if (ingredientsError) throw ingredientsError;
+
+      setShowResults(false);
+      toast({
+        title: "Success",
+        description: "Recipe and ingredients have been saved",
+      });
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe and ingredients",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -35,10 +149,10 @@ export function SearchBar({
           description: "Please sign in to search for recipes",
           variant: "destructive",
         });
+        navigate("/sign-in");
         return;
       }
 
-      // Get user's health goals from their profile
       const { data: userData } = await supabase
         .from('users')
         .select('dietary_preferences')
@@ -97,11 +211,12 @@ export function SearchBar({
         </Button>
       </div>
 
-      <AlternativeSearchResults
+      <AlternativeResults
         showResults={showResults}
         setShowResults={setShowResults}
         alternative={alternative}
         handleSearch={handleSearch}
+        handleAddToMeals={handleAddToMeals}
       />
     </>
   );

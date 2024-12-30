@@ -1,3 +1,5 @@
+import { ExpandableIngredient } from "./ExpandableIngredient";
+
 interface Ingredient {
   name: string;
   amount: number;

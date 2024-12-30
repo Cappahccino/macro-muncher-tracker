@@ -55,8 +55,8 @@ export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDi
       <DialogContent className="max-w-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-gray-700 max-h-[90vh] overflow-y-auto">
         <RecipeHeader
           title={recipe.title}
+          createdAt={recipe.created_at}
           description={recipe.description}
-          created_at={recipe.created_at}
         />
         
         <div className="mt-6 space-y-6">

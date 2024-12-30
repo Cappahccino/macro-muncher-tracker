@@ -1,4 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { useSaveRecipe } from "@/hooks/useSaveRecipe";
+import { MacroNutrient } from "../meal/MacroNutrient";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -7,15 +10,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MacroNutrient } from "../meal/MacroNutrient";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AlternativeSearchResultsProps {
   showResults: boolean;
   setShowResults: (show: boolean) => void;
   alternative: any;
   handleSearch: () => void;
-  handleAddToMeals: () => void;
 }
 
 export function AlternativeSearchResults({
@@ -23,8 +23,18 @@ export function AlternativeSearchResults({
   setShowResults,
   alternative,
   handleSearch,
-  handleAddToMeals
 }: AlternativeSearchResultsProps) {
+  const { saveRecipe, isSaving } = useSaveRecipe();
+
+  const handleAddToMeals = async () => {
+    if (!alternative) return;
+    
+    const saved = await saveRecipe(alternative);
+    if (saved) {
+      setShowResults(false);
+    }
+  };
+
   return (
     <AlertDialog open={showResults} onOpenChange={setShowResults}>
       <AlertDialogContent className="max-w-2xl max-h-[90vh]">
@@ -123,8 +133,11 @@ export function AlternativeSearchResults({
           >
             Search Again
           </Button>
-          <Button onClick={handleAddToMeals}>
-            Add to Recipe Vault
+          <Button 
+            onClick={handleAddToMeals}
+            disabled={isSaving}
+          >
+            {isSaving ? "Adding..." : "Add to Recipe Vault"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

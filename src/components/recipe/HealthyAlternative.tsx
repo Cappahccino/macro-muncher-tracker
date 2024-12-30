@@ -55,7 +55,6 @@ export function HealthyAlternative() {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="p-6 bg-gradient-to-br from-purple-600/5 via-blue-600/5 to-purple-600/5 rounded-lg border border-purple-500/20 shadow-lg backdrop-blur-sm"
     >
       <h3 className="text-lg font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
         Use AI to Find Healthy Meal Alternatives

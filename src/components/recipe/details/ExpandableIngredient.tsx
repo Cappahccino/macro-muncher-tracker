@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
 interface IngredientMacros {
   calories: number;
@@ -24,11 +24,11 @@ export function ExpandableIngredient({ name, amount, macros }: ExpandableIngredi
         className="flex items-center justify-between cursor-pointer p-2 hover:bg-muted/50 rounded-lg"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span>{name} - {Math.round(amount)}g</span>
+        <span className="text-sm">{name} - {Math.round(amount)}g</span>
         {isExpanded ? (
-          <ChevronUp className="h-4 w-4" />
+          <Minus className="h-4 w-4" />
         ) : (
-          <ChevronDown className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
         )}
       </div>
       

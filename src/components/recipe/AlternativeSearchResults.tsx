@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 import { MacroNutrient } from "../meal/MacroNutrient";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ExpandableIngredient } from "./details/ExpandableIngredient";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -60,13 +61,16 @@ export function AlternativeSearchResults({
 
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Ingredients:</h5>
-                  <ul className="space-y-1">
+                  <div className="space-y-2">
                     {alternative.ingredients?.map((ingredient: any, index: number) => (
-                      <li key={index} className="text-sm">
-                        {ingredient.name} - {ingredient.amount}g
-                      </li>
+                      <ExpandableIngredient
+                        key={index}
+                        name={ingredient.name}
+                        amount={ingredient.amount}
+                        macros={ingredient.macros}
+                      />
                     ))}
-                  </ul>
+                  </div>
                 </div>
 
                 <div className="mt-4">

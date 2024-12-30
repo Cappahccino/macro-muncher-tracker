@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { useSaveRecipe } from "@/hooks/useSaveRecipe";
+import { MacroNutrient } from "../meal/MacroNutrient";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -7,9 +12,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MacroNutrient } from "../meal/MacroNutrient";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { SaveToVaultButton } from "../meal/SaveToVaultButton";
 
 interface AlternativeResultsProps {
   showResults: boolean;
@@ -24,6 +26,13 @@ export function AlternativeResults({
   alternative,
   handleSearch,
 }: AlternativeResultsProps) {
+  const { saveRecipe, isSaving } = useSaveRecipe();
+  const [expandedIngredient, setExpandedIngredient] = useState<number | null>(null);
+
+  const toggleIngredient = (index: number) => {
+    setExpandedIngredient(expandedIngredient === index ? null : index);
+  };
+
   const macros = alternative?.macronutrients?.perServing;
   const meal = macros ? {
     name: alternative.title,
@@ -60,12 +69,22 @@ export function AlternativeResults({
 
                 <div className="mt-4">
                   <h5 className="font-medium mb-2">Ingredients:</h5>
-                  <ul className="space-y-4">
+                  <ul className="space-y-2">
                     {alternative.ingredients?.map((ingredient: any, index: number) => (
                       <li key={index} className="text-sm">
                         <div className="space-y-2">
-                          <p>{ingredient.name} - {ingredient.amount}g</p>
-                          {ingredient.macros && (
+                          <div 
+                            className="flex items-center justify-between cursor-pointer p-2 hover:bg-muted/50 rounded-lg"
+                            onClick={() => toggleIngredient(index)}
+                          >
+                            <span>{ingredient.name} - {ingredient.amount}g</span>
+                            {expandedIngredient === index ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </div>
+                          {expandedIngredient === index && ingredient.macros && (
                             <div className="grid grid-cols-5 gap-2 pl-4 text-xs bg-muted/50 p-2 rounded">
                               <div>
                                 <p className="text-muted-foreground">Calories</p>
@@ -159,7 +178,12 @@ export function AlternativeResults({
           >
             Search Again
           </Button>
-          {meal && <SaveToVaultButton meal={meal} />}
+          <Button 
+            onClick={() => saveRecipe(meal)}
+            disabled={isSaving}
+          >
+            {isSaving ? "Adding..." : "Add to Recipe Vault"}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

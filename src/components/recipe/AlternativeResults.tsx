@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MacroNutrient } from "../meal/MacroNutrient";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SaveToVaultButton } from "../meal/SaveToVaultButton";
 
 interface AlternativeResultsProps {
   showResults: boolean;
   setShowResults: (show: boolean) => void;
   alternative: any;
   handleSearch: () => void;
-  handleAddToMeals: () => void;
 }
 
 export function AlternativeResults({
@@ -23,8 +23,17 @@ export function AlternativeResults({
   setShowResults,
   alternative,
   handleSearch,
-  handleAddToMeals
 }: AlternativeResultsProps) {
+  const macros = alternative?.macronutrients?.perServing;
+  const meal = macros ? {
+    name: alternative.title,
+    calories: macros.calories,
+    protein: macros.protein,
+    carbs: macros.carbs,
+    fat: macros.fat,
+    fiber: macros.fiber
+  } : null;
+
   return (
     <AlertDialog open={showResults} onOpenChange={setShowResults}>
       <AlertDialogContent className="max-w-2xl max-h-[90vh]">
@@ -70,33 +79,33 @@ export function AlternativeResults({
                   </ol>
                 </div>
 
-                {alternative.macronutrients?.perServing && (
+                {macros && (
                   <div className="mt-4">
                     <h5 className="font-medium mb-2">Nutrition (per serving):</h5>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <MacroNutrient 
                         label="Calories" 
-                        value={alternative.macronutrients.perServing.calories} 
+                        value={macros.calories} 
                         unit="" 
                       />
                       <MacroNutrient 
                         label="Protein" 
-                        value={alternative.macronutrients.perServing.protein} 
+                        value={macros.protein} 
                         unit="g" 
                       />
                       <MacroNutrient 
                         label="Carbs" 
-                        value={alternative.macronutrients.perServing.carbs} 
+                        value={macros.carbs} 
                         unit="g" 
                       />
                       <MacroNutrient 
                         label="Fat" 
-                        value={alternative.macronutrients.perServing.fat} 
+                        value={macros.fat} 
                         unit="g" 
                       />
                       <MacroNutrient 
                         label="Fiber" 
-                        value={alternative.macronutrients.perServing.fiber} 
+                        value={macros.fiber} 
                         unit="g" 
                       />
                     </div>
@@ -123,9 +132,7 @@ export function AlternativeResults({
           >
             Search Again
           </Button>
-          <Button onClick={handleAddToMeals}>
-            Add to Recipe Vault
-          </Button>
+          {meal && <SaveToVaultButton meal={meal} />}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

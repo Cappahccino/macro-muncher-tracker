@@ -4,14 +4,39 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface SaveToVaultButtonProps {
-  meal: {
-    name: string;
+interface Ingredient {
+  name: string;
+  amount: number;
+  macros: {
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
-    fiber?: number;
+    fiber: number;
+  };
+}
+
+interface SaveToVaultButtonProps {
+  meal: {
+    title: string;
+    description: string;
+    instructions: {
+      steps: string[];
+      servingSize?: {
+        servings: number;
+        gramsPerServing: number;
+      };
+    };
+    ingredients?: Ingredient[];
+    macronutrients: {
+      perServing: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        fiber: number;
+      };
+    };
   };
 }
 
@@ -32,32 +57,71 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
         return;
       }
 
-      const { error } = await supabase
+      // First, save the recipe
+      const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
         .insert({
           user_id: session.user.id,
-          title: meal.name,
-          description: `A meal with ${meal.calories} calories, ${meal.protein}g protein, ${meal.carbs}g carbs, and ${meal.fat}g fat.`,
-          instructions: {
-            macros: {
-              calories: meal.calories,
-              protein: meal.protein,
-              carbs: meal.carbs,
-              fat: meal.fat,
-              fiber: meal.fiber || 0
-            }
-          },
-          // Explicitly set all total_* columns
-          total_calories: meal.calories,
-          total_protein: meal.protein,
-          total_carbs: meal.carbs,
-          total_fat: meal.fat,
-          total_fiber: meal.fiber || 0
+          title: meal.title,
+          description: meal.description,
+          instructions: meal.instructions,
+          total_calories: meal.macronutrients.perServing.calories,
+          total_protein: meal.macronutrients.perServing.protein,
+          total_carbs: meal.macronutrients.perServing.carbs,
+          total_fat: meal.macronutrients.perServing.fat,
+          total_fiber: meal.macronutrients.perServing.fiber
+        })
+        .select()
+        .single();
+
+      if (recipeError) {
+        console.error('Error saving recipe:', recipeError);
+        throw recipeError;
+      }
+
+      // Then, save each ingredient with its macros
+      if (meal.ingredients && recipe) {
+        const ingredientPromises = meal.ingredients.map(async (ingredient) => {
+          // First, create or get the ingredient
+          const { data: savedIngredient, error: ingredientError } = await supabase
+            .from('ingredients')
+            .insert({
+              name: ingredient.name,
+              calories_per_100g: (ingredient.macros.calories / ingredient.amount) * 100,
+              protein_per_100g: (ingredient.macros.protein / ingredient.amount) * 100,
+              carbs_per_100g: (ingredient.macros.carbs / ingredient.amount) * 100,
+              fat_per_100g: (ingredient.macros.fat / ingredient.amount) * 100,
+              fiber_per_100g: (ingredient.macros.fiber / ingredient.amount) * 100,
+            })
+            .select()
+            .single();
+
+          if (ingredientError) {
+            console.error('Error saving ingredient:', ingredientError);
+            throw ingredientError;
+          }
+
+          // Then, create the recipe_ingredient relationship with custom macros
+          const { error: recipeIngredientError } = await supabase
+            .from('recipe_ingredients')
+            .insert({
+              recipe_id: recipe.recipe_id,
+              ingredient_id: savedIngredient.ingredient_id,
+              quantity_g: ingredient.amount,
+              custom_calories: ingredient.macros.calories,
+              custom_protein: ingredient.macros.protein,
+              custom_carbs: ingredient.macros.carbs,
+              custom_fat: ingredient.macros.fat,
+              custom_fiber: ingredient.macros.fiber
+            });
+
+          if (recipeIngredientError) {
+            console.error('Error saving recipe ingredient:', recipeIngredientError);
+            throw recipeIngredientError;
+          }
         });
 
-      if (error) {
-        console.error('Error saving recipe:', error);
-        throw error;
+        await Promise.all(ingredientPromises);
       }
 
       toast({

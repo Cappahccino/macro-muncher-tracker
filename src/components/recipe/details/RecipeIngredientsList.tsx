@@ -1,4 +1,4 @@
-import { RecipeIngredientItem } from "./RecipeIngredientItem";
+import { ExpandableIngredient } from "../ingredients/ExpandableIngredient";
 
 interface Ingredient {
   name: string;
@@ -20,15 +20,16 @@ export function RecipeIngredientsList({ ingredients }: RecipeIngredientsListProp
   return (
     <div className="mt-4">
       <h5 className="font-medium mb-2">Ingredients:</h5>
-      <ul className="space-y-2">
-        {ingredients.map((ingredient, index) => (
-          <RecipeIngredientItem
+      <div className="space-y-2">
+        {ingredients?.map((ingredient, index) => (
+          <ExpandableIngredient
             key={index}
-            ingredient={ingredient}
-            index={index}
+            name={ingredient.name}
+            amount={ingredient.amount}
+            macros={ingredient.macros}
           />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

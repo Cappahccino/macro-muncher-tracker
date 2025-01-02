@@ -14,9 +14,9 @@ const SignIn = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [emailNotVerified, setEmailNotVerified] = useState(false);
-  const [resendingEmail, setResendingEmail] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
   const [currentEmail, setCurrentEmail] = useState<string>("");
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   const handleResendVerification = async () => {
     if (!currentEmail) {
@@ -107,17 +107,12 @@ const SignIn = () => {
               isResending={resendingEmail}
             />
           )}
-
-          {signInError && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{signInError}</AlertDescription>
-            </Alert>
-          )}
           
           <SignInForm
             onSubmit={onSubmit}
             isLoading={isLoading}
             onSignUpClick={() => navigate("/sign-up")}
+            error={signInError}
           />
         </CardContent>
       </Card>

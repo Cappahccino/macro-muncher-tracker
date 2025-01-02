@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 interface Ingredient {
   name: string;
   amount: number;
-  macros: {
+  macros?: {
     calories: number;
     protein: number;
     carbs: number;
@@ -28,7 +28,7 @@ export function RecipeIngredientItem({ ingredient, index }: RecipeIngredientItem
           className="flex items-center justify-between cursor-pointer p-2 hover:bg-muted/50 rounded-lg"
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <span>{ingredient.name} - {Math.round(ingredient.amount)}g</span>
+          <span>{ingredient.name} - {ingredient.amount}g</span>
           {isExpanded ? (
             <ChevronUp className="h-4 w-4" />
           ) : (

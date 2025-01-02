@@ -52,7 +52,7 @@ interface RecipeDetailsDialogProps {
 export function RecipeDetailsDialog({ recipe, isOpen, onClose }: RecipeDetailsDialogProps) {
   const [editingIngredient, setEditingIngredient] = useState<{
     index: number;
-    ingredient: Recipe['ingredients'][0];
+    ingredient: NonNullable<Recipe['ingredients']>[0];
   } | null>(null);
 
   if (!recipe) return null;

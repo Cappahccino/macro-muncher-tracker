@@ -12,7 +12,7 @@ export const handleAuthError = (error: any) => {
 
   switch (errorCode) {
     case 'invalid_credentials':
-      return 'Invalid email or password. Please check your credentials and try again.';
+      return 'Invalid email or password. Please try again.';
     case 'user_not_found':
       return 'No account found with this email address.';
     case 'email_not_confirmed':

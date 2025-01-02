@@ -8,21 +8,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Ingredient {
+  recipe_ingredient_id: string;
+  quantity_g: number;
   name: string;
-  amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
 }
 
 interface EditIngredientWeightDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ingredient: Ingredient | undefined;
+  ingredient: Ingredient | null;
   onSave: (weight: number) => void;
 }
 
@@ -36,9 +34,37 @@ export function EditIngredientWeightDialog({
 
   useEffect(() => {
     if (ingredient) {
-      setWeight(ingredient.amount);
+      setWeight(ingredient.quantity_g);
     }
   }, [ingredient]);
+
+  const handleSave = async () => {
+    if (!ingredient) return;
+
+    try {
+      const { error } = await supabase
+        .from('recipe_ingredients')
+        .update({ quantity_g: weight })
+        .eq('recipe_ingredient_id', ingredient.recipe_ingredient_id);
+
+      if (error) throw error;
+
+      onSave(weight);
+      onOpenChange(false);
+      
+      toast({
+        title: "Success",
+        description: `Updated ${ingredient.name} weight to ${weight}g`,
+      });
+    } catch (error) {
+      console.error('Error updating ingredient weight:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update ingredient weight",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!ingredient) return null;
 
@@ -65,7 +91,7 @@ export function EditIngredientWeightDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => onSave(weight)}>Save Changes</Button>
+          <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

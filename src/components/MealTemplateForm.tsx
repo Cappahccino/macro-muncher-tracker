@@ -9,6 +9,8 @@ import { SaveToVaultButton } from "@/components/meal/SaveToVaultButton";
 import { ConfirmTemplateDialog } from "@/components/meal/ConfirmTemplateDialog";
 import { IngredientsList } from "@/components/meal/IngredientsList";
 import { calculateTotalMacros } from "@/utils/macroCalculations";
+import { EditIngredientDialog } from "./meal/EditIngredientDialog";
+import { Plus } from "lucide-react";
 
 interface FoodComponent {
   name: string;
@@ -57,6 +59,7 @@ export function MealTemplateForm({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>([]);
   const [instructions, setInstructions] = useState<string>("");
+  const [editingIngredient, setEditingIngredient] = useState<{index: number, component: FoodComponent} | null>(null);
 
   const handleAddComponent = (component: FoodComponent) => {
     const existingIndex = pendingIngredients.findIndex(
@@ -121,6 +124,33 @@ export function MealTemplateForm({
     setInstructions("");
   };
 
+  const handleEditIngredient = (index: number, component: FoodComponent) => {
+    setEditingIngredient({ index, component });
+  };
+
+  const handleUpdateIngredient = (updatedComponent: FoodComponent) => {
+    if (editingIngredient === null) return;
+    
+    const updatedIngredients = [...pendingIngredients];
+    updatedIngredients[editingIngredient.index] = updatedComponent;
+    setPendingIngredients(updatedIngredients);
+    setEditingIngredient(null);
+    
+    toast({
+      title: "Success",
+      description: "Ingredient updated successfully",
+    });
+  };
+
+  const handleDeleteIngredient = (index: number) => {
+    const updatedIngredients = pendingIngredients.filter((_, i) => i !== index);
+    setPendingIngredients(updatedIngredients);
+    toast({
+      title: "Success",
+      description: "Ingredient removed successfully",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6 bg-card/50 backdrop-blur-sm border rounded-xl shadow-lg">
@@ -133,31 +163,26 @@ export function MealTemplateForm({
               className="flex-1"
             />
             {currentTemplate.name && (
-              <SaveToVaultButton
-                meal={{
-                  title: currentTemplate.name,
-                  description: currentTemplate.description || "",
-                  instructions: {
-                    steps: instructions.split('\n').filter(step => step.trim() !== ''),
-                  },
-                  ingredients: pendingIngredients.map(comp => ({
-                    name: comp.name,
-                    amount: comp.amount,
-                    macros: {
-                      calories: comp.calories,
-                      protein: comp.protein,
-                      carbs: comp.carbs,
-                      fat: comp.fat,
-                      fiber: comp.fiber || 0,
-                    }
-                  })),
-                  macronutrients: {
-                    perServing: calculateTotalMacros(pendingIngredients)
-                  }
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  const savedTemplates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
+                  savedTemplates.push(currentTemplate);
+                  localStorage.setItem('mealTemplates', JSON.stringify(savedTemplates));
+                  toast({
+                    title: "Success",
+                    description: "Recipe saved successfully",
+                  });
                 }}
-              />
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             )}
           </div>
+
+          <FoodSelect onAddComponent={handleAddComponent} />
 
           <Textarea
             placeholder="Recipe notes"
@@ -172,10 +197,12 @@ export function MealTemplateForm({
             onChange={(e) => setInstructions(e.target.value)}
             className="min-h-[150px]"
           />
-
-          <FoodSelect onAddComponent={handleAddComponent} />
           
-          <IngredientsList ingredients={pendingIngredients} />
+          <IngredientsList 
+            ingredients={pendingIngredients}
+            onEdit={handleEditIngredient}
+            onDelete={handleDeleteIngredient}
+          />
           
           <div className="flex gap-4">
             <Button type="submit" className="w-full">
@@ -198,6 +225,13 @@ export function MealTemplateForm({
           setShowConfirmDialog(false);
           resetForm();
         }}
+      />
+
+      <EditIngredientDialog
+        open={editingIngredient !== null}
+        onOpenChange={(open) => !open && setEditingIngredient(null)}
+        ingredient={editingIngredient?.component}
+        onSave={handleUpdateIngredient}
       />
     </div>
   );

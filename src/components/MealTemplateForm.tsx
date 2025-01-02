@@ -1,8 +1,5 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { FoodSelect } from "@/components/FoodSelect";
 import { toast } from "@/components/ui/use-toast";
 import { SaveToVaultButton } from "@/components/meal/SaveToVaultButton";
@@ -10,37 +7,11 @@ import { ConfirmTemplateDialog } from "@/components/meal/ConfirmTemplateDialog";
 import { IngredientsList } from "@/components/meal/IngredientsList";
 import { calculateTotalMacros } from "@/utils/macroCalculations";
 import { EditIngredientDialog } from "./meal/EditIngredientDialog";
-import { Plus } from "lucide-react";
-
-interface FoodComponent {
-  name: string;
-  amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-}
-
-interface MealTemplate {
-  name: string;
-  description?: string;
-  instructions?: {
-    steps: string[];
-    servingSize?: {
-      servings: number;
-      gramsPerServing: number;
-    };
-  };
-  components: FoodComponent[];
-  totalMacros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
+import { RecipeFormHeader } from "./meal/RecipeFormHeader";
+import { RecipeNotes } from "./meal/RecipeNotes";
+import { RecipeInstructions } from "./meal/RecipeInstructions";
+import { RecipeFormActions } from "./meal/RecipeFormActions";
+import { FoodComponent, MealTemplate } from "@/types/food";
 
 interface MealTemplateFormProps {
   editingIndex: number | null;
@@ -155,47 +126,21 @@ export function MealTemplateForm({
     <div className="space-y-6">
       <Card className="p-6 bg-card/50 backdrop-blur-sm border rounded-xl shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder="Recipe name"
-              value={currentTemplate.name}
-              onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
-              className="flex-1"
-            />
-            {currentTemplate.name && (
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  const savedTemplates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
-                  savedTemplates.push(currentTemplate);
-                  localStorage.setItem('mealTemplates', JSON.stringify(savedTemplates));
-                  toast({
-                    title: "Success",
-                    description: "Recipe saved successfully",
-                  });
-                }}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <RecipeFormHeader
+            name={currentTemplate.name}
+            onNameChange={(name) => setCurrentTemplate({ ...currentTemplate, name })}
+          />
 
           <FoodSelect onAddComponent={handleAddComponent} />
 
-          <Textarea
-            placeholder="Recipe notes"
-            value={currentTemplate.description || ""}
-            onChange={(e) => setCurrentTemplate({ ...currentTemplate, description: e.target.value })}
-            className="min-h-[100px]"
+          <RecipeNotes
+            description={currentTemplate.description || ""}
+            onChange={(description) => setCurrentTemplate({ ...currentTemplate, description })}
           />
 
-          <Textarea
-            placeholder="Instructions (one step per line)"
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-            className="min-h-[150px]"
+          <RecipeInstructions
+            instructions={instructions}
+            onChange={setInstructions}
           />
           
           <IngredientsList 
@@ -204,16 +149,10 @@ export function MealTemplateForm({
             onDelete={handleDeleteIngredient}
           />
           
-          <div className="flex gap-4">
-            <Button type="submit" className="w-full">
-              {editingIndex !== null ? "Save Changes" : "Add Recipe"}
-            </Button>
-            {editingIndex !== null && (
-              <Button type="button" variant="outline" className="w-full" onClick={onCancel}>
-                Cancel Edit
-              </Button>
-            )}
-          </div>
+          <RecipeFormActions
+            isEditing={editingIndex !== null}
+            onCancel={onCancel}
+          />
         </form>
       </Card>
 

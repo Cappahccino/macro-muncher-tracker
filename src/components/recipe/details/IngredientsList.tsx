@@ -10,6 +10,7 @@ interface Ingredient {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
 }
 
 interface IngredientsListProps {
@@ -44,7 +45,8 @@ export function IngredientsList({ ingredients, onUpdateIngredient }: Ingredients
                     Calories: {Math.round(ingredient.calories)} | 
                     Protein: {Math.round(ingredient.protein)}g | 
                     Carbs: {Math.round(ingredient.carbs)}g | 
-                    Fat: {Math.round(ingredient.fat)}g
+                    Fat: {Math.round(ingredient.fat)}g |
+                    Fiber: {Math.round(ingredient.fiber)}g
                   </span>
                 </div>
                 {onUpdateIngredient && (

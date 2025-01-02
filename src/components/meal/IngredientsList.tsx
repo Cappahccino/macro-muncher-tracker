@@ -1,6 +1,6 @@
 import { FoodComponent } from "@/types/food";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 interface IngredientsListProps {
   ingredients: FoodComponent[];
@@ -36,7 +36,7 @@ export function IngredientsList({ ingredients, onEdit, onDelete }: IngredientsLi
                   size="icon"
                   onClick={() => onEdit(idx, component)}
                 >
-                  <Edit className="h-4 w-4" />
+                  <Pencil className="h-4 w-4" />
                 </Button>
               )}
               {onDelete && (

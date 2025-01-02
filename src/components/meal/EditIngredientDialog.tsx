@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FoodComponent } from "@/types/food";
+import { Pencil } from "lucide-react";
 
 interface EditIngredientDialogProps {
   open: boolean;

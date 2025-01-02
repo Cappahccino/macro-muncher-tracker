@@ -6,34 +6,7 @@ import { MealTemplateForm } from "@/components/MealTemplateForm";
 import { MealTemplateList } from "@/components/MealTemplateList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
-interface FoodComponent {
-  name: string;
-  amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
-
-interface MealTemplate {
-  name: string;
-  description?: string;
-  instructions?: {
-    steps: string[];
-    servingSize?: {
-      servings: number;
-      gramsPerServing: number;
-    };
-  };
-  components: FoodComponent[];
-  totalMacros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-}
+import { MealTemplate } from "@/types/food";
 
 const Recipes = () => {
   const { toast } = useToast();
@@ -46,7 +19,7 @@ const Recipes = () => {
   const [newTemplate, setNewTemplate] = useState<MealTemplate>({
     name: "",
     components: [],
-    totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   });
 
   useEffect(() => {
@@ -73,7 +46,7 @@ const Recipes = () => {
     setNewTemplate({
       name: "",
       components: [],
-      totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+      totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
     });
   };
 
@@ -113,7 +86,7 @@ const Recipes = () => {
               setNewTemplate({
                 name: "",
                 components: [],
-                totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+                totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
               });
             }}
           />

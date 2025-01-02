@@ -2,26 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-interface FoodComponent {
-  name: string;
-  amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
-
-interface MealTemplate {
-  name: string;
-  components: FoodComponent[];
-  totalMacros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  };
-}
+import { MealTemplate } from "@/types/food";
 
 interface MealTemplateListProps {
   templates: MealTemplate[];
@@ -80,7 +61,8 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
                             Calories: {Math.round(component.calories)} | 
                             Protein: {Math.round(component.protein)}g | 
                             Carbs: {Math.round(component.carbs)}g | 
-                            Fat: {Math.round(component.fat)}g
+                            Fat: {Math.round(component.fat)}g |
+                            Fiber: {Math.round(component.fiber)}g
                           </p>
                         </div>
                       ))}
@@ -89,7 +71,7 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
                   
                   <div className="border-t border-border/50 pt-4">
                     <h4 className="font-medium text-lg mb-2">Total Macros</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="bg-background/50 rounded-lg p-3 text-center">
                         <p className="text-sm text-muted-foreground">Calories</p>
                         <p className="font-bold text-lg">{Math.round(template.totalMacros.calories)}</p>
@@ -105,6 +87,10 @@ export function MealTemplateList({ templates, onEdit, onDelete }: MealTemplateLi
                       <div className="bg-background/50 rounded-lg p-3 text-center">
                         <p className="text-sm text-muted-foreground">Fat</p>
                         <p className="font-bold text-lg">{Math.round(template.totalMacros.fat)}g</p>
+                      </div>
+                      <div className="bg-background/50 rounded-lg p-3 text-center">
+                        <p className="text-sm text-muted-foreground">Fiber</p>
+                        <p className="font-bold text-lg">{Math.round(template.totalMacros.fiber)}g</p>
                       </div>
                     </div>
                   </div>

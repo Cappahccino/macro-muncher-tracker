@@ -66,20 +66,8 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
         amount: weight,
         ...macros
       };
-      
-      // Check if this component already exists in the current template
-      const templates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
-      const currentTemplate = templates.find((template: any) => 
-        template.components.some((comp: any) => comp.name === food.name)
-      );
-
-      if (currentTemplate) {
-        setPendingComponent(newComponent);
-        setShowConfirmDialog(true);
-      } else {
-        onAddComponent(newComponent);
-        resetForm();
-      }
+      setPendingComponent(newComponent);
+      setShowConfirmDialog(true);
     }
   };
 
@@ -125,9 +113,17 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Update Component</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Component</AlertDialogTitle>
             <AlertDialogDescription>
-              This food item already exists in the template. Do you want to update it with the new weight and macros?
+              Please confirm the following values:
+              <div className="mt-2 space-y-1">
+                <p><strong>Food:</strong> {pendingComponent?.name}</p>
+                <p><strong>Weight:</strong> {pendingComponent?.amount}g</p>
+                <p><strong>Calories:</strong> {pendingComponent?.calories.toFixed(1)}</p>
+                <p><strong>Protein:</strong> {pendingComponent?.protein.toFixed(1)}g</p>
+                <p><strong>Carbs:</strong> {pendingComponent?.carbs.toFixed(1)}g</p>
+                <p><strong>Fat:</strong> {pendingComponent?.fat.toFixed(1)}g</p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -138,7 +134,7 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAdd}>
-              Update Component
+              Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

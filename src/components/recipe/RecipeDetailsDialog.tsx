@@ -25,8 +25,10 @@ interface Recipe {
   created_at: string;
   dietary_tags?: string[];
   ingredients?: Array<{
+    recipe_ingredient_id: string;
     name: string;
     amount: number;
+    quantity_g: number;
     calories: number;
     protein: number;
     carbs: number;

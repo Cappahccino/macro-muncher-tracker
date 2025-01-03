@@ -93,7 +93,7 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
         .insert({
           user_id: session.user.id,
           title: meal.title,
-          description: meal.description || '',
+          description: meal.description,
           instructions: { steps: instructionsArray },
           total_calories: meal.macronutrients.perServing.calories,
           total_protein: meal.macronutrients.perServing.protein,
@@ -148,9 +148,6 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
         title: "Success",
         description: "Recipe saved to vault successfully",
       });
-      
-      // Navigate to the recipe vault to see the newly added recipe
-      navigate("/recipe-vault");
     } catch (error) {
       console.error('Error saving recipe:', error);
       toast({

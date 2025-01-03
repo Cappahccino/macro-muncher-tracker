@@ -7,20 +7,38 @@ import { useNavigate } from "react-router-dom";
 interface Ingredient {
   name: string;
   amount: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber: number;
-  ingredient_id?: string; // Updated from 'id' to 'ingredient_id' to match Supabase schema
+  macros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
+  ingredient_id?: string;
 }
 
 interface Recipe {
   title: string;
   description: string;
-  instructions: any;
+  instructions: {
+    steps: string[];
+  };
   dietary_tags?: string[];
   ingredients?: Ingredient[];
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+  total_fiber?: number;
+  macronutrients?: {
+    perServing: {
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      fiber: number;
+    };
+  };
 }
 
 export function useSaveRecipe() {
@@ -51,7 +69,12 @@ export function useSaveRecipe() {
           title: recipe.title,
           description: recipe.description,
           instructions: recipe.instructions,
-          dietary_tags: recipe.dietary_tags || []
+          dietary_tags: recipe.dietary_tags || [],
+          total_calories: recipe.total_calories,
+          total_protein: recipe.total_protein,
+          total_carbs: recipe.total_carbs,
+          total_fat: recipe.total_fat,
+          total_fiber: recipe.total_fiber
         }])
         .select()
         .single();
@@ -61,20 +84,50 @@ export function useSaveRecipe() {
       // If we have ingredients, add them to the recipe
       if (newRecipe && recipe.ingredients) {
         const ingredientPromises = recipe.ingredients.map(async (ingredient) => {
-          const { error: ingredientError } = await supabase
+          // First, try to find or create the ingredient
+          const { data: existingIngredient, error: searchError } = await supabase
+            .from('ingredients')
+            .select('ingredient_id')
+            .eq('name', ingredient.name)
+            .single();
+
+          let ingredientId;
+
+          if (existingIngredient) {
+            ingredientId = existingIngredient.ingredient_id;
+          } else {
+            // Create new ingredient if it doesn't exist
+            const { data: newIngredient, error: ingredientError } = await supabase
+              .from('ingredients')
+              .insert({
+                name: ingredient.name,
+                calories_per_100g: (ingredient.macros.calories / ingredient.amount) * 100,
+                protein_per_100g: (ingredient.macros.protein / ingredient.amount) * 100,
+                carbs_per_100g: (ingredient.macros.carbs / ingredient.amount) * 100,
+                fat_per_100g: (ingredient.macros.fat / ingredient.amount) * 100,
+                fiber_per_100g: (ingredient.macros.fiber / ingredient.amount) * 100,
+              })
+              .select()
+              .single();
+
+            if (ingredientError) throw ingredientError;
+            ingredientId = newIngredient.ingredient_id;
+          }
+
+          const { error: recipeIngredientError } = await supabase
             .from('recipe_ingredients')
             .insert([{
               recipe_id: newRecipe.recipe_id,
-              ingredient_id: ingredient.ingredient_id, // Updated from 'id' to 'ingredient_id'
+              ingredient_id: ingredientId,
               quantity_g: ingredient.amount,
-              custom_calories: ingredient.calories,
-              custom_protein: ingredient.protein,
-              custom_carbs: ingredient.carbs,
-              custom_fat: ingredient.fat,
-              custom_fiber: ingredient.fiber
+              custom_calories: ingredient.macros.calories,
+              custom_protein: ingredient.macros.protein,
+              custom_carbs: ingredient.macros.carbs,
+              custom_fat: ingredient.macros.fat,
+              custom_fiber: ingredient.macros.fiber
             }]);
 
-          if (ingredientError) throw ingredientError;
+          if (recipeIngredientError) throw recipeIngredientError;
         });
 
         await Promise.all(ingredientPromises);

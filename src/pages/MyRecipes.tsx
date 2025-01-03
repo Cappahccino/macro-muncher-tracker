@@ -103,7 +103,12 @@ const MyRecipes = () => {
         })),
         macronutrients: {
           perServing: recipe.macros
-        }
+        },
+        total_calories: recipe.macros.calories,
+        total_protein: recipe.macros.protein,
+        total_carbs: recipe.macros.carbs,
+        total_fat: recipe.macros.fat,
+        total_fiber: recipe.macros.fiber
       };
 
       await saveRecipe(recipeForVault);

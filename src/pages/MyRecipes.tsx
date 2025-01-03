@@ -3,10 +3,10 @@ import { Header } from "@/components/Header";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FoodSelect } from "@/components/FoodSelect";
 import { Trash, Pencil, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SaveToVaultButton } from "@/components/meal/SaveToVaultButton";
+import { RecipeIngredientSelect } from "@/components/recipe/RecipeIngredientSelect";
 
 interface Ingredient {
   name: string;
@@ -179,7 +179,7 @@ const MyRecipes = () => {
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Add Ingredients</h3>
-            <FoodSelect onAddComponent={handleAddIngredient} />
+            <RecipeIngredientSelect onAddIngredient={handleAddIngredient} />
           </div>
 
           {ingredients.length > 0 && (

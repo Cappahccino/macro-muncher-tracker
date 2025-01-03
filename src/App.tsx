@@ -17,6 +17,7 @@ import MealPage from "./pages/MealPage";
 import MealsList from "./pages/MealsList";
 import WeightProgress from "./pages/WeightProgress";
 import RecipeVault from "./pages/RecipeVault";
+import MyRecipes from "./pages/MyRecipes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/food-list" element={<FoodList />} />
           <Route path="/meal/:id" element={<MealPage />} />
           <Route path="/recipes" element={<MealsList />} />
+          <Route path="/my-recipes" element={<MyRecipes />} />
           <Route path="/recipe-vault" element={<RecipeVault />} />
           <Route path="/weight-progress" element={<WeightProgress />} />
           <Route path="*" element={<Navigate to="/" replace />} />

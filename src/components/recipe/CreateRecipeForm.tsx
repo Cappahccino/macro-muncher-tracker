@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Trash, Pencil, Save } from "lucide-react";
-import { SaveToVaultButton } from "@/components/meal/SaveToVaultButton";
 import { RecipeIngredientSelect } from "@/components/recipe/RecipeIngredientSelect";
+import { RecipeBasicInfo } from "./form/RecipeBasicInfo";
+import { IngredientsList } from "./form/IngredientsList";
+import { MacroSummary } from "./form/MacroSummary";
+import { FormActions } from "./form/FormActions";
 
 interface Ingredient {
   name: string;
@@ -106,15 +105,20 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
     setIngredients([]);
   };
 
+  const totalMacros = calculateTotalMacros();
+
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-bold">Create New Recipe</h2>
       
       <div className="space-y-4">
-        <Input
-          placeholder="Recipe Name"
-          value={recipeName}
-          onChange={(e) => setRecipeName(e.target.value)}
+        <RecipeBasicInfo
+          recipeName={recipeName}
+          setRecipeName={setRecipeName}
+          notes={notes}
+          setNotes={setNotes}
+          instructions={instructions}
+          setInstructions={setInstructions}
         />
 
         <div className="space-y-4">
@@ -122,116 +126,44 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
           <RecipeIngredientSelect onAddIngredient={handleAddIngredient} />
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Notes</h3>
-          <Textarea
-            placeholder="Add any notes about this recipe..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Instructions</h3>
-          <Textarea
-            placeholder="Add cooking instructions (one step per line)..."
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-          />
-        </div>
-
         {ingredients.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Ingredients List</h3>
-            <div className="space-y-2">
-              {ingredients.map((ingredient, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">{ingredient.name}</p>
-                    {editingIndex === index ? (
-                      <div className="flex items-center gap-2 mt-1">
-                        <Input
-                          type="number"
-                          value={editWeight}
-                          onChange={(e) => setEditWeight(Number(e.target.value))}
-                          className="w-24"
-                        />
-                        <Button size="sm" onClick={handleUpdateWeight}>
-                          Update
-                        </Button>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Weight: {ingredient.amount}g | 
-                        Calories: {Math.round(ingredient.calories)} | 
-                        P: {Math.round(ingredient.protein)}g | 
-                        C: {Math.round(ingredient.carbs)}g | 
-                        F: {Math.round(ingredient.fat)}g |
-                        Fiber: {Math.round(ingredient.fiber)}g
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => startEditingWeight(index)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteIngredient(index)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <IngredientsList
+              ingredients={ingredients}
+              editingIndex={editingIndex}
+              editWeight={editWeight}
+              onDeleteIngredient={handleDeleteIngredient}
+              onStartEditingWeight={startEditingWeight}
+              onEditWeightChange={setEditWeight}
+              onUpdateWeight={handleUpdateWeight}
+            />
 
-            <div className="pt-4 border-t">
-              <h3 className="text-lg font-semibold mb-2">Total Macronutrients</h3>
-              <div className="grid grid-cols-5 gap-4">
-                {Object.entries(calculateTotalMacros()).map(([key, value]) => (
-                  <div key={key} className="bg-muted p-2 rounded-lg">
-                    <p className="text-sm text-muted-foreground capitalize">{key}</p>
-                    <p className="font-semibold">{Math.round(value)}{key === 'calories' ? '' : 'g'}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <MacroSummary macros={totalMacros} />
 
-            <div className="flex items-center gap-4 pt-4">
-              <Button onClick={handleSaveRecipe} className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Save Recipe
-              </Button>
-              <SaveToVaultButton
-                meal={{
-                  title: recipeName,
-                  description: notes,
-                  instructions: {
-                    steps: instructions.split('\n').filter(line => line.trim() !== ''),
-                  },
-                  ingredients: ingredients.map(ingredient => ({
-                    name: ingredient.name,
-                    amount: ingredient.amount,
-                    macros: {
-                      calories: ingredient.calories,
-                      protein: ingredient.protein,
-                      carbs: ingredient.carbs,
-                      fat: ingredient.fat,
-                      fiber: ingredient.fiber,
-                    }
-                  })),
-                  macronutrients: {
-                    perServing: calculateTotalMacros(),
-                  },
-                }}
-              />
-            </div>
+            <FormActions
+              onSave={handleSaveRecipe}
+              recipe={{
+                title: recipeName,
+                description: notes,
+                instructions: {
+                  steps: instructions.split('\n').filter(line => line.trim() !== ''),
+                },
+                ingredients: ingredients.map(ingredient => ({
+                  name: ingredient.name,
+                  amount: ingredient.amount,
+                  macros: {
+                    calories: ingredient.calories,
+                    protein: ingredient.protein,
+                    carbs: ingredient.carbs,
+                    fat: ingredient.fat,
+                    fiber: ingredient.fiber,
+                  }
+                })),
+                macronutrients: {
+                  perServing: totalMacros,
+                },
+              }}
+            />
           </div>
         )}
       </div>

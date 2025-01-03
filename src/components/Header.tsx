@@ -38,6 +38,11 @@ export const Header = () => {
       show: location.pathname !== "/recipes"
     },
     {
+      path: "/my-recipes",
+      label: "My Recipes",
+      show: location.pathname !== "/my-recipes"
+    },
+    {
       path: "/recipe-vault",
       label: "Recipe Vault",
       icon: BookCopy,

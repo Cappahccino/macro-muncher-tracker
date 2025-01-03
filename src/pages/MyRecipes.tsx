@@ -3,15 +3,11 @@ import { Header } from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
 import { CreateRecipeForm } from "@/components/recipe/CreateRecipeForm";
 import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
+import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 
 interface Recipe {
   title: string;
@@ -38,9 +34,7 @@ interface Recipe {
 const MyRecipes = () => {
   const { toast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [showInstructionsDialog, setShowInstructionsDialog] = useState(false);
-  const [instructions, setInstructions] = useState("");
+  const { saveRecipe, isSaving } = useSaveRecipe();
 
   useEffect(() => {
     const savedRecipes = localStorage.getItem('savedRecipes');
@@ -88,28 +82,44 @@ const MyRecipes = () => {
     });
   };
 
-  const handleSaveToVault = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    setInstructions(recipe.instructions.join('\n'));
-    setShowInstructionsDialog(true);
-  };
+  const handleSaveToVault = async (recipe: Recipe) => {
+    try {
+      const recipeForVault = {
+        title: recipe.title,
+        description: recipe.notes,
+        instructions: {
+          steps: recipe.instructions
+        },
+        ingredients: recipe.ingredients.map(ingredient => ({
+          name: ingredient.name,
+          amount: ingredient.amount,
+          macros: {
+            calories: ingredient.calories,
+            protein: ingredient.protein,
+            carbs: ingredient.carbs,
+            fat: ingredient.fat,
+            fiber: ingredient.fiber,
+          }
+        })),
+        macronutrients: {
+          perServing: recipe.macros
+        }
+      };
 
-  const handleConfirmVaultSave = () => {
-    if (!selectedRecipe) return;
-    
-    const recipeWithInstructions = {
-      ...selectedRecipe,
-      instructions: instructions.split('\n').filter(line => line.trim() !== ''),
-    };
-
-    setShowInstructionsDialog(false);
-    setInstructions("");
-    setSelectedRecipe(null);
-    
-    toast({
-      title: "Success",
-      description: "Recipe saved to vault successfully",
-    });
+      await saveRecipe(recipeForVault);
+      
+      toast({
+        title: "Success",
+        description: "Recipe saved to vault successfully",
+      });
+    } catch (error) {
+      console.error('Error saving to vault:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe to vault",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUpdateIngredient = (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
@@ -117,10 +127,8 @@ const MyRecipes = () => {
     const recipe = updatedRecipes[recipeIndex];
     const ingredient = recipe.ingredients[ingredientIndex];
     
-    // Calculate the ratio of new amount to old amount
     const ratio = newAmount / ingredient.amount;
     
-    // Update the ingredient amount and scale its macros
     ingredient.amount = newAmount;
     ingredient.calories *= ratio;
     ingredient.protein *= ratio;
@@ -128,7 +136,6 @@ const MyRecipes = () => {
     ingredient.fat *= ratio;
     ingredient.fiber *= ratio;
     
-    // Recalculate total macros for the recipe
     recipe.macros = recipe.ingredients.reduce(
       (acc, curr) => ({
         calories: acc.calories + curr.calories,
@@ -151,46 +158,34 @@ const MyRecipes = () => {
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
       
-      <div className="space-y-8">
-        <CreateRecipeForm onSave={handleSaveRecipe} />
+      <div className="mt-8 space-y-8">
+        <RecipeVaultHeader title="My Recipes" />
 
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Saved Recipes</h2>
-          <SavedRecipesList
-            recipes={recipes}
-            onDelete={handleDeleteRecipe}
-            onSaveToVault={handleSaveToVault}
-            onUpdateIngredient={handleUpdateIngredient}
-          />
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <CreateRecipeForm onSave={handleSaveRecipe} />
+
+            <Separator className="my-8" />
+
+            <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+              Saved Recipes
+            </h2>
+            
+            <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
+              <SavedRecipesList
+                recipes={recipes}
+                onDelete={handleDeleteRecipe}
+                onSaveToVault={handleSaveToVault}
+                onUpdateIngredient={handleUpdateIngredient}
+              />
+            </ScrollArea>
+          </motion.div>
         </div>
       </div>
-
-      <Dialog open={showInstructionsDialog} onOpenChange={setShowInstructionsDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Cooking Instructions</DialogTitle>
-            <DialogDescription>
-              Please enter the cooking instructions for this recipe (one step per line)
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="1. Preheat oven to 350°F&#10;2. Mix ingredients in a bowl&#10;3. Bake for 30 minutes"
-              className="min-h-[200px]"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowInstructionsDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleConfirmVaultSave}>
-                Save to Vault
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

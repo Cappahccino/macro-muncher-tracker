@@ -109,26 +109,46 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
       // Then, save each ingredient with its macros
       if (meal.ingredients && recipe) {
         const ingredientPromises = meal.ingredients.map(async (ingredient) => {
-          const { data: savedIngredient, error: ingredientError } = await supabase
+          // First, try to find an existing ingredient with the same name
+          const { data: existingIngredient, error: searchError } = await supabase
             .from('ingredients')
-            .insert({
-              name: ingredient.name,
-              calories_per_100g: (ingredient.macros.calories / ingredient.amount) * 100,
-              protein_per_100g: (ingredient.macros.protein / ingredient.amount) * 100,
-              carbs_per_100g: (ingredient.macros.carbs / ingredient.amount) * 100,
-              fat_per_100g: (ingredient.macros.fat / ingredient.amount) * 100,
-              fiber_per_100g: (ingredient.macros.fiber / ingredient.amount) * 100,
-            })
-            .select()
+            .select('ingredient_id')
+            .eq('name', ingredient.name)
             .single();
 
-          if (ingredientError) throw ingredientError;
+          if (searchError && searchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            throw searchError;
+          }
 
+          let ingredientId;
+
+          if (existingIngredient) {
+            ingredientId = existingIngredient.ingredient_id;
+          } else {
+            // Create new ingredient if it doesn't exist
+            const { data: newIngredient, error: ingredientError } = await supabase
+              .from('ingredients')
+              .insert({
+                name: ingredient.name,
+                calories_per_100g: (ingredient.macros.calories / ingredient.amount) * 100,
+                protein_per_100g: (ingredient.macros.protein / ingredient.amount) * 100,
+                carbs_per_100g: (ingredient.macros.carbs / ingredient.amount) * 100,
+                fat_per_100g: (ingredient.macros.fat / ingredient.amount) * 100,
+                fiber_per_100g: (ingredient.macros.fiber / ingredient.amount) * 100,
+              })
+              .select()
+              .single();
+
+            if (ingredientError) throw ingredientError;
+            ingredientId = newIngredient.ingredient_id;
+          }
+
+          // Create recipe_ingredient association
           const { error: recipeIngredientError } = await supabase
             .from('recipe_ingredients')
             .insert({
               recipe_id: recipe.recipe_id,
-              ingredient_id: savedIngredient.ingredient_id,
+              ingredient_id: ingredientId,
               quantity_g: ingredient.amount,
               custom_calories: ingredient.macros.calories,
               custom_protein: ingredient.macros.protein,
@@ -148,6 +168,9 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
         title: "Success",
         description: "Recipe saved to vault successfully",
       });
+      
+      // Navigate to recipe vault to see the newly added recipe
+      navigate("/recipe-vault");
     } catch (error) {
       console.error('Error saving recipe:', error);
       toast({

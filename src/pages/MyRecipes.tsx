@@ -116,6 +116,34 @@ const MyRecipes = () => {
     });
   };
 
+  const handleSaveToVault = (recipe: Recipe) => {
+    // Convert the recipe to the format expected by the vault
+    const vaultRecipe = {
+      title: recipe.title,
+      description: recipe.notes,
+      instructions: {
+        steps: recipe.instructions,
+      },
+      ingredients: recipe.ingredients.map(ingredient => ({
+        name: ingredient.name,
+        amount: ingredient.amount,
+        macros: {
+          calories: ingredient.calories,
+          protein: ingredient.protein,
+          carbs: ingredient.carbs,
+          fat: ingredient.fat,
+          fiber: ingredient.fiber,
+        }
+      })),
+      macronutrients: {
+        perServing: recipe.macros,
+      },
+    };
+    
+    // Pass the existing instructions to pre-fill the dialog
+    return vaultRecipe;
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
@@ -152,6 +180,7 @@ const MyRecipes = () => {
                 recipes={recipes}
                 onDelete={handleDeleteRecipe}
                 onUpdateIngredient={handleUpdateIngredient}
+                onSaveToVault={handleSaveToVault}
               />
             </ScrollArea>
           </motion.div>

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
+import { Trash, Save } from "lucide-react";
 
 interface Recipe {
   title: string;
@@ -27,9 +27,10 @@ interface Recipe {
 interface SavedRecipesListProps {
   recipes: Recipe[];
   onDelete: (index: number) => void;
+  onSaveToVault: (recipe: Recipe) => void;
 }
 
-export function SavedRecipesList({ recipes, onDelete }: SavedRecipesListProps) {
+export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedRecipesListProps) {
   if (recipes.length === 0) {
     return (
       <Card className="p-6">
@@ -46,13 +47,22 @@ export function SavedRecipesList({ recipes, onDelete }: SavedRecipesListProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">{recipe.title}</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDelete(index)}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onSaveToVault(recipe)}
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(index)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               
               {recipe.notes && (

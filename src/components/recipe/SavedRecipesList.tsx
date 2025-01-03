@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash, Save } from "lucide-react";
+import { Trash, Save, Pencil } from "lucide-react";
+import { useState } from "react";
+import { EditIngredientWeightDialog } from "./EditIngredientWeightDialog";
 
 interface Recipe {
   title: string;
@@ -28,9 +30,18 @@ interface SavedRecipesListProps {
   recipes: Recipe[];
   onDelete: (index: number) => void;
   onSaveToVault: (recipe: Recipe) => void;
+  onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
 }
 
-export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedRecipesListProps) {
+export function SavedRecipesList({ 
+  recipes, 
+  onDelete, 
+  onSaveToVault,
+  onUpdateIngredient 
+}: SavedRecipesListProps) {
+  const [editingRecipe, setEditingRecipe] = useState<number | null>(null);
+  const [editingIngredient, setEditingIngredient] = useState<number | null>(null);
+
   if (recipes.length === 0) {
     return (
       <Card className="p-6">
@@ -41,8 +52,8 @@ export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedReci
 
   return (
     <div className="space-y-4">
-      {recipes.map((recipe, index) => (
-        <Card key={index} className="p-4">
+      {recipes.map((recipe, recipeIndex) => (
+        <Card key={recipeIndex} className="p-4">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -58,7 +69,7 @@ export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedReci
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onDelete(index)}
+                    onClick={() => onDelete(recipeIndex)}
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
@@ -86,9 +97,19 @@ export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedReci
               <div>
                 <h4 className="font-medium">Ingredients:</h4>
                 <ul className="text-sm text-muted-foreground">
-                  {recipe.ingredients.map((ingredient, i) => (
-                    <li key={i}>
-                      {ingredient.name} ({ingredient.amount}g)
+                  {recipe.ingredients.map((ingredient, ingredientIndex) => (
+                    <li key={ingredientIndex} className="flex items-center justify-between py-1">
+                      <span>{ingredient.name} ({ingredient.amount}g)</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditingRecipe(recipeIndex);
+                          setEditingIngredient(ingredientIndex);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -106,6 +127,22 @@ export function SavedRecipesList({ recipes, onDelete, onSaveToVault }: SavedReci
           </div>
         </Card>
       ))}
+
+      {editingRecipe !== null && editingIngredient !== null && (
+        <EditIngredientWeightDialog
+          ingredient={recipes[editingRecipe].ingredients[editingIngredient]}
+          isOpen={editingRecipe !== null && editingIngredient !== null}
+          onClose={() => {
+            setEditingRecipe(null);
+            setEditingIngredient(null);
+          }}
+          onSave={(newAmount) => {
+            onUpdateIngredient(editingRecipe, editingIngredient, newAmount);
+            setEditingRecipe(null);
+            setEditingIngredient(null);
+          }}
+        />
+      )}
     </div>
   );
 }

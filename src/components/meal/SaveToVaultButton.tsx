@@ -3,6 +3,15 @@ import { Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Ingredient {
   name: string;
@@ -38,11 +47,14 @@ interface SaveToVaultButtonProps {
       };
     };
   };
+  existingInstructions?: string[];
 }
 
-export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
+export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultButtonProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showInstructionsDialog, setShowInstructionsDialog] = useState(false);
+  const [instructions, setInstructions] = useState(existingInstructions ? existingInstructions.join('\n') : "");
 
   const handleSaveToVault = async () => {
     try {
@@ -57,6 +69,24 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
         return;
       }
 
+      setShowInstructionsDialog(true);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to prepare recipe for saving",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConfirmSave = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const instructionsArray = instructions.split('\n').filter(line => line.trim() !== '');
+
       // First, save the recipe
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
@@ -64,7 +94,7 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
           user_id: session.user.id,
           title: meal.title,
           description: meal.description,
-          instructions: meal.instructions,
+          instructions: { steps: instructionsArray },
           total_calories: meal.macronutrients.perServing.calories,
           total_protein: meal.macronutrients.perServing.protein,
           total_carbs: meal.macronutrients.perServing.carbs,
@@ -74,15 +104,11 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
         .select()
         .single();
 
-      if (recipeError) {
-        console.error('Error saving recipe:', recipeError);
-        throw recipeError;
-      }
+      if (recipeError) throw recipeError;
 
       // Then, save each ingredient with its macros
       if (meal.ingredients && recipe) {
         const ingredientPromises = meal.ingredients.map(async (ingredient) => {
-          // First, create or get the ingredient
           const { data: savedIngredient, error: ingredientError } = await supabase
             .from('ingredients')
             .insert({
@@ -96,12 +122,8 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
             .select()
             .single();
 
-          if (ingredientError) {
-            console.error('Error saving ingredient:', ingredientError);
-            throw ingredientError;
-          }
+          if (ingredientError) throw ingredientError;
 
-          // Then, create the recipe_ingredient relationship with custom macros
           const { error: recipeIngredientError } = await supabase
             .from('recipe_ingredients')
             .insert({
@@ -115,15 +137,13 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
               custom_fiber: ingredient.macros.fiber
             });
 
-          if (recipeIngredientError) {
-            console.error('Error saving recipe ingredient:', recipeIngredientError);
-            throw recipeIngredientError;
-          }
+          if (recipeIngredientError) throw recipeIngredientError;
         });
 
         await Promise.all(ingredientPromises);
       }
 
+      setShowInstructionsDialog(false);
       toast({
         title: "Success",
         description: "Recipe saved to vault successfully",
@@ -139,9 +159,38 @@ export function SaveToVaultButton({ meal }: SaveToVaultButtonProps) {
   };
 
   return (
-    <Button onClick={handleSaveToVault} className="flex items-center gap-2">
-      <Save className="h-4 w-4" />
-      Save to Vault
-    </Button>
+    <>
+      <Button onClick={handleSaveToVault} className="flex items-center gap-2">
+        <Save className="h-4 w-4" />
+        Save to Vault
+      </Button>
+
+      <Dialog open={showInstructionsDialog} onOpenChange={setShowInstructionsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Cooking Instructions</DialogTitle>
+            <DialogDescription>
+              Please enter the cooking instructions for this recipe (one step per line)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="1. Preheat oven to 350°F&#10;2. Mix ingredients in a bowl&#10;3. Bake for 30 minutes"
+              className="min-h-[200px]"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowInstructionsDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmSave}>
+                Save to Vault
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

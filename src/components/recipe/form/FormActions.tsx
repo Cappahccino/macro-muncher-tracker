@@ -40,7 +40,7 @@ export function FormActions({ onSave, recipe }: FormActionsProps) {
         <Save className="h-4 w-4" />
         Save Recipe
       </Button>
-      <SaveToVaultButton meal={recipe} />
+      <SaveToVaultButton meal={recipe} existingInstructions={recipe.instructions.steps} />
     </div>
   );
 }

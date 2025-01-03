@@ -42,7 +42,6 @@ const MyRecipes = () => {
   const [showInstructionsDialog, setShowInstructionsDialog] = useState(false);
   const [instructions, setInstructions] = useState("");
 
-  // Load saved recipes from localStorage on component mount
   useEffect(() => {
     const savedRecipes = localStorage.getItem('savedRecipes');
     if (savedRecipes) {
@@ -50,7 +49,6 @@ const MyRecipes = () => {
     }
   }, []);
 
-  // Save recipes to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('savedRecipes', JSON.stringify(recipes));
   }, [recipes]);
@@ -92,6 +90,7 @@ const MyRecipes = () => {
 
   const handleSaveToVault = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
+    setInstructions(recipe.instructions.join('\n'));
     setShowInstructionsDialog(true);
   };
 
@@ -113,6 +112,41 @@ const MyRecipes = () => {
     });
   };
 
+  const handleUpdateIngredient = (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
+    const updatedRecipes = [...recipes];
+    const recipe = updatedRecipes[recipeIndex];
+    const ingredient = recipe.ingredients[ingredientIndex];
+    
+    // Calculate the ratio of new amount to old amount
+    const ratio = newAmount / ingredient.amount;
+    
+    // Update the ingredient amount and scale its macros
+    ingredient.amount = newAmount;
+    ingredient.calories *= ratio;
+    ingredient.protein *= ratio;
+    ingredient.carbs *= ratio;
+    ingredient.fat *= ratio;
+    ingredient.fiber *= ratio;
+    
+    // Recalculate total macros for the recipe
+    recipe.macros = recipe.ingredients.reduce(
+      (acc, curr) => ({
+        calories: acc.calories + curr.calories,
+        protein: acc.protein + curr.protein,
+        carbs: acc.carbs + curr.carbs,
+        fat: acc.fat + curr.fat,
+        fiber: acc.fiber + curr.fiber,
+      }),
+      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+    );
+    
+    setRecipes(updatedRecipes);
+    toast({
+      title: "Success",
+      description: "Ingredient weight updated successfully",
+    });
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
@@ -126,6 +160,7 @@ const MyRecipes = () => {
             recipes={recipes}
             onDelete={handleDeleteRecipe}
             onSaveToVault={handleSaveToVault}
+            onUpdateIngredient={handleUpdateIngredient}
           />
         </div>
       </div>

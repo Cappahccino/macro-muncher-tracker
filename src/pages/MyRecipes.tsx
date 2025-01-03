@@ -3,15 +3,11 @@ import { Header } from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
 import { CreateRecipeForm } from "@/components/recipe/CreateRecipeForm";
 import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { motion } from "framer-motion";
+import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface Recipe {
   title: string;
@@ -88,39 +84,13 @@ const MyRecipes = () => {
     });
   };
 
-  const handleSaveToVault = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    setInstructions(recipe.instructions.join('\n'));
-    setShowInstructionsDialog(true);
-  };
-
-  const handleConfirmVaultSave = () => {
-    if (!selectedRecipe) return;
-    
-    const recipeWithInstructions = {
-      ...selectedRecipe,
-      instructions: instructions.split('\n').filter(line => line.trim() !== ''),
-    };
-
-    setShowInstructionsDialog(false);
-    setInstructions("");
-    setSelectedRecipe(null);
-    
-    toast({
-      title: "Success",
-      description: "Recipe saved to vault successfully",
-    });
-  };
-
   const handleUpdateIngredient = (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
     const updatedRecipes = [...recipes];
     const recipe = updatedRecipes[recipeIndex];
     const ingredient = recipe.ingredients[ingredientIndex];
     
-    // Calculate the ratio of new amount to old amount
     const ratio = newAmount / ingredient.amount;
     
-    // Update the ingredient amount and scale its macros
     ingredient.amount = newAmount;
     ingredient.calories *= ratio;
     ingredient.protein *= ratio;
@@ -128,7 +98,6 @@ const MyRecipes = () => {
     ingredient.fat *= ratio;
     ingredient.fiber *= ratio;
     
-    // Recalculate total macros for the recipe
     recipe.macros = recipe.ingredients.reduce(
       (acc, curr) => ({
         calories: acc.calories + curr.calories,
@@ -151,46 +120,43 @@ const MyRecipes = () => {
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
       
-      <div className="space-y-8">
-        <CreateRecipeForm onSave={handleSaveRecipe} />
+      <div className="mt-8 space-y-8">
+        <RecipeVaultHeader title="My Recipes" />
 
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Saved Recipes</h2>
-          <SavedRecipesList
-            recipes={recipes}
-            onDelete={handleDeleteRecipe}
-            onSaveToVault={handleSaveToVault}
-            onUpdateIngredient={handleUpdateIngredient}
-          />
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-8"
+        >
+          <Card className="p-6 space-y-6 bg-card/50 backdrop-blur-sm">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+              Create New Recipe
+            </h2>
+            <CreateRecipeForm onSave={handleSaveRecipe} />
+          </Card>
+
+          <Separator className="my-8" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+              Saved Recipes
+            </h2>
+            
+            <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
+              <SavedRecipesList
+                recipes={recipes}
+                onDelete={handleDeleteRecipe}
+                onUpdateIngredient={handleUpdateIngredient}
+              />
+            </ScrollArea>
+          </motion.div>
+        </motion.div>
       </div>
-
-      <Dialog open={showInstructionsDialog} onOpenChange={setShowInstructionsDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Cooking Instructions</DialogTitle>
-            <DialogDescription>
-              Please enter the cooking instructions for this recipe (one step per line)
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="1. Preheat oven to 350°F&#10;2. Mix ingredients in a bowl&#10;3. Bake for 30 minutes"
-              className="min-h-[200px]"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowInstructionsDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleConfirmVaultSave}>
-                Save to Vault
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

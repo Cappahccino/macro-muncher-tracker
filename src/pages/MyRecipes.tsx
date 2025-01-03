@@ -28,7 +28,17 @@ interface Recipe {
       gramsPerServing: number;
     };
   };
-  ingredients: Ingredient[];
+  ingredients: {
+    name: string;
+    amount: number;
+    macros: {
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      fiber: number;
+    };
+  }[];
   macronutrients: {
     perServing: {
       calories: number;
@@ -122,7 +132,17 @@ const MyRecipes = () => {
       instructions: {
         steps: [],
       },
-      ingredients,
+      ingredients: ingredients.map(ingredient => ({
+        name: ingredient.name,
+        amount: ingredient.amount,
+        macros: {
+          calories: ingredient.calories,
+          protein: ingredient.protein,
+          carbs: ingredient.carbs,
+          fat: ingredient.fat,
+          fiber: ingredient.fiber,
+        }
+      })),
       macronutrients: {
         perServing: totalMacros,
       },
@@ -237,7 +257,17 @@ const MyRecipes = () => {
                     instructions: {
                       steps: [],
                     },
-                    ingredients,
+                    ingredients: ingredients.map(ingredient => ({
+                      name: ingredient.name,
+                      amount: ingredient.amount,
+                      macros: {
+                        calories: ingredient.calories,
+                        protein: ingredient.protein,
+                        carbs: ingredient.carbs,
+                        fat: ingredient.fat,
+                        fiber: ingredient.fiber,
+                      }
+                    })),
                     macronutrients: {
                       perServing: calculateTotalMacros(),
                     },

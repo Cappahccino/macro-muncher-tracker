@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { findOrCreateIngredient, addIngredientToRecipe } from "@/utils/recipe/ingredientManagement";
 
 interface Ingredient {
   name: string;
@@ -44,28 +43,15 @@ interface Recipe {
 export function useSaveRecipe() {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const saveRecipe = async (recipe: Recipe) => {
-    setIsSaving(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to save recipes",
-          variant: "destructive",
-        });
-        navigate("/sign-in");
-        return;
-      }
+      setIsSaving(true);
 
-      // Insert the recipe
+      // Create the recipe first
       const { data: newRecipe, error: recipeError } = await supabase
         .from('recipes')
         .insert([{
-          user_id: session.user.id,
           title: recipe.title,
           description: recipe.description,
           instructions: recipe.instructions,
@@ -83,65 +69,19 @@ export function useSaveRecipe() {
 
       // If we have ingredients, add them to the recipe
       if (newRecipe && recipe.ingredients) {
-        const ingredientPromises = recipe.ingredients.map(async (ingredient) => {
-          // First, try to find or create the ingredient
-          const { data: existingIngredient, error: searchError } = await supabase
-            .from('ingredients')
-            .select('ingredient_id')
-            .eq('name', ingredient.name)
-            .single();
-
-          let ingredientId;
-
-          if (existingIngredient) {
-            ingredientId = existingIngredient.ingredient_id;
-          } else {
-            // Create new ingredient if it doesn't exist
-            const { data: newIngredient, error: ingredientError } = await supabase
-              .from('ingredients')
-              .insert({
-                name: ingredient.name,
-                calories_per_100g: (ingredient.macros.calories / ingredient.amount) * 100,
-                protein_per_100g: (ingredient.macros.protein / ingredient.amount) * 100,
-                carbs_per_100g: (ingredient.macros.carbs / ingredient.amount) * 100,
-                fat_per_100g: (ingredient.macros.fat / ingredient.amount) * 100,
-                fiber_per_100g: (ingredient.macros.fiber / ingredient.amount) * 100,
-              })
-              .select()
-              .single();
-
-            if (ingredientError) throw ingredientError;
-            ingredientId = newIngredient.ingredient_id;
-          }
-
-          const { error: recipeIngredientError } = await supabase
-            .from('recipe_ingredients')
-            .insert([{
-              recipe_id: newRecipe.recipe_id,
-              ingredient_id: ingredientId,
-              quantity_g: ingredient.amount,
-              custom_calories: ingredient.macros.calories,
-              custom_protein: ingredient.macros.protein,
-              custom_carbs: ingredient.macros.carbs,
-              custom_fat: ingredient.macros.fat,
-              custom_fiber: ingredient.macros.fiber
-            }]);
-
-          if (recipeIngredientError) throw recipeIngredientError;
-        });
-
-        await Promise.all(ingredientPromises);
+        await Promise.all(
+          recipe.ingredients.map(async (ingredient) => {
+            const ingredientId = await findOrCreateIngredient(ingredient);
+            await addIngredientToRecipe(newRecipe.recipe_id, ingredientId, ingredient);
+          })
+        );
       }
-
-      // Invalidate and refetch the recipes query
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      await queryClient.refetchQueries({ queryKey: ['recipes'] });
 
       toast({
         title: "Success",
-        description: "Recipe has been added to your meals",
+        description: "Recipe saved successfully",
       });
-      
+
       return newRecipe;
     } catch (error) {
       console.error('Error saving recipe:', error);
@@ -150,7 +90,7 @@ export function useSaveRecipe() {
         description: "Failed to save recipe. Please try again.",
         variant: "destructive",
       });
-      return null;
+      throw error;
     } finally {
       setIsSaving(false);
     }

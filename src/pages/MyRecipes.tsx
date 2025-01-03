@@ -7,10 +7,11 @@ import { convertToVaultRecipe } from "@/utils/recipe/recipeConversion";
 import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Recipe {
   title: string;
-  notes?: string;
+  notes: string;
   instructions: string[];
   ingredients: {
     name: string;
@@ -30,11 +31,12 @@ interface Recipe {
   };
 }
 
-const initialRecipes: Recipe[] = []; // Replace with actual initial data
+const initialRecipes: Recipe[] = [];
 
 export default function MyRecipes() {
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDeleteRecipe = (index: number) => {
     const newRecipes = [...recipes];
@@ -45,6 +47,17 @@ export default function MyRecipes() {
       title: "Recipe deleted",
       description: "The recipe has been removed from your list.",
     });
+  };
+
+  const handleSaveToVault = async (recipe: Recipe) => {
+    const vaultRecipe = convertToVaultRecipe(recipe);
+    
+    // After successful save, navigate to the recipe vault
+    toast({
+      title: "Recipe saved",
+      description: "The recipe has been saved to your vault.",
+    });
+    navigate("/recipe-vault");
   };
 
   const handleUpdateIngredient = (
@@ -110,7 +123,7 @@ export default function MyRecipes() {
                 recipes={recipes}
                 onDelete={handleDeleteRecipe}
                 onUpdateIngredient={handleUpdateIngredient}
-                onSaveToVault={convertToVaultRecipe}
+                onSaveToVault={handleSaveToVault}
               />
             </ScrollArea>
           </motion.div>

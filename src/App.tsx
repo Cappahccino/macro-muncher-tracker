@@ -47,8 +47,8 @@ const App = () => (
           <Route path="/food-list" element={<FoodList />} />
           <Route path="/meal/:id" element={<MealPage />} />
           <Route path="/recipes" element={<MealsList />} />
-          <Route path="/my-recipes" element={<MyRecipes />} />
           <Route path="/recipe-vault" element={<RecipeVault />} />
+          <Route path="/my-recipes" element={<MyRecipes />} />
           <Route path="/weight-progress" element={<WeightProgress />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

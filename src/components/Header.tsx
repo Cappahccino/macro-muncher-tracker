@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Menu, User, BookCopy, X, ScrollText } from "lucide-react";
+import { Home, Menu, User, BookCopy, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,12 +36,6 @@ export const Header = () => {
       path: "/recipes",
       label: "Meals List",
       show: location.pathname !== "/recipes"
-    },
-    {
-      path: "/my-recipes",
-      label: "My Recipes",
-      icon: ScrollText,
-      show: location.pathname !== "/my-recipes"
     },
     {
       path: "/recipe-vault",

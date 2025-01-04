@@ -16,8 +16,9 @@ serve(async (req) => {
   }
 
   try {
-    const { searchQuery } = await req.json();
+    const { searchQuery, userGoals } = await req.json();
     console.log('Received search query:', searchQuery);
+    console.log('User goals:', userGoals);
 
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -30,16 +31,16 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful nutritionist and chef that provides healthy recipes. Always provide measurements in grams and include detailed nutritional information for each ingredient.'
+            content: `You are a helpful nutritionist and chef that provides healthy recipes. Always provide measurements in grams and include detailed nutritional information for each ingredient. Consider the following health goals: ${userGoals || 'balanced nutrition'}`
           },
           {
             role: 'user',
-            content: `Please give me a recipe for ${searchQuery}. Give me step by step instructions on how I can make this dish and also list the ingredients with their measurements in grams. You must provide the total macros for the recipe and macros for the individual ingredients in grams.
+            content: `Please give me a healthy alternative for ${searchQuery}. Give me step by step instructions on how I can make the alternative dish and also list the ingredients with their measurements. You must provide ingredients and steps in grams. You must provide the total macros for the alternative dish and macros for the individual ingredients in grams.
 
             Return the response in this exact JSON format:
             {
               "title": "Recipe Name",
-              "description": "Brief description",
+              "description": "Brief description of why this recipe aligns with the user's health goals",
               "servingSize": {
                 "servings": number,
                 "gramsPerServing": number
@@ -99,7 +100,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in search-recipes function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

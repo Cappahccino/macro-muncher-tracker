@@ -1,6 +1,6 @@
 import { Header } from "@/components/Header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DietaryFilters } from "@/components/recipe/DietaryFilters";
 import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
 import { HealthyAlternative } from "@/components/recipe/HealthyAlternative";
@@ -12,6 +12,8 @@ import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const RecipeVault = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -19,17 +21,55 @@ const RecipeVault = () => {
   const [isSearching, setIsSearching] = useState(false);
   const { recipes, isLoading, queryClient } = useRecipes();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to view your recipes",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate("/sign-in");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   const handleDelete = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-    if (searchQuery) {
-      setSearchQuery("");
-      setIsSearching(false);
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      if (searchQuery) {
+        setSearchQuery("");
+        setIsSearching(false);
+      }
+      toast({
+        title: "Success",
+        description: "Recipe deleted successfully",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recipe",
+        variant: "destructive",
+      });
     }
-    toast({
-      title: "Success",
-      description: "Recipe deleted successfully",
-    });
   };
 
   const filteredRecipes = recipes?.filter(recipe => {

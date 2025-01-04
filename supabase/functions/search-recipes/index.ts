@@ -37,7 +37,7 @@ serve(async (req) => {
             role: 'user',
             content: `Please give me a healthy alternative for ${searchQuery}. Give me step by step instructions on how I can make the alternative dish and also list the ingredients with their measurements. You must provide ingredients and steps in grams. You must provide the total macros for the alternative dish and macros for the individual ingredients in grams.
 
-            Return the response in this exact JSON format:
+            Return the response in this exact JSON format without any markdown formatting or code blocks:
             {
               "title": "Recipe Name",
               "description": "Brief description of why this recipe aligns with the user's health goals",
@@ -48,13 +48,13 @@ serve(async (req) => {
               "ingredients": [
                 {
                   "name": "Ingredient name",
-                  "amount": number (in grams),
+                  "amount": number,
                   "macros": {
-                    "calories": number (per specified amount),
-                    "protein": number (in grams per specified amount),
-                    "carbs": number (in grams per specified amount),
-                    "fat": number (in grams per specified amount),
-                    "fiber": number (in grams per specified amount)
+                    "calories": number,
+                    "protein": number,
+                    "carbs": number,
+                    "fat": number,
+                    "fiber": number
                   }
                 }
               ],
@@ -87,8 +87,17 @@ serve(async (req) => {
       throw new Error('Invalid AI response format');
     }
 
-    const recipe = JSON.parse(data.choices[0].message.content);
-    console.log('Parsed recipe:', recipe);
+    let recipe;
+    try {
+      const content = data.choices[0].message.content;
+      // Remove any markdown formatting if present
+      const jsonContent = content.replace(/```json\n|\n```/g, '').trim();
+      recipe = JSON.parse(jsonContent);
+      console.log('Parsed recipe:', recipe);
+    } catch (parseError) {
+      console.error('Error parsing recipe JSON:', parseError);
+      throw new Error('Failed to parse recipe data from AI response');
+    }
 
     return new Response(
       JSON.stringify(recipe),

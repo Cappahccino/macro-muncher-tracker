@@ -14,7 +14,6 @@ interface Ingredient {
     protein: number;
     carbs: number;
     fat: number;
-    fiber: number;
   };
 }
 
@@ -40,7 +39,6 @@ interface Meal {
       protein: number;
       carbs: number;
       fat: number;
-      fiber: number;
     };
   };
 }

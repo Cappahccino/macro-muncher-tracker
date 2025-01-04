@@ -39,7 +39,6 @@ export function AlternativeResults({
     total_protein: macros?.protein,
     total_carbs: macros?.carbs,
     total_fat: macros?.fat,
-    total_fiber: macros?.fiber,
     ingredients: alternative.ingredients
   } : null;
 
@@ -64,7 +63,7 @@ export function AlternativeResults({
                 {macros && (
                   <div className="mt-4">
                     <h5 className="font-medium mb-2">Total Nutrition (per serving):</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <MacroNutrient 
                         label="Calories" 
                         value={macros.calories} 
@@ -83,11 +82,6 @@ export function AlternativeResults({
                       <MacroNutrient 
                         label="Fat" 
                         value={macros.fat} 
-                        unit="g" 
-                      />
-                      <MacroNutrient 
-                        label="Fiber" 
-                        value={macros.fiber} 
                         unit="g" 
                       />
                     </div>

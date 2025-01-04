@@ -6,7 +6,6 @@ interface IngredientMacros {
   protein: number;
   carbs: number;
   fat: number;
-  fiber: number;
 }
 
 interface ExpandableIngredientProps {
@@ -33,7 +32,7 @@ export function ExpandableIngredient({ name, amount, macros }: ExpandableIngredi
       </div>
       
       {isExpanded && macros && (
-        <div className="grid grid-cols-5 gap-2 pl-4 text-xs bg-muted/50 p-2 rounded">
+        <div className="grid grid-cols-4 gap-2 pl-4 text-xs bg-muted/50 p-2 rounded">
           <div>
             <p className="text-muted-foreground">Calories</p>
             <p>{Math.round(macros.calories)}</p>
@@ -49,10 +48,6 @@ export function ExpandableIngredient({ name, amount, macros }: ExpandableIngredi
           <div>
             <p className="text-muted-foreground">Fat</p>
             <p>{Math.round(macros.fat)}g</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Fiber</p>
-            <p>{Math.round(macros.fiber)}g</p>
           </div>
         </div>
       )}

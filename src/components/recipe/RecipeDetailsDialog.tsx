@@ -34,13 +34,11 @@ interface Recipe {
     protein: number;
     carbs: number;
     fat: number;
-    fiber: number;
   }>;
   total_calories?: number;
   total_protein?: number;
   total_carbs?: number;
   total_fat?: number;
-  total_fiber?: number;
 }
 
 interface RecipeDetailsDialogProps {
@@ -115,7 +113,6 @@ export function RecipeDetailsDialog({
             protein={recipe.total_protein}
             carbs={recipe.total_carbs}
             fat={recipe.total_fat}
-            fiber={recipe.total_fiber}
           />
 
           <IngredientsList 

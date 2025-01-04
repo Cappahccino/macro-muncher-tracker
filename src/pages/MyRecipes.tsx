@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { useToast } from "@/hooks/use-toast";
-import { CreateRecipeForm } from "@/components/recipe/CreateRecipeForm";
-import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
-import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion } from "framer-motion";
-import { Separator } from "@/components/ui/separator";
-import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
+import { RecipePageHeader } from "@/components/recipe/page/RecipePageHeader";
+import { RecipeContent } from "@/components/recipe/page/RecipeContent";
+import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 
 interface Recipe {
   title: string;
@@ -38,7 +34,7 @@ const MyRecipes = () => {
   const { toast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { saveRecipe, isSaving } = useSaveRecipe();
+  const { saveRecipe } = useSaveRecipe();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,7 +70,7 @@ const MyRecipes = () => {
 
     checkAuthAndLoadRecipes();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         navigate("/sign-in");
       }
@@ -218,42 +214,19 @@ const MyRecipes = () => {
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
-      
-      <div className="mt-8 space-y-8">
-        <RecipeVaultHeader title="My Recipes" />
-
-        <div className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <>
-                <CreateRecipeForm onSave={handleSaveRecipe} />
-
-                <Separator className="my-8" />
-
-                <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
-                  Saved Recipes
-                </h2>
-                
-                <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
-                  <SavedRecipesList
-                    recipes={recipes}
-                    onDelete={handleDeleteRecipe}
-                    onSaveToVault={handleSaveToVault}
-                    onUpdateIngredient={handleUpdateIngredient}
-                  />
-                </ScrollArea>
-              </>
-            )}
-          </motion.div>
-        </div>
+      <RecipePageHeader />
+      <div className="space-y-6">
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <RecipeContent
+            recipes={recipes}
+            onSaveRecipe={handleSaveRecipe}
+            onDeleteRecipe={handleDeleteRecipe}
+            onSaveToVault={handleSaveToVault}
+            onUpdateIngredient={handleUpdateIngredient}
+          />
+        )}
       </div>
     </div>
   );

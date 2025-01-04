@@ -7,6 +7,7 @@ import { useState } from "react";
 import { AlternativeResults } from "./AlternativeResults";
 import { useNavigate } from "react-router-dom";
 import { useRecipeSearch } from "@/hooks/useRecipeSearch";
+import { LoadingIcon } from "@/components/ui/loading-icon";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -49,7 +50,10 @@ export function SearchBar({
           className="w-[100px]"
         >
           {isSearching ? (
-            "Searching..."
+            <div className="flex items-center gap-2">
+              <LoadingIcon size={16} />
+              <span>Searching</span>
+            </div>
           ) : (
             <>
               <Search className="h-4 w-4 mr-2" />

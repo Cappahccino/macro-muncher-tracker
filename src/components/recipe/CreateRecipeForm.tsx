@@ -41,7 +41,16 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
   const [editWeight, setEditWeight] = useState<number>(0);
 
   const handleAddIngredient = (ingredient: Ingredient) => {
-    setIngredients([...ingredients, ingredient]);
+    // Ensure all macro values are numbers
+    const validatedIngredient = {
+      ...ingredient,
+      calories: Number(ingredient.calories) || 0,
+      protein: Number(ingredient.protein) || 0,
+      carbs: Number(ingredient.carbs) || 0,
+      fat: Number(ingredient.fat) || 0,
+      fiber: Number(ingredient.fiber) || 0,
+    };
+    setIngredients([...ingredients, validatedIngredient]);
   };
 
   const handleDeleteIngredient = (index: number) => {
@@ -68,7 +77,7 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
       protein: ingredient.protein * ratio,
       carbs: ingredient.carbs * ratio,
       fat: ingredient.fat * ratio,
-      fiber: ingredient.fiber * ratio,
+      fiber: ingredient.fiber * ratio, // Ensure fiber is scaled properly
     };
 
     setIngredients(updatedIngredients);
@@ -78,11 +87,11 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
   const calculateTotalMacros = () => {
     return ingredients.reduce(
       (acc, curr) => ({
-        calories: acc.calories + curr.calories,
-        protein: acc.protein + curr.protein,
-        carbs: acc.carbs + curr.carbs,
-        fat: acc.fat + curr.fat,
-        fiber: acc.fiber + curr.fiber,
+        calories: acc.calories + (Number(curr.calories) || 0),
+        protein: acc.protein + (Number(curr.protein) || 0),
+        carbs: acc.carbs + (Number(curr.carbs) || 0),
+        fat: acc.fat + (Number(curr.fat) || 0),
+        fiber: acc.fiber + (Number(curr.fiber) || 0), // Ensure fiber is included in total
       }),
       { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
     );

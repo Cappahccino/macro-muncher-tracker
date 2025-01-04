@@ -1,18 +1,17 @@
 import { Activity, Flame, Package, Carrot, Droplet } from "lucide-react";
-import { MacroRatios } from "@/components/meal/MacroRatios";
 
 interface MacronutrientSummaryProps {
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export const MacronutrientSummary = ({ 
-  calories, 
-  protein, 
-  carbs, 
-  fat 
+  calories = 0, 
+  protein = 0, 
+  carbs = 0, 
+  fat = 0 
 }: MacronutrientSummaryProps) => {
   return (
     <div className="mt-4 space-y-2">
@@ -50,15 +49,6 @@ export const MacronutrientSummary = ({
           <p className="font-semibold">{Math.round(fat)}g</p>
         </div>
       </div>
-      
-      {calories > 0 && (
-        <MacroRatios
-          calories={calories}
-          protein={protein}
-          carbs={carbs}
-          fat={fat}
-        />
-      )}
     </div>
   );
 };

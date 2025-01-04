@@ -48,10 +48,17 @@ export function useSaveRecipe() {
     try {
       setIsSaving(true);
 
-      // Create the recipe first
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No authenticated session found');
+      }
+
+      // Create the recipe with user_id
       const { data: newRecipe, error: recipeError } = await supabase
         .from('recipes')
         .insert([{
+          user_id: session.user.id, // Add user_id here
           title: recipe.title,
           description: recipe.description,
           instructions: recipe.instructions,

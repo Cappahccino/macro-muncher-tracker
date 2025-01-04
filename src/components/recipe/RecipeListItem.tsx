@@ -18,7 +18,6 @@ interface Recipe {
   total_protein?: number;
   total_carbs?: number;
   total_fat?: number;
-  total_fiber?: number;
 }
 
 interface RecipeListItemProps {
@@ -50,10 +49,9 @@ export const RecipeListItem = ({ recipe, onDelete }: RecipeListItemProps) => {
               {recipe.total_calories && (
                 <MacronutrientSummary
                   calories={recipe.total_calories}
-                  protein={recipe.total_protein || 0}
-                  carbs={recipe.total_carbs || 0}
-                  fat={recipe.total_fat || 0}
-                  fiber={recipe.total_fiber || 0}
+                  protein={recipe.total_protein}
+                  carbs={recipe.total_carbs}
+                  fat={recipe.total_fat}
                 />
               )}
             </div>

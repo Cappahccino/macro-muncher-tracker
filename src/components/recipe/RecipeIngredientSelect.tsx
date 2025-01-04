@@ -39,11 +39,11 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
   const calculateMacros = (food: Ingredient, weightInGrams: number) => {
     const ratio = weightInGrams / 100; // Since base values are per 100g
     return {
-      calories: food.calories * ratio,
-      protein: food.protein * ratio,
-      carbs: food.carbs * ratio,
-      fat: food.fat * ratio,
-      fiber: food.fiber * ratio,
+      calories: (food.calories || 0) * ratio,
+      protein: (food.protein || 0) * ratio,
+      carbs: (food.carbs || 0) * ratio,
+      fat: (food.fat || 0) * ratio,
+      fiber: (food.fiber || 0) * ratio,
     };
   };
 

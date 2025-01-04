@@ -35,29 +35,12 @@ interface Recipe {
     carbs: number;
     fat: number;
     fiber: number;
-    macros?: {
-      calories: number;
-      protein: number;
-      carbs: number;
-      fat: number;
-      fiber: number;
-    };
   }>;
   total_calories?: number;
   total_protein?: number;
   total_carbs?: number;
   total_fat?: number;
   total_fiber?: number;
-  macronutrients?: {
-    totalCalories: number;
-    perServing: {
-      calories: number;
-      protein: number;
-      carbs: number;
-      fat: number;
-      fiber: number;
-    };
-  };
 }
 
 interface RecipeDetailsDialogProps {
@@ -79,15 +62,6 @@ export function RecipeDetailsDialog({
 
   const servingInfo = recipe.instructions?.servingSize;
   const steps = recipe.instructions?.steps || [];
-
-  // Use either the direct macros or the ones from the macronutrients object
-  const macros = {
-    calories: recipe.total_calories || recipe.macronutrients?.totalCalories || 0,
-    protein: recipe.total_protein || recipe.macronutrients?.perServing.protein || 0,
-    carbs: recipe.total_carbs || recipe.macronutrients?.perServing.carbs || 0,
-    fat: recipe.total_fat || recipe.macronutrients?.perServing.fat || 0,
-    fiber: recipe.total_fiber || recipe.macronutrients?.perServing.fiber || 0,
-  };
 
   const handleSaveToVault = async () => {
     try {
@@ -137,11 +111,11 @@ export function RecipeDetailsDialog({
           )}
 
           <MacronutrientSummary
-            calories={macros.calories}
-            protein={macros.protein}
-            carbs={macros.carbs}
-            fat={macros.fat}
-            fiber={macros.fiber}
+            calories={recipe.total_calories}
+            protein={recipe.total_protein}
+            carbs={recipe.total_carbs}
+            fat={recipe.total_fat}
+            fiber={recipe.total_fiber}
           />
 
           <IngredientsList 

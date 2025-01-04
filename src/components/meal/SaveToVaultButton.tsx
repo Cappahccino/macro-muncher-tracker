@@ -87,11 +87,11 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
 
       const instructionsArray = instructions.split('\n').filter(line => line.trim() !== '');
 
-      // First, save the recipe with the user_id
+      // First, save the recipe
       const { data: recipe, error: recipeError } = await supabase
         .from('recipes')
         .insert({
-          user_id: session.user.id, // Explicitly set the user_id
+          user_id: session.user.id,
           title: meal.title,
           description: meal.description,
           instructions: { steps: instructionsArray },
@@ -104,10 +104,7 @@ export function SaveToVaultButton({ meal, existingInstructions }: SaveToVaultBut
         .select()
         .single();
 
-      if (recipeError) {
-        console.error('Recipe error:', recipeError);
-        throw recipeError;
-      }
+      if (recipeError) throw recipeError;
 
       // Then, save each ingredient with its macros
       if (meal.ingredients && recipe) {

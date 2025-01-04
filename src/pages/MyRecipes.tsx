@@ -8,6 +8,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { useSaveRecipe } from "@/hooks/useSaveRecipe";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 interface Recipe {
   title: string;
@@ -34,17 +37,58 @@ interface Recipe {
 const MyRecipes = () => {
   const { toast } = useToast();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { saveRecipe, isSaving } = useSaveRecipe();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const savedRecipes = localStorage.getItem('savedRecipes');
-    if (savedRecipes) {
-      setRecipes(JSON.parse(savedRecipes));
+    const checkAuthAndLoadRecipes = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to view your recipes",
+            variant: "destructive",
+          });
+          navigate("/sign-in");
+          return;
+        }
+
+        const savedRecipes = localStorage.getItem('savedRecipes');
+        if (savedRecipes) {
+          setRecipes(JSON.parse(savedRecipes));
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load recipes",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthAndLoadRecipes();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate("/sign-in");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    if (recipes.length > 0) {
+      localStorage.setItem('savedRecipes', JSON.stringify(recipes));
     }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('savedRecipes', JSON.stringify(recipes));
   }, [recipes]);
 
   const handleSaveRecipe = (recipe: Recipe) => {
@@ -84,6 +128,18 @@ const MyRecipes = () => {
 
   const handleSaveToVault = async (recipe: Recipe) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save to vault",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+        return;
+      }
+
       const recipeForVault = {
         title: recipe.title,
         description: recipe.notes,
@@ -172,22 +228,30 @@ const MyRecipes = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <CreateRecipeForm onSave={handleSaveRecipe} />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <>
+                <CreateRecipeForm onSave={handleSaveRecipe} />
 
-            <Separator className="my-8" />
+                <Separator className="my-8" />
 
-            <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
-              Saved Recipes
-            </h2>
-            
-            <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
-              <SavedRecipesList
-                recipes={recipes}
-                onDelete={handleDeleteRecipe}
-                onSaveToVault={handleSaveToVault}
-                onUpdateIngredient={handleUpdateIngredient}
-              />
-            </ScrollArea>
+                <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+                  Saved Recipes
+                </h2>
+                
+                <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
+                  <SavedRecipesList
+                    recipes={recipes}
+                    onDelete={handleDeleteRecipe}
+                    onSaveToVault={handleSaveToVault}
+                    onUpdateIngredient={handleUpdateIngredient}
+                  />
+                </ScrollArea>
+              </>
+            )}
           </motion.div>
         </div>
       </div>

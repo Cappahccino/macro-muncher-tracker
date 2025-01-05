@@ -21,6 +21,17 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [weight, setWeight] = useState<number>(0);
 
+  const handleAddComponent = (component: {
+    name: string;
+    amount: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  }) => {
+    setSelectedFood(component);
+  };
+
   const handleAddIngredient = () => {
     if (!selectedFood || !weight) return;
 
@@ -34,7 +45,7 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
       protein: (selectedFood.protein || 0) * ratio,
       carbs: (selectedFood.carbs || 0) * ratio,
       fat: (selectedFood.fat || 0) * ratio,
-      fiber: (selectedFood.fiber || 0) * ratio, // Note: 'fibre' is the property name in the food list
+      fiber: (selectedFood.fiber || 0) * ratio,
     };
 
     onAddIngredient(ingredient);
@@ -47,8 +58,7 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <FoodSelect
-            onFoodSelect={setSelectedFood}
-            selectedFood={selectedFood}
+            onAddComponent={handleAddComponent}
           />
         </div>
         <div className="w-32">

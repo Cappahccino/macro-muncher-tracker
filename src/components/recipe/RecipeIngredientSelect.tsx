@@ -34,7 +34,7 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
       protein: (selectedFood.protein || 0) * ratio,
       carbs: (selectedFood.carbs || 0) * ratio,
       fat: (selectedFood.fat || 0) * ratio,
-      fiber: (selectedFood.fibre || 0) * ratio, // Note: 'fibre' is the property name in the food list
+      fiber: (selectedFood.fiber || 0) * ratio, // Note: 'fibre' is the property name in the food list
     };
 
     onAddIngredient(ingredient);

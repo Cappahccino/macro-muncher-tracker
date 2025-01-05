@@ -20,7 +20,7 @@ interface FoodItem {
   protein: number;
   carbs: number;
   fat: number;
-  fibre: number;
+  fiber: number;
   notes: string;
   weight: number;
 }

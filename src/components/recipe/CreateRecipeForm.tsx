@@ -77,7 +77,7 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
       protein: ingredient.protein * ratio,
       carbs: ingredient.carbs * ratio,
       fat: ingredient.fat * ratio,
-      fiber: ingredient.fiber * ratio, // Ensure fiber is scaled properly
+      fiber: ingredient.fiber * ratio,
     };
 
     setIngredients(updatedIngredients);
@@ -91,7 +91,7 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
         protein: acc.protein + (Number(curr.protein) || 0),
         carbs: acc.carbs + (Number(curr.carbs) || 0),
         fat: acc.fat + (Number(curr.fat) || 0),
-        fiber: acc.fiber + (Number(curr.fiber) || 0), // Ensure fiber is included in total
+        fiber: acc.fiber + (Number(curr.fiber) || 0),
       }),
       { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
     );

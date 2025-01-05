@@ -8,7 +8,7 @@ interface FoodItem {
   protein: number;
   carbs: number;
   fat: number;
-  fibre: number;
+  fiber: number;
   notes: string;
   weight: number;
 }
@@ -31,7 +31,7 @@ export function FoodItemCard({ food, onEdit, onDelete }: FoodItemCardProps) {
             <p>Protein: {food.protein}g</p>
             <p>Carbs: {food.carbs}g</p>
             <p>Fat: {food.fat}g</p>
-            <p>Fibre: {food.fibre}g</p>
+            <p>Fiber: {food.fiber}g</p>
           </div>
           {food.notes && (
             <p className="mt-2 text-sm text-muted-foreground">Notes: {food.notes}</p>

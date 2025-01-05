@@ -6,7 +6,7 @@ interface MacroInputsProps {
   protein: number;
   carbs: number;
   fat: number;
-  fibre: number;
+  fiber: number;
   onChange: (field: string, value: number) => void;
 }
 
@@ -16,7 +16,7 @@ export function MacroInputs({
   protein,
   carbs,
   fat,
-  fibre,
+  fiber,
   onChange,
 }: MacroInputsProps) {
   return (
@@ -53,9 +53,9 @@ export function MacroInputs({
       />
       <Input
         type="number"
-        placeholder="Fibre (g)"
-        value={fibre || ""}
-        onChange={(e) => onChange("fibre", Number(e.target.value))}
+        placeholder="Fiber (g)"
+        value={fiber || ""}
+        onChange={(e) => onChange("fiber", Number(e.target.value))}
       />
     </div>
   );

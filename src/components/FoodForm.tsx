@@ -12,7 +12,7 @@ interface FoodItem {
   protein: number;
   carbs: number;
   fat: number;
-  fibre: number;
+  fiber: number;
   notes: string;
   weight: number;
 }
@@ -32,7 +32,7 @@ export function FoodForm({ onSave, initialFood, onCancel }: FoodFormProps) {
       protein: 0,
       carbs: 0,
       fat: 0,
-      fibre: 0,
+      fiber: 0,
       notes: "",
       weight: 100, // Default weight is 100g
     }
@@ -69,7 +69,7 @@ export function FoodForm({ onSave, initialFood, onCancel }: FoodFormProps) {
           protein={food.protein}
           carbs={food.carbs}
           fat={food.fat}
-          fibre={food.fibre}
+          fiber={food.fiber}
           onChange={handleMacroChange}
         />
         <Textarea

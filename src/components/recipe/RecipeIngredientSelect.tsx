@@ -42,22 +42,14 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
     setWeight(0);
   };
 
-  const handleFoodSelect = (component: any) => {
-    setSelectedFood({
-      name: component.name,
-      calories: component.calories,
-      protein: component.protein,
-      carbs: component.carbs,
-      fat: component.fat,
-      fibre: component.fibre,
-    });
-  };
-
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <FoodSelect onAddComponent={handleFoodSelect} />
+          <FoodSelect
+            onFoodSelect={setSelectedFood}
+            selectedFood={selectedFood}
+          />
         </div>
         <div className="w-32">
           <Input

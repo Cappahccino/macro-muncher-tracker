@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
 import { RecipePageHeader } from "@/components/recipe/page/RecipePageHeader";
 import { RecipeContent } from "@/components/recipe/page/RecipeContent";
-import { useRecipeManagement } from "@/components/recipe/hooks/useRecipeManagement";
+import { useRecipeManagement } from "@/hooks/recipe/useRecipeManagement";
 
 const MyRecipes = () => {
   const {

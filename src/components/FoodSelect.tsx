@@ -5,7 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -41,7 +40,6 @@ interface FoodSelectProps {
 
 export function FoodSelect({ onAddComponent }: FoodSelectProps) {
   const [selectedFood, setSelectedFood] = useState<string>("");
-  const [weight, setWeight] = useState<number>(100);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingComponent, setPendingComponent] = useState<any>(null);
   
@@ -60,10 +58,10 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
   const handleAddComponent = () => {
     const food = foodItems.find(item => item.name === selectedFood);
     if (food) {
-      const macros = calculateMacros(food, weight);
+      const macros = calculateMacros(food, 100); // Default to 100g
       const newComponent = {
         name: food.name,
-        amount: weight,
+        amount: 100,
         ...macros
       };
       
@@ -93,7 +91,6 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
 
   const resetForm = () => {
     setSelectedFood("");
-    setWeight(100);
     setPendingComponent(null);
   };
 
@@ -112,14 +109,7 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          type="number"
-          placeholder="Weight (g)"
-          value={weight}
-          onChange={(e) => setWeight(Number(e.target.value))}
-          className="w-[120px]"
-        />
-        <Button onClick={handleAddComponent}>Add Component</Button>
+        <Button onClick={handleAddComponent}>Add Ingredient</Button>
       </div>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>

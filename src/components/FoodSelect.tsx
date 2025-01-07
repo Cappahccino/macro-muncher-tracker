@@ -5,7 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -41,7 +40,6 @@ interface FoodSelectProps {
 
 export function FoodSelect({ onAddComponent }: FoodSelectProps) {
   const [selectedFood, setSelectedFood] = useState<string>("");
-  const [weight, setWeight] = useState<number>(100);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingComponent, setPendingComponent] = useState<any>(null);
   
@@ -60,10 +58,10 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
   const handleAddComponent = () => {
     const food = foodItems.find(item => item.name === selectedFood);
     if (food) {
-      const macros = calculateMacros(food, weight);
+      const macros = calculateMacros(food, 100); // Default to 100g
       const newComponent = {
         name: food.name,
-        amount: weight,
+        amount: 100, // Default weight
         ...macros
       };
       
@@ -93,7 +91,6 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
 
   const resetForm = () => {
     setSelectedFood("");
-    setWeight(100);
     setPendingComponent(null);
   };
 
@@ -112,22 +109,15 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          type="number"
-          placeholder="Weight (g)"
-          value={weight}
-          onChange={(e) => setWeight(Number(e.target.value))}
-          className="w-[120px]"
-        />
-        <Button onClick={handleAddComponent}>Add Component</Button>
+        <Button onClick={handleAddComponent}>Add Ingredient</Button>
       </div>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Update Component</AlertDialogTitle>
+            <AlertDialogTitle>Update Ingredient</AlertDialogTitle>
             <AlertDialogDescription>
-              This food item already exists in the template. Do you want to update it with the new weight and macros?
+              This ingredient already exists in the recipe. Do you want to update it?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -138,7 +128,7 @@ export function FoodSelect({ onAddComponent }: FoodSelectProps) {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAdd}>
-              Update Component
+              Update Ingredient
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,8 +52,13 @@ export function MealTemplateForm({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>([]);
 
+  // Reset pending ingredients when template changes
+  useEffect(() => {
+    setPendingIngredients(template.components || []);
+  }, [template]);
+
   const handleAddComponent = (component: FoodComponent) => {
-    setPendingIngredients([...pendingIngredients, component]);
+    setPendingIngredients(prev => [...prev, component]);
   };
 
   const calculateTotalMacros = (components: FoodComponent[]) => {
@@ -76,7 +81,6 @@ export function MealTemplateForm({
       return;
     }
     
-    // Add pending ingredients and calculate total macros only when submitting
     const updatedTemplate = {
       ...currentTemplate,
       components: pendingIngredients,
@@ -88,6 +92,8 @@ export function MealTemplateForm({
       setCurrentTemplate(updatedTemplate);
     } else {
       onSave(updatedTemplate);
+      // Reset form after saving
+      setCurrentTemplate({ name: "", components: [], totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 } });
       setPendingIngredients([]);
     }
   };

@@ -21,17 +21,6 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [weight, setWeight] = useState<number>(0);
 
-  const handleAddComponent = (component: {
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  }) => {
-    setSelectedFood(component);
-  };
-
   const handleAddIngredient = () => {
     if (!selectedFood || !weight) return;
 
@@ -54,29 +43,25 @@ export function RecipeIngredientSelect({ onAddIngredient }: RecipeIngredientSele
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <FoodSelect
-            onAddComponent={handleAddComponent}
-          />
-        </div>
-        <div className="w-32">
-          <Input
-            type="number"
-            placeholder="Weight (g)"
-            value={weight || ''}
-            onChange={(e) => setWeight(Number(e.target.value))}
-            min="0"
-          />
-        </div>
-        <Button 
-          onClick={handleAddIngredient}
-          disabled={!selectedFood || !weight}
-        >
-          Add
-        </Button>
+    <div className="flex items-center gap-4">
+      <div className="flex-1">
+        <FoodSelect onSelect={setSelectedFood} />
       </div>
+      <div className="w-32">
+        <Input
+          type="number"
+          placeholder="Weight (g)"
+          value={weight || ''}
+          onChange={(e) => setWeight(Number(e.target.value))}
+          min="0"
+        />
+      </div>
+      <Button 
+        onClick={handleAddIngredient}
+        disabled={!selectedFood || !weight}
+      >
+        Add
+      </Button>
     </div>
   );
 }

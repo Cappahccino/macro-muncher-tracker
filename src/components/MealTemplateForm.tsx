@@ -50,10 +50,11 @@ export function MealTemplateForm({
 }: MealTemplateFormProps) {
   const [currentTemplate, setCurrentTemplate] = useState<MealTemplate>(template);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>([]);
+  const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>(template.components || []);
 
-  // Reset pending ingredients when template changes
+  // Reset form when template changes
   useEffect(() => {
+    setCurrentTemplate(template);
     setPendingIngredients(template.components || []);
   }, [template]);
 
@@ -68,6 +69,15 @@ export function MealTemplateForm({
       carbs: acc.carbs + component.carbs,
       fat: acc.fat + component.fat,
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  };
+
+  const resetForm = () => {
+    setCurrentTemplate({
+      name: "",
+      components: [],
+      totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    });
+    setPendingIngredients([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -92,16 +102,14 @@ export function MealTemplateForm({
       setCurrentTemplate(updatedTemplate);
     } else {
       onSave(updatedTemplate);
-      // Reset form after saving
-      setCurrentTemplate({ name: "", components: [], totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 } });
-      setPendingIngredients([]);
+      resetForm(); // Reset form after saving
     }
   };
 
   const handleConfirmEdit = () => {
     onSave(currentTemplate);
     setShowConfirmDialog(false);
-    setPendingIngredients([]);
+    resetForm(); // Reset form after confirming edit
   };
 
   return (

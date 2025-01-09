@@ -33,7 +33,6 @@ interface FoodSelectProps {
 export function FoodSelect({ onSelect }: FoodSelectProps) {
   const [selectedFood, setSelectedFood] = useState<string>("");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingComponent, setPendingComponent] = useState<any>(null);
   
   const foodItems: FoodItem[] = JSON.parse(localStorage.getItem('foodItems') || '[]');
 
@@ -70,12 +69,10 @@ export function FoodSelect({ onSelect }: FoodSelectProps) {
             <AlertDialogCancel onClick={() => {
               setShowConfirmDialog(false);
               setSelectedFood("");
-              setPendingComponent(null);
             }}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              // Handle confirmation if needed
               setShowConfirmDialog(false);
             }}>
               Update Ingredient

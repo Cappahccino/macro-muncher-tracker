@@ -51,15 +51,33 @@ export function MealTemplateForm({
   const [currentTemplate, setCurrentTemplate] = useState<MealTemplate>(template);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingIngredients, setPendingIngredients] = useState<FoodComponent[]>(template.components || []);
+  const [selectedFood, setSelectedFood] = useState<any>(null);
+  const [amount, setAmount] = useState<number>(100);
 
   // Reset form when template changes
   useEffect(() => {
     setCurrentTemplate(template);
     setPendingIngredients(template.components || []);
+    setSelectedFood(null);
+    setAmount(100);
   }, [template]);
 
-  const handleAddComponent = (component: FoodComponent) => {
-    setPendingIngredients(prev => [...prev, component]);
+  const handleAddIngredient = () => {
+    if (!selectedFood || !amount) return;
+
+    const ratio = amount / 100;
+    const newComponent: FoodComponent = {
+      name: selectedFood.name,
+      amount: amount,
+      calories: selectedFood.calories * ratio,
+      protein: selectedFood.protein * ratio,
+      carbs: selectedFood.carbs * ratio,
+      fat: selectedFood.fat * ratio,
+    };
+
+    setPendingIngredients(prev => [...prev, newComponent]);
+    setSelectedFood(null);
+    setAmount(100);
   };
 
   const calculateTotalMacros = (components: FoodComponent[]) => {
@@ -78,6 +96,8 @@ export function MealTemplateForm({
       totalMacros: { calories: 0, protein: 0, carbs: 0, fat: 0 }
     });
     setPendingIngredients([]);
+    setSelectedFood(null);
+    setAmount(100);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -102,14 +122,14 @@ export function MealTemplateForm({
       setCurrentTemplate(updatedTemplate);
     } else {
       onSave(updatedTemplate);
-      resetForm(); // Reset form after saving
+      resetForm();
     }
   };
 
   const handleConfirmEdit = () => {
     onSave(currentTemplate);
     setShowConfirmDialog(false);
-    resetForm(); // Reset form after confirming edit
+    resetForm();
   };
 
   return (
@@ -121,7 +141,25 @@ export function MealTemplateForm({
             value={currentTemplate.name}
             onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
           />
-          <FoodSelect onAddComponent={handleAddComponent} />
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <FoodSelect onSelect={setSelectedFood} />
+            </div>
+            <Input
+              type="number"
+              placeholder="Weight (g)"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              className="w-32"
+            />
+            <Button 
+              type="button"
+              onClick={handleAddIngredient}
+              disabled={!selectedFood || !amount}
+            >
+              Add
+            </Button>
+          </div>
           
           {pendingIngredients.length > 0 && (
             <div className="mt-4 space-y-2">

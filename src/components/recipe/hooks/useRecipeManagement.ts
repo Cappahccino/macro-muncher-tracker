@@ -7,8 +7,8 @@ import { transformRecipeToDatabase } from "./utils/recipeTransformations";
 
 export function useRecipeManagement() {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const { recipes, queryClient } = useRecipeDatabase();
+  const { recipes, isLoading: isLoadingRecipes, error, queryClient } = useRecipeDatabase();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveRecipe = async (recipe: Recipe) => {
     if (!recipe.title.trim()) {
@@ -30,6 +30,7 @@ export function useRecipeManagement() {
     }
 
     try {
+      setIsSaving(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -63,11 +64,14 @@ export function useRecipeManagement() {
         description: "Failed to save recipe",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDeleteRecipe = async (index: number) => {
     try {
+      setIsSaving(true);
       const recipe = recipes[index];
       const { error } = await supabase
         .from('recipes')
@@ -89,11 +93,14 @@ export function useRecipeManagement() {
         description: "Failed to delete recipe",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleSaveToVault = async (recipe: Recipe) => {
     try {
+      setIsSaving(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -127,11 +134,14 @@ export function useRecipeManagement() {
         description: "Failed to save recipe to vault",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleUpdateIngredient = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
     try {
+      setIsSaving(true);
       const recipe = recipes[recipeIndex];
       if (!recipe) return;
 
@@ -156,12 +166,14 @@ export function useRecipeManagement() {
         description: "Failed to update ingredient weight",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return {
     recipes,
-    isLoading,
+    isLoading: isLoadingRecipes || isSaving,
     handleSaveRecipe,
     handleDeleteRecipe,
     handleSaveToVault,

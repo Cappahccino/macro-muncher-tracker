@@ -11,7 +11,13 @@ interface Recipe {
   recipe_id: string;
   title: string;
   description: string | null;
-  instructions: string[];
+  instructions: {
+    steps?: string[];
+    servingSize?: {
+      servings: number;
+      gramsPerServing: number;
+    };
+  } | null;
   created_at: string;
   dietary_tags?: string[];
   total_calories?: number;

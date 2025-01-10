@@ -6,9 +6,37 @@ interface Recipe {
   recipe_id: string;
   title: string;
   description: string | null;
-  instructions: any | null;
+  instructions: {
+    steps?: string[];
+    servingSize?: {
+      servings: number;
+      gramsPerServing: number;
+    };
+  } | null;
   created_at: string;
   dietary_tags?: string[];
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+  total_fiber?: number;
+  notes: string;
+  ingredients: {
+    name: string;
+    amount: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  }[];
+  macros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
 }
 
 interface RecipeListProps {

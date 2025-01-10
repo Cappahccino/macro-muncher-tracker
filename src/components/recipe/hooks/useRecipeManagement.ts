@@ -1,35 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
-interface Ingredient {
-  name: string;
-  amount: number;
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
-
-interface Recipe {
-  title: string;
-  notes: string;
-  instructions: { steps: string[] };
-  ingredients: Ingredient[];
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
+import { Recipe, Ingredient } from "@/types/recipe";
 
 interface DatabaseRecipe {
   recipe_id: string;
@@ -286,3 +261,4 @@ export function useRecipeManagement() {
     handleUpdateIngredient
   };
 }
+

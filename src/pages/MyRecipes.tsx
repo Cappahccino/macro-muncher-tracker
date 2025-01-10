@@ -3,6 +3,7 @@ import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
 import { RecipePageHeader } from "@/components/recipe/page/RecipePageHeader";
 import { RecipeContent } from "@/components/recipe/page/RecipeContent";
 import { useRecipeManagement } from "@/components/recipe/hooks/useRecipeManagement";
+import { Recipe } from "@/types/recipe";
 
 const MyRecipes = () => {
   const {

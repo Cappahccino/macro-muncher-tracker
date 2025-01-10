@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Recipe {
   recipe_id: string;
@@ -25,6 +26,8 @@ interface DeleteRecipeDialogProps {
 }
 
 export function DeleteRecipeDialog({ recipe, onDelete }: DeleteRecipeDialogProps) {
+  const queryClient = useQueryClient();
+
   const handleDelete = async () => {
     try {
       const { error } = await supabase
@@ -34,6 +37,9 @@ export function DeleteRecipeDialog({ recipe, onDelete }: DeleteRecipeDialogProps
 
       if (error) throw error;
 
+      // Invalidate and refetch recipes query
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      
       onDelete();
       toast({
         title: "Recipe Deleted",

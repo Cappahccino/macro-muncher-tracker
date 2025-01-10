@@ -39,7 +39,10 @@ export const useRecipeDatabase = () => {
           `)
           .eq('user_id', session.user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching recipes:', error);
+          throw error;
+        }
 
         return data as DatabaseRecipe[];
       } catch (error) {
@@ -59,7 +62,7 @@ export const useRecipeDatabase = () => {
     }
   });
 
-  const recipes: Recipe[] = dbRecipes.map(transformDatabaseRecipeToRecipe);
+  const recipes: Recipe[] = (dbRecipes || []).map(transformDatabaseRecipeToRecipe);
 
   return {
     recipes,

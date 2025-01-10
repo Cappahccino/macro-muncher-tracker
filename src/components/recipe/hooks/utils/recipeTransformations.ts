@@ -44,11 +44,11 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
   const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
     name: ingredient.ingredients?.name || '',
     amount: ingredient.quantity_g,
-    calories: ingredient.calories,
-    protein: ingredient.protein,
-    carbs: ingredient.carbs,
-    fat: ingredient.fat,
-    fiber: ingredient.fiber,
+    calories: ingredient.custom_calories || ingredient.calories || 0,
+    protein: ingredient.custom_protein || ingredient.protein || 0,
+    carbs: ingredient.custom_carbs || ingredient.carbs || 0,
+    fat: ingredient.custom_fat || ingredient.fat || 0,
+    fiber: ingredient.custom_fiber || ingredient.fiber || 0,
     ingredient_id: ingredient.ingredient_id
   }));
 

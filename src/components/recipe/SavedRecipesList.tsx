@@ -112,7 +112,16 @@ export function SavedRecipesList({
                 <ul className="text-sm text-muted-foreground">
                   {recipe.ingredients.map((ingredient, ingredientIndex) => (
                     <li key={ingredientIndex} className="flex items-center justify-between py-1">
-                      <span>{ingredient.name} ({ingredient.amount}g)</span>
+                      <div>
+                        <span>{ingredient.name} ({ingredient.amount}g)</span>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Calories: {Math.round(ingredient.calories)} | 
+                          Protein: {Math.round(ingredient.protein)}g | 
+                          Carbs: {Math.round(ingredient.carbs)}g | 
+                          Fat: {Math.round(ingredient.fat)}g |
+                          Fiber: {Math.round(ingredient.fiber)}g
+                        </div>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"

@@ -1,182 +1,35 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Recipe } from "@/types/recipe";
 import { useRecipeDatabase } from "./useRecipeDatabase";
-import { transformRecipeToDatabase } from "./utils/recipeTransformations";
+import { useRecipeSave } from "./useRecipeSave";
+import { useRecipeDelete } from "./useRecipeDelete";
+import { useRecipeIngredient } from "./useRecipeIngredient";
+import { Recipe } from "@/types/recipe";
 
 export function useRecipeManagement() {
-  const { toast } = useToast();
-  const { recipes, isLoading: isLoadingRecipes, error, queryClient } = useRecipeDatabase();
-  const [isSaving, setIsSaving] = useState(false);
+  const { recipes, isLoading: isLoadingRecipes } = useRecipeDatabase();
+  const { handleSaveRecipe, isSaving: isSavingRecipe } = useRecipeSave();
+  const { handleDeleteRecipe, isDeleting } = useRecipeDelete();
+  const { handleUpdateIngredient, isUpdating } = useRecipeIngredient();
 
-  const handleSaveRecipe = async (recipe: Recipe) => {
-    if (!recipe.title.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a recipe name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (recipe.ingredients.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please add at least one ingredient",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to save recipes",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const dbRecipe = transformRecipeToDatabase(recipe);
-      const { error } = await supabase
-        .from('recipes')
-        .insert({
-          ...dbRecipe,
-          user_id: session.user.id
-        });
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      
-      toast({
-        title: "Success",
-        description: "Recipe saved successfully",
-      });
-    } catch (error) {
-      console.error('Error saving recipe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save recipe",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
+  const handleDelete = async (index: number) => {
+    const recipe = recipes[index];
+    if (recipe) {
+      await handleDeleteRecipe(recipe);
     }
   };
 
-  const handleDeleteRecipe = async (index: number) => {
-    try {
-      setIsSaving(true);
-      const recipe = recipes[index];
-      const { error } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('recipe_id', recipe.recipe_id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      
-      toast({
-        title: "Success",
-        description: "Recipe deleted successfully",
-      });
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete recipe",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSaveToVault = async (recipe: Recipe) => {
-    try {
-      setIsSaving(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to save recipes",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const dbRecipe = transformRecipeToDatabase(recipe);
-      const { error } = await supabase
-        .from('recipes')
-        .insert({
-          ...dbRecipe,
-          user_id: session.user.id
-        });
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      
-      toast({
-        title: "Success",
-        description: "Recipe saved to vault successfully",
-      });
-    } catch (error) {
-      console.error('Error saving to vault:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save recipe to vault",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleUpdateIngredient = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
-    try {
-      setIsSaving(true);
-      const recipe = recipes[recipeIndex];
-      if (!recipe) return;
-
-      const { error } = await supabase
-        .from('recipe_ingredients')
-        .update({ quantity_g: newAmount })
-        .eq('recipe_id', recipe.recipe_id)
-        .eq('ingredient_id', recipe.ingredients[ingredientIndex].ingredient_id);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      
-      toast({
-        title: "Success",
-        description: "Ingredient weight updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating ingredient:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update ingredient weight",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
+  const handleUpdate = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
+    const recipe = recipes[recipeIndex];
+    if (recipe) {
+      await handleUpdateIngredient(recipe, ingredientIndex, newAmount);
     }
   };
 
   return {
     recipes,
-    isLoading: isLoadingRecipes || isSaving,
+    isLoading: isLoadingRecipes || isSavingRecipe || isDeleting || isUpdating,
     handleSaveRecipe,
-    handleDeleteRecipe,
-    handleSaveToVault,
-    handleUpdateIngredient
+    handleDeleteRecipe: handleDelete,
+    handleSaveToVault: handleSaveRecipe,
+    handleUpdateIngredient: handleUpdate
   };
 }

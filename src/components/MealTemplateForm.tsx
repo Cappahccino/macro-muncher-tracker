@@ -2,18 +2,10 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FoodSelect } from "@/components/FoodSelect";
 import { toast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { IngredientInput } from "./meal-template/IngredientInput";
+import { PendingIngredientsList } from "./meal-template/PendingIngredientsList";
+import { ConfirmDialog } from "./meal-template/ConfirmDialog";
 
 interface FoodComponent {
   name: string;
@@ -54,7 +46,6 @@ export function MealTemplateForm({
   const [selectedFood, setSelectedFood] = useState<any>(null);
   const [amount, setAmount] = useState<number>(100);
 
-  // Reset form when template changes
   useEffect(() => {
     setCurrentTemplate(template);
     setPendingIngredients(template.components || []);
@@ -126,12 +117,6 @@ export function MealTemplateForm({
     }
   };
 
-  const handleConfirmEdit = () => {
-    onSave(currentTemplate);
-    setShowConfirmDialog(false);
-    resetForm();
-  };
-
   return (
     <>
       <Card className="p-4">
@@ -141,46 +126,21 @@ export function MealTemplateForm({
             value={currentTemplate.name}
             onChange={(e) => setCurrentTemplate({ ...currentTemplate, name: e.target.value })}
           />
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <FoodSelect onSelect={setSelectedFood} />
-            </div>
-            <Input
-              type="number"
-              placeholder="Weight (g)"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-32"
-            />
-            <Button 
-              type="button"
-              onClick={handleAddIngredient}
-              disabled={!selectedFood || !amount}
-            >
-              Add
-            </Button>
-          </div>
           
-          {pendingIngredients.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <h4 className="font-medium">Pending Ingredients:</h4>
-              {pendingIngredients.map((component, idx) => (
-                <div key={idx} className="pl-4">
-                  <p>{component.name} - {component.amount}g</p>
-                  <p className="text-sm text-muted-foreground">
-                    Calories: {component.calories.toFixed(1)} | 
-                    Protein: {component.protein.toFixed(1)}g | 
-                    Carbs: {component.carbs.toFixed(1)}g | 
-                    Fat: {component.fat.toFixed(1)}g
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
+          <IngredientInput
+            selectedFood={selectedFood}
+            amount={amount}
+            onFoodSelect={setSelectedFood}
+            onAmountChange={setAmount}
+            onAdd={handleAddIngredient}
+          />
+          
+          <PendingIngredientsList ingredients={pendingIngredients} />
           
           <Button type="submit" className="w-full">
             {editingIndex !== null ? "Save Changes" : "Add Recipe"}
           </Button>
+          
           {editingIndex !== null && (
             <Button type="button" variant="outline" className="w-full" onClick={onCancel}>
               Cancel Edit
@@ -189,24 +149,15 @@ export function MealTemplateForm({
         </form>
       </Card>
 
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Recipe Update</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to update this recipe? This will overwrite the existing recipe with the new information.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowConfirmDialog(false)}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmEdit}>
-              Update Recipe
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        onConfirm={() => {
+          onSave(currentTemplate);
+          setShowConfirmDialog(false);
+          resetForm();
+        }}
+      />
     </>
   );
 }

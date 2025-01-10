@@ -5,17 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface FoodItem {
   name: string;
@@ -23,7 +12,6 @@ interface FoodItem {
   protein: number;
   carbs: number;
   fat: number;
-  fiber: number;
 }
 
 interface FoodSelectProps {
@@ -31,55 +19,25 @@ interface FoodSelectProps {
 }
 
 export function FoodSelect({ onSelect }: FoodSelectProps) {
-  const [selectedFood, setSelectedFood] = useState<string>("");
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  
   const foodItems: FoodItem[] = JSON.parse(localStorage.getItem('foodItems') || '[]');
 
   const handleFoodSelect = (foodName: string) => {
-    setSelectedFood(foodName);
     const food = foodItems.find(item => item.name === foodName);
     onSelect(food || null);
   };
 
   return (
-    <div className="w-full">
-      <Select value={selectedFood} onValueChange={handleFoodSelect}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select a food" />
-        </SelectTrigger>
-        <SelectContent>
-          {foodItems.map((food, index) => (
-            <SelectItem key={index} value={food.name}>
-              {food.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Update Ingredient</AlertDialogTitle>
-            <AlertDialogDescription>
-              This ingredient already exists in the recipe. Do you want to update it?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setShowConfirmDialog(false);
-              setSelectedFood("");
-            }}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              setShowConfirmDialog(false);
-            }}>
-              Update Ingredient
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    <Select onValueChange={handleFoodSelect}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select a food" />
+      </SelectTrigger>
+      <SelectContent>
+        {foodItems.map((food, index) => (
+          <SelectItem key={index} value={food.name}>
+            {food.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

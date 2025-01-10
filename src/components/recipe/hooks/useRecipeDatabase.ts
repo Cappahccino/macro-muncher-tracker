@@ -28,7 +28,15 @@ export const useRecipeDatabase = () => {
 
         const { data, error } = await supabase
           .from('recipes')
-          .select('*, recipe_ingredients(*)')
+          .select(`
+            *,
+            recipe_ingredients (
+              *,
+              ingredients (
+                name
+              )
+            )
+          `)
           .eq('user_id', session.user.id);
 
         if (error) throw error;

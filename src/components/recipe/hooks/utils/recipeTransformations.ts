@@ -1,6 +1,28 @@
 import { Recipe, Ingredient } from "@/types/recipe";
 import { Json } from "@/integrations/supabase/types";
 
+export interface DatabaseRecipeIngredient {
+  recipe_ingredient_id: string;
+  recipe_id: string;
+  ingredient_id: string;
+  quantity_g: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+  custom_calories: number | null;
+  custom_protein: number | null;
+  custom_carbs: number | null;
+  custom_fat: number | null;
+  custom_fiber: number | null;
+  created_at: string;
+  updated_at: string;
+  ingredients?: {
+    name: string;
+  };
+}
+
 export interface DatabaseRecipe {
   recipe_id: string;
   user_id: string;
@@ -15,22 +37,13 @@ export interface DatabaseRecipe {
   total_fiber: number | null;
   created_at: string;
   updated_at: string;
-  recipe_ingredients: Array<{
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-    ingredient_id: string;
-  }>;
+  recipe_ingredients: DatabaseRecipeIngredient[];
 }
 
 export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
   const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
-    name: ingredient.name,
-    amount: ingredient.amount,
+    name: ingredient.ingredients?.name || '',
+    amount: ingredient.quantity_g,
     calories: ingredient.calories,
     protein: ingredient.protein,
     carbs: ingredient.carbs,
@@ -67,14 +80,22 @@ export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 
     total_fat: recipe.macros.fat,
     total_fiber: recipe.macros.fiber,
     recipe_ingredients: recipe.ingredients.map(ingredient => ({
-      name: ingredient.name,
-      amount: ingredient.amount,
+      recipe_ingredient_id: '',
+      recipe_id: '',
+      ingredient_id: ingredient.ingredient_id || '',
+      quantity_g: ingredient.amount,
       calories: ingredient.calories,
       protein: ingredient.protein,
       carbs: ingredient.carbs,
       fat: ingredient.fat,
       fiber: ingredient.fiber,
-      ingredient_id: ingredient.ingredient_id || ''
+      custom_calories: null,
+      custom_protein: null,
+      custom_carbs: null,
+      custom_fat: null,
+      custom_fiber: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }))
   };
 };

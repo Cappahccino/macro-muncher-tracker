@@ -41,6 +41,15 @@ interface DatabaseRecipe {
   total_fiber: number;
   created_at: string;
   updated_at: string;
+  ingredients?: Array<{
+    name: string;
+    amount: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  }>;
 }
 
 const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
@@ -48,7 +57,7 @@ const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
     title: dbRecipe.title,
     notes: dbRecipe.description || '',
     instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [],
-    ingredients: [], // This will be populated when needed
+    ingredients: dbRecipe.ingredients || [],
     macros: {
       calories: dbRecipe.total_calories || 0,
       protein: dbRecipe.total_protein || 0,
@@ -69,7 +78,8 @@ const transformRecipeToDatabase = (recipe: Recipe) => {
     total_protein: recipe.macros.protein,
     total_carbs: recipe.macros.carbs,
     total_fat: recipe.macros.fat,
-    total_fiber: recipe.macros.fiber
+    total_fiber: recipe.macros.fiber,
+    ingredients: recipe.ingredients
   };
 };
 

@@ -11,7 +11,7 @@ interface Recipe {
   recipe_id: string;
   title: string;
   description: string | null;
-  instructions: any | null;
+  instructions: string[];
   created_at: string;
   dietary_tags?: string[];
   total_calories?: number;
@@ -19,14 +19,32 @@ interface Recipe {
   total_carbs?: number;
   total_fat?: number;
   total_fiber?: number;
+  notes: string;
+  ingredients: {
+    name: string;
+    amount: number;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  }[];
+  macros: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+  };
 }
 
 interface RecipeActionsProps {
   recipe: Recipe;
   onDelete: () => void;
+  onSave?: (recipe: Recipe) => void;
 }
 
-export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
+export function RecipeActions({ recipe, onDelete, onSave }: RecipeActionsProps) {
   const queryClient = useQueryClient();
 
   const handleAddToMeals = async (e: React.MouseEvent) => {
@@ -60,7 +78,7 @@ export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
       >
         <Plus className="h-4 w-4" />
       </Button>
-      <SaveRecipeButton recipe={recipe} />
+      <SaveRecipeButton recipe={recipe} onSave={onSave} />
       <PrintRecipeButton recipe={recipe} />
       <DeleteRecipeDialog recipe={recipe} onDelete={onDelete} />
     </div>

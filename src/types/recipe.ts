@@ -13,7 +13,7 @@ export interface Ingredient {
 export interface Recipe {
   title: string;
   notes: string;
-  instructions: { steps: string[] };
+  instructions: string[];
   ingredients: Ingredient[];
   macros: {
     calories: number;

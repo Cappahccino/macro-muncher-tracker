@@ -20,7 +20,7 @@ interface DatabaseRecipe {
   total_fiber: number;
   created_at: string;
   updated_at: string;
-  ingredients?: Array<{
+  recipe_ingredients: Array<{
     name: string;
     amount: number;
     calories: number;
@@ -32,7 +32,7 @@ interface DatabaseRecipe {
 }
 
 const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
-  const ingredients: Ingredient[] = (dbRecipe.ingredients || []).map(ingredient => ({
+  const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
     name: ingredient.name,
     amount: ingredient.amount,
     macros: {
@@ -47,7 +47,7 @@ const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
   return {
     title: dbRecipe.title,
     notes: dbRecipe.description || '',
-    instructions: { steps: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [] },
+    instructions: dbRecipe.instructions || [],
     ingredients,
     macros: {
       calories: dbRecipe.total_calories || 0,
@@ -60,7 +60,7 @@ const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
 };
 
 const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
-  const ingredients = recipe.ingredients.map(ingredient => ({
+  const recipe_ingredients = recipe.ingredients.map(ingredient => ({
     name: ingredient.name,
     amount: ingredient.amount,
     calories: ingredient.macros.calories,
@@ -73,14 +73,14 @@ const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe
   return {
     title: recipe.title,
     description: recipe.notes,
-    instructions: recipe.instructions.steps,
+    instructions: recipe.instructions,
     dietary_tags: [],
     total_calories: recipe.macros.calories,
     total_protein: recipe.macros.protein,
     total_carbs: recipe.macros.carbs,
     total_fat: recipe.macros.fat,
     total_fiber: recipe.macros.fiber,
-    ingredients
+    recipe_ingredients
   };
 };
 

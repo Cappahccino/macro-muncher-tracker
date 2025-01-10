@@ -5,19 +5,23 @@ import { useNavigate } from "react-router-dom";
 import { useSaveRecipe } from "@/hooks/useSaveRecipe";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-interface Recipe {
-  title: string;
-  notes: string;
-  instructions: string[];
-  ingredients: {
-    name: string;
-    amount: number;
+interface Ingredient {
+  name: string;
+  amount: number;
+  macros: {
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
     fiber: number;
-  }[];
+  };
+}
+
+interface Recipe {
+  title: string;
+  notes: string;
+  instructions: { steps: string[] };
+  ingredients: Ingredient[];
   macros: {
     calories: number;
     protein: number;
@@ -53,11 +57,23 @@ interface DatabaseRecipe {
 }
 
 const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
+  const ingredients = (dbRecipe.ingredients || []).map(ingredient => ({
+    name: ingredient.name,
+    amount: ingredient.amount,
+    macros: {
+      calories: ingredient.calories,
+      protein: ingredient.protein,
+      carbs: ingredient.carbs,
+      fat: ingredient.fat,
+      fiber: ingredient.fiber
+    }
+  }));
+
   return {
     title: dbRecipe.title,
     notes: dbRecipe.description || '',
-    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [],
-    ingredients: dbRecipe.ingredients || [],
+    instructions: { steps: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [] },
+    ingredients,
     macros: {
       calories: dbRecipe.total_calories || 0,
       protein: dbRecipe.total_protein || 0,
@@ -68,18 +84,28 @@ const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
   };
 };
 
-const transformRecipeToDatabase = (recipe: Recipe) => {
+const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
+  const ingredients = recipe.ingredients.map(ingredient => ({
+    name: ingredient.name,
+    amount: ingredient.amount,
+    calories: ingredient.macros.calories,
+    protein: ingredient.macros.protein,
+    carbs: ingredient.macros.carbs,
+    fat: ingredient.macros.fat,
+    fiber: ingredient.macros.fiber
+  }));
+
   return {
     title: recipe.title,
     description: recipe.notes,
-    instructions: { steps: recipe.instructions },
+    instructions: recipe.instructions.steps,
     dietary_tags: [],
     total_calories: recipe.macros.calories,
     total_protein: recipe.macros.protein,
     total_carbs: recipe.macros.carbs,
     total_fat: recipe.macros.fat,
     total_fiber: recipe.macros.fiber,
-    ingredients: recipe.ingredients
+    ingredients
   };
 };
 

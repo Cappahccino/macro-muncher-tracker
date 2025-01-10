@@ -63,7 +63,7 @@ const transformRecipeToDatabase = (recipe: Recipe) => {
   return {
     title: recipe.title,
     description: recipe.notes,
-    instructions: recipe.instructions,
+    instructions: { steps: recipe.instructions },
     dietary_tags: [],
     total_calories: recipe.macros.calories,
     total_protein: recipe.macros.protein,

@@ -10,7 +10,7 @@ export const useRecipeDatabase = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: dbRecipes = [], isLoading } = useQuery({
+  const { data: dbRecipes = [], isLoading, error } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
       try {
@@ -44,9 +44,18 @@ export const useRecipeDatabase = () => {
           throw error;
         }
 
+        if (!data) {
+          return [];
+        }
+
         return data as DatabaseRecipe[];
       } catch (error) {
         console.error('Error loading recipes:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch recipes",
+          variant: "destructive",
+        });
         return [];
       }
     },
@@ -67,6 +76,7 @@ export const useRecipeDatabase = () => {
   return {
     recipes,
     isLoading,
+    error,
     queryClient
   };
 };

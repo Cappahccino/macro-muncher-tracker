@@ -21,7 +21,9 @@ const MyRecipes = () => {
       <RecipePageHeader />
       <div className="space-y-6">
         {isLoading ? (
-          <LoadingSpinner />
+          <div className="flex items-center justify-center min-h-[400px]">
+            <LoadingSpinner />
+          </div>
         ) : (
           <RecipeContent
             recipes={recipes}

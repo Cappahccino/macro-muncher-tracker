@@ -27,6 +27,52 @@ interface Recipe {
   };
 }
 
+interface DatabaseRecipe {
+  recipe_id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  instructions: any;
+  dietary_tags: string[];
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  total_fiber: number;
+  created_at: string;
+  updated_at: string;
+}
+
+const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
+  return {
+    title: dbRecipe.title,
+    notes: dbRecipe.description || '',
+    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [],
+    ingredients: [], // This will be populated when needed
+    macros: {
+      calories: dbRecipe.total_calories || 0,
+      protein: dbRecipe.total_protein || 0,
+      carbs: dbRecipe.total_carbs || 0,
+      fat: dbRecipe.total_fat || 0,
+      fiber: dbRecipe.total_fiber || 0,
+    }
+  };
+};
+
+const transformRecipeToDatabase = (recipe: Recipe) => {
+  return {
+    title: recipe.title,
+    description: recipe.notes,
+    instructions: recipe.instructions,
+    dietary_tags: [],
+    total_calories: recipe.macros.calories,
+    total_protein: recipe.macros.protein,
+    total_carbs: recipe.macros.carbs,
+    total_fat: recipe.macros.fat,
+    total_fiber: recipe.macros.fiber
+  };
+};
+
 export function useRecipeManagement() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +80,7 @@ export function useRecipeManagement() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: recipes = [] } = useQuery({
+  const { data: dbRecipes = [] } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
       try {
@@ -80,6 +126,8 @@ export function useRecipeManagement() {
     }
   });
 
+  const recipes = dbRecipes.map(transformDatabaseRecipeToRecipe);
+
   const handleSaveRecipe = async (recipe: Recipe) => {
     if (!recipe.title.trim()) {
       toast({
@@ -100,7 +148,8 @@ export function useRecipeManagement() {
     }
 
     try {
-      await saveRecipe(recipe);
+      const dbRecipe = transformRecipeToDatabase(recipe);
+      await saveRecipe(dbRecipe);
       await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       
       toast({
@@ -119,7 +168,7 @@ export function useRecipeManagement() {
 
   const handleDeleteRecipe = async (index: number) => {
     try {
-      const recipe = recipes[index];
+      const recipe = dbRecipes[index];
       const { error } = await supabase
         .from('recipes')
         .delete()
@@ -145,7 +194,8 @@ export function useRecipeManagement() {
 
   const handleSaveToVault = async (recipe: Recipe) => {
     try {
-      await saveRecipe(recipe);
+      const dbRecipe = transformRecipeToDatabase(recipe);
+      await saveRecipe(dbRecipe);
       await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       
       toast({
@@ -164,7 +214,7 @@ export function useRecipeManagement() {
 
   const handleUpdateIngredient = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
     try {
-      const recipe = recipes[recipeIndex];
+      const recipe = dbRecipes[recipeIndex];
       if (!recipe) return;
 
       const { error } = await supabase

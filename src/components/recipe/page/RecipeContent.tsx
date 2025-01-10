@@ -3,34 +3,13 @@ import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-
-interface Recipe {
-  title: string;
-  notes: string;
-  instructions: string[];
-  ingredients: {
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  }[];
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
+import { Recipe } from "@/types/recipe";
 
 interface RecipeContentProps {
   recipes: Recipe[];
-  onSaveRecipe: (recipe: Recipe) => void;
+  onSaveRecipe: (recipe: Recipe) => Promise<void>;
   onDeleteRecipe: (index: number) => void;
-  onSaveToVault: (recipe: Recipe) => void;
+  onSaveToVault: (recipe: Recipe) => Promise<void>;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
 }
 

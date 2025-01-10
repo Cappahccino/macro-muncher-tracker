@@ -11,7 +11,7 @@ interface DatabaseRecipe {
   user_id: string;
   title: string;
   description: string;
-  instructions: any;
+  instructions: string[];
   dietary_tags: string[];
   total_calories: number;
   total_protein: number;
@@ -32,7 +32,7 @@ interface DatabaseRecipe {
 }
 
 const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
-  const ingredients = (dbRecipe.ingredients || []).map(ingredient => ({
+  const ingredients: Ingredient[] = (dbRecipe.ingredients || []).map(ingredient => ({
     name: ingredient.name,
     amount: ingredient.amount,
     macros: {
@@ -109,7 +109,7 @@ export function useRecipeManagement() {
 
         const { data, error } = await supabase
           .from('recipes')
-          .select('*')
+          .select('*, recipe_ingredients(*)') // Include recipe ingredients in the query
           .eq('user_id', session.user.id);
 
         if (error) {
@@ -121,8 +121,6 @@ export function useRecipeManagement() {
       } catch (error) {
         console.error('Error loading recipes:', error);
         return [];
-      } finally {
-        setIsLoading(false);
       }
     },
     meta: {
@@ -261,4 +259,3 @@ export function useRecipeManagement() {
     handleUpdateIngredient
   };
 }
-

@@ -1,141 +1,14 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useSaveRecipe } from "@/hooks/useSaveRecipe";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Recipe, Ingredient } from "@/types/recipe";
-
-interface DatabaseRecipe {
-  recipe_id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  instructions: string[];
-  dietary_tags: string[];
-  total_calories: number;
-  total_protein: number;
-  total_carbs: number;
-  total_fat: number;
-  total_fiber: number;
-  created_at: string;
-  updated_at: string;
-  recipe_ingredients: Array<{
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  }>;
-}
-
-const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recipe => {
-  const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
-    name: ingredient.name,
-    amount: ingredient.amount,
-    macros: {
-      calories: ingredient.calories,
-      protein: ingredient.protein,
-      carbs: ingredient.carbs,
-      fat: ingredient.fat,
-      fiber: ingredient.fiber
-    }
-  }));
-
-  return {
-    title: dbRecipe.title,
-    notes: dbRecipe.description || '',
-    instructions: dbRecipe.instructions || [],
-    ingredients,
-    macros: {
-      calories: dbRecipe.total_calories || 0,
-      protein: dbRecipe.total_protein || 0,
-      carbs: dbRecipe.total_carbs || 0,
-      fat: dbRecipe.total_fat || 0,
-      fiber: dbRecipe.total_fiber || 0,
-    }
-  };
-};
-
-const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
-  const recipe_ingredients = recipe.ingredients.map(ingredient => ({
-    name: ingredient.name,
-    amount: ingredient.amount,
-    calories: ingredient.macros.calories,
-    protein: ingredient.macros.protein,
-    carbs: ingredient.macros.carbs,
-    fat: ingredient.macros.fat,
-    fiber: ingredient.macros.fiber
-  }));
-
-  return {
-    title: recipe.title,
-    description: recipe.notes,
-    instructions: recipe.instructions,
-    dietary_tags: [],
-    total_calories: recipe.macros.calories,
-    total_protein: recipe.macros.protein,
-    total_carbs: recipe.macros.carbs,
-    total_fat: recipe.macros.fat,
-    total_fiber: recipe.macros.fiber,
-    recipe_ingredients
-  };
-};
+import { Recipe } from "@/types/recipe";
+import { useRecipeDatabase } from "./useRecipeDatabase";
+import { transformRecipeToDatabase } from "./utils/recipeTransformations";
 
 export function useRecipeManagement() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const { saveRecipe } = useSaveRecipe();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  const { data: dbRecipes = [] } = useQuery({
-    queryKey: ['recipes'],
-    queryFn: async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          toast({
-            title: "Authentication required",
-            description: "Please sign in to view your recipes",
-            variant: "destructive",
-          });
-          navigate("/sign-in");
-          return [];
-        }
-
-        const { data, error } = await supabase
-          .from('recipes')
-          .select('*, recipe_ingredients(*)') // Include recipe ingredients in the query
-          .eq('user_id', session.user.id);
-
-        if (error) {
-          console.error('Error fetching recipes:', error);
-          throw error;
-        }
-
-        return data || [];
-      } catch (error) {
-        console.error('Error loading recipes:', error);
-        return [];
-      }
-    },
-    meta: {
-      onError: (error: Error) => {
-        console.error('Query error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch recipes",
-          variant: "destructive",
-        });
-      }
-    }
-  });
-
-  const recipes = dbRecipes.map(transformDatabaseRecipeToRecipe);
+  const { recipes, queryClient } = useRecipeDatabase();
 
   const handleSaveRecipe = async (recipe: Recipe) => {
     if (!recipe.title.trim()) {
@@ -157,8 +30,26 @@ export function useRecipeManagement() {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save recipes",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const dbRecipe = transformRecipeToDatabase(recipe);
-      await saveRecipe(dbRecipe);
+      const { error } = await supabase
+        .from('recipes')
+        .insert({
+          ...dbRecipe,
+          user_id: session.user.id
+        });
+
+      if (error) throw error;
+
       await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       
       toast({
@@ -177,7 +68,7 @@ export function useRecipeManagement() {
 
   const handleDeleteRecipe = async (index: number) => {
     try {
-      const recipe = dbRecipes[index];
+      const recipe = recipes[index];
       const { error } = await supabase
         .from('recipes')
         .delete()
@@ -203,8 +94,26 @@ export function useRecipeManagement() {
 
   const handleSaveToVault = async (recipe: Recipe) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to save recipes",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const dbRecipe = transformRecipeToDatabase(recipe);
-      await saveRecipe(dbRecipe);
+      const { error } = await supabase
+        .from('recipes')
+        .insert({
+          ...dbRecipe,
+          user_id: session.user.id
+        });
+
+      if (error) throw error;
+
       await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       
       toast({
@@ -223,7 +132,7 @@ export function useRecipeManagement() {
 
   const handleUpdateIngredient = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
     try {
-      const recipe = dbRecipes[recipeIndex];
+      const recipe = recipes[recipeIndex];
       if (!recipe) return;
 
       const { error } = await supabase

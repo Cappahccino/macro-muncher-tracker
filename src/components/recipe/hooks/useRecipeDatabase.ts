@@ -28,7 +28,7 @@ export const useRecipeDatabase = () => {
 
         const { data, error } = await supabase
           .from('recipes')
-          .select('*, recipe_ingredients(*)')
+          .select('*, recipe_ingredients(*))')
           .eq('user_id', session.user.id);
 
         if (error) throw error;
@@ -51,7 +51,7 @@ export const useRecipeDatabase = () => {
     }
   });
 
-  const recipes = dbRecipes.map(transformDatabaseRecipeToRecipe);
+  const recipes: Recipe[] = dbRecipes.map(transformDatabaseRecipeToRecipe);
 
   return {
     recipes,

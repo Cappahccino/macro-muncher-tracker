@@ -23,6 +23,7 @@ export interface DatabaseRecipe {
     carbs: number;
     fat: number;
     fiber: number;
+    ingredient_id: string;
   }>;
 }
 
@@ -30,19 +31,19 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
   const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
     name: ingredient.name,
     amount: ingredient.amount,
-    macros: {
-      calories: ingredient.calories,
-      protein: ingredient.protein,
-      carbs: ingredient.carbs,
-      fat: ingredient.fat,
-      fiber: ingredient.fiber
-    }
+    calories: ingredient.calories,
+    protein: ingredient.protein,
+    carbs: ingredient.carbs,
+    fat: ingredient.fat,
+    fiber: ingredient.fiber,
+    ingredient_id: ingredient.ingredient_id
   }));
 
   return {
+    recipe_id: dbRecipe.recipe_id,
     title: dbRecipe.title,
     notes: dbRecipe.description || '',
-    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions : [],
+    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions.map(String) : [],
     ingredients,
     macros: {
       calories: dbRecipe.total_calories || 0,
@@ -55,16 +56,6 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
 };
 
 export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
-  const recipe_ingredients = recipe.ingredients.map(ingredient => ({
-    name: ingredient.name,
-    amount: ingredient.amount,
-    calories: ingredient.macros.calories,
-    protein: ingredient.macros.protein,
-    carbs: ingredient.macros.carbs,
-    fat: ingredient.macros.fat,
-    fiber: ingredient.macros.fiber
-  }));
-
   return {
     title: recipe.title,
     description: recipe.notes,
@@ -75,6 +66,15 @@ export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 
     total_carbs: recipe.macros.carbs,
     total_fat: recipe.macros.fat,
     total_fiber: recipe.macros.fiber,
-    recipe_ingredients
+    recipe_ingredients: recipe.ingredients.map(ingredient => ({
+      name: ingredient.name,
+      amount: ingredient.amount,
+      calories: ingredient.calories,
+      protein: ingredient.protein,
+      carbs: ingredient.carbs,
+      fat: ingredient.fat,
+      fiber: ingredient.fiber,
+      ingredient_id: ingredient.ingredient_id || ''
+    }))
   };
 };

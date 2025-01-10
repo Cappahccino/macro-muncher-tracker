@@ -16,23 +16,8 @@ export function MealFormInput({
   onChange,
   isMealName = false
 }: MealFormInputProps) {
-  const handleTemplateSelect = (templateName: string) => {
-    // Update the meal name input with the selected template name
-    onChange(templateName);
-    
-    // Get the template's macros and emit them
-    const savedTemplates = JSON.parse(localStorage.getItem('mealTemplates') || '[]');
-    const selectedTemplate = savedTemplates.find((t: any) => t.name === templateName);
-    
-    if (selectedTemplate) {
-      const event = new CustomEvent('templateSelected', { 
-        detail: {
-          ...selectedTemplate.totalMacros,
-          name: selectedTemplate.name
-        }
-      });
-      window.dispatchEvent(event);
-    }
+  const handleRecipeSelect = (recipeName: string) => {
+    onChange(recipeName);
   };
 
   return (
@@ -41,7 +26,7 @@ export function MealFormInput({
         <>
           <MealSelect 
             value={String(value)} 
-            onChange={handleTemplateSelect} 
+            onChange={handleRecipeSelect} 
           />
           <Input
             type={type}

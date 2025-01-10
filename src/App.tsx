@@ -14,7 +14,6 @@ import UserProfile from "./pages/UserProfile";
 import Index from "./pages/Index";
 import FoodList from "./pages/FoodList";
 import MealPage from "./pages/MealPage";
-import MealsList from "./pages/MealsList";
 import WeightProgress from "./pages/WeightProgress";
 import RecipeVault from "./pages/RecipeVault";
 import MyRecipes from "./pages/MyRecipes";
@@ -46,7 +45,6 @@ const App = () => (
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/food-list" element={<FoodList />} />
           <Route path="/meal/:id" element={<MealPage />} />
-          <Route path="/recipes" element={<MealsList />} />
           <Route path="/recipe-vault" element={<RecipeVault />} />
           <Route path="/weight-progress" element={<WeightProgress />} />
           <Route path="/my-recipes" element={<MyRecipes />} />

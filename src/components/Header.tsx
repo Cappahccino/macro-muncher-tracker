@@ -33,11 +33,6 @@ export const Header = () => {
       show: location.pathname !== "/food-list"
     },
     {
-      path: "/recipes",
-      label: "Meals List",
-      show: location.pathname !== "/recipes"
-    },
-    {
       path: "/my-recipes",
       label: "My Recipes",
       show: location.pathname !== "/my-recipes"

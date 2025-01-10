@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { RecipeListItem } from "./RecipeListItem";
+import { LoadingSpinner } from "./page/LoadingSpinner";
 
 interface Recipe {
   recipe_id: string;
@@ -12,10 +13,11 @@ interface Recipe {
 
 interface RecipeListProps {
   recipes: Recipe[];
-  onDelete: () => void;
+  onDelete: (index: number) => void;
+  isLoading?: boolean;
 }
 
-export function RecipeList({ recipes, onDelete }: RecipeListProps) {
+export function RecipeList({ recipes, onDelete, isLoading = false }: RecipeListProps) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -26,6 +28,14 @@ export function RecipeList({ recipes, onDelete }: RecipeListProps) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <motion.div 
       variants={container}
@@ -34,11 +44,11 @@ export function RecipeList({ recipes, onDelete }: RecipeListProps) {
       className="space-y-4"
     >
       {recipes && recipes.length > 0 ? (
-        recipes.map((recipe) => (
+        recipes.map((recipe, index) => (
           <RecipeListItem 
             key={recipe.recipe_id} 
             recipe={recipe}
-            onDelete={onDelete}
+            onDelete={() => onDelete(index)}
           />
         ))
       ) : (

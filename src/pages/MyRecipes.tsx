@@ -3,9 +3,14 @@ import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
 import { RecipePageHeader } from "@/components/recipe/page/RecipePageHeader";
 import { RecipeContent } from "@/components/recipe/page/RecipeContent";
 import { useRecipeManagement } from "@/components/recipe/hooks/useRecipeManagement";
-import { Recipe } from "@/types/recipe";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const MyRecipes = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     recipes,
     isLoading,
@@ -14,6 +19,22 @@ const MyRecipes = () => {
     handleSaveToVault,
     handleUpdateIngredient
   } = useRecipeManagement();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to view your recipes",
+          variant: "destructive",
+        });
+        navigate("/sign-in");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
 
   return (
     <div className="container max-w-4xl mx-auto p-4">

@@ -11,6 +11,7 @@ interface RecipeContentProps {
   onDeleteRecipe: (index: number) => void;
   onSaveToVault: (recipe: Recipe) => Promise<void>;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
+  isLoading?: boolean;
 }
 
 export function RecipeContent({
@@ -19,6 +20,7 @@ export function RecipeContent({
   onDeleteRecipe,
   onSaveToVault,
   onUpdateIngredient,
+  isLoading = false,
 }: RecipeContentProps) {
   return (
     <motion.div
@@ -40,6 +42,7 @@ export function RecipeContent({
           onDelete={onDeleteRecipe}
           onSaveToVault={onSaveToVault}
           onUpdateIngredient={onUpdateIngredient}
+          isLoading={isLoading}
         />
       </ScrollArea>
     </motion.div>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Trash, Save, Pencil } from "lucide-react";
 import { useState } from "react";
 import { EditIngredientWeightDialog } from "./EditIngredientWeightDialog";
+import { LoadingSpinner } from "./page/LoadingSpinner";
 
 interface Recipe {
   title: string;
@@ -31,16 +32,28 @@ interface SavedRecipesListProps {
   onDelete: (index: number) => void;
   onSaveToVault: (recipe: Recipe) => void;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
+  isLoading?: boolean;
 }
 
 export function SavedRecipesList({ 
   recipes, 
   onDelete, 
   onSaveToVault,
-  onUpdateIngredient 
+  onUpdateIngredient,
+  isLoading = false
 }: SavedRecipesListProps) {
   const [editingRecipe, setEditingRecipe] = useState<number | null>(null);
   const [editingIngredient, setEditingIngredient] = useState<number | null>(null);
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="flex justify-center items-center min-h-[200px]">
+          <LoadingSpinner />
+        </div>
+      </Card>
+    );
+  }
 
   if (recipes.length === 0) {
     return (

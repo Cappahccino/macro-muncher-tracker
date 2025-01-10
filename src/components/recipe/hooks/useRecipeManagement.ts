@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useSaveRecipe } from "@/hooks/useSaveRecipe";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Recipe {
   title: string;
@@ -28,13 +29,14 @@ interface Recipe {
 
 export function useRecipeManagement() {
   const { toast } = useToast();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { saveRecipe } = useSaveRecipe();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const checkAuthAndLoadRecipes = async () => {
+  const { data: recipes = [] } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -45,45 +47,40 @@ export function useRecipeManagement() {
             variant: "destructive",
           });
           navigate("/sign-in");
-          return;
+          return [];
         }
 
-        const savedRecipes = localStorage.getItem('savedRecipes');
-        if (savedRecipes) {
-          setRecipes(JSON.parse(savedRecipes));
+        const { data, error } = await supabase
+          .from('recipes')
+          .select('*')
+          .eq('user_id', session.user.id);
+
+        if (error) {
+          console.error('Error fetching recipes:', error);
+          throw error;
         }
+
+        return data || [];
       } catch (error) {
-        console.error('Error checking auth:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load recipes",
-          variant: "destructive",
-        });
+        console.error('Error loading recipes:', error);
+        return [];
       } finally {
         setIsLoading(false);
       }
-    };
-
-    checkAuthAndLoadRecipes();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        navigate("/sign-in");
+    },
+    meta: {
+      onError: (error: Error) => {
+        console.error('Query error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch recipes",
+          variant: "destructive",
+        });
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  useEffect(() => {
-    if (recipes.length > 0) {
-      localStorage.setItem('savedRecipes', JSON.stringify(recipes));
     }
-  }, [recipes]);
+  });
 
-  const handleSaveRecipe = (recipe: Recipe) => {
+  const handleSaveRecipe = async (recipe: Recipe) => {
     if (!recipe.title.trim()) {
       toast({
         title: "Error",
@@ -102,64 +99,54 @@ export function useRecipeManagement() {
       return;
     }
 
-    setRecipes([...recipes, recipe]);
-    toast({
-      title: "Success",
-      description: "Recipe saved successfully",
-    });
+    try {
+      await saveRecipe(recipe);
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      
+      toast({
+        title: "Success",
+        description: "Recipe saved successfully",
+      });
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save recipe",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteRecipe = (index: number) => {
-    const newRecipes = recipes.filter((_, i) => i !== index);
-    setRecipes(newRecipes);
-    toast({
-      title: "Success",
-      description: "Recipe deleted successfully",
-    });
+  const handleDeleteRecipe = async (index: number) => {
+    try {
+      const recipe = recipes[index];
+      const { error } = await supabase
+        .from('recipes')
+        .delete()
+        .eq('recipe_id', recipe.recipe_id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      
+      toast({
+        title: "Success",
+        description: "Recipe deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recipe",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveToVault = async (recipe: Recipe) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to save to vault",
-          variant: "destructive",
-        });
-        navigate("/sign-in");
-        return;
-      }
-
-      const recipeForVault = {
-        title: recipe.title,
-        description: recipe.notes,
-        instructions: {
-          steps: recipe.instructions
-        },
-        ingredients: recipe.ingredients.map(ingredient => ({
-          name: ingredient.name,
-          amount: ingredient.amount,
-          macros: {
-            calories: ingredient.calories,
-            protein: ingredient.protein,
-            carbs: ingredient.carbs,
-            fat: ingredient.fat,
-            fiber: ingredient.fiber,
-          }
-        })),
-        macronutrients: {
-          perServing: recipe.macros
-        },
-        total_calories: recipe.macros.calories,
-        total_protein: recipe.macros.protein,
-        total_carbs: recipe.macros.carbs,
-        total_fat: recipe.macros.fat,
-        total_fiber: recipe.macros.fiber
-      };
-
-      await saveRecipe(recipeForVault);
+      await saveRecipe(recipe);
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
       
       toast({
         title: "Success",
@@ -175,36 +162,33 @@ export function useRecipeManagement() {
     }
   };
 
-  const handleUpdateIngredient = (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
-    const updatedRecipes = [...recipes];
-    const recipe = updatedRecipes[recipeIndex];
-    const ingredient = recipe.ingredients[ingredientIndex];
-    
-    const ratio = newAmount / ingredient.amount;
-    
-    ingredient.amount = newAmount;
-    ingredient.calories *= ratio;
-    ingredient.protein *= ratio;
-    ingredient.carbs *= ratio;
-    ingredient.fat *= ratio;
-    ingredient.fiber *= ratio;
-    
-    recipe.macros = recipe.ingredients.reduce(
-      (acc, curr) => ({
-        calories: acc.calories + curr.calories,
-        protein: acc.protein + curr.protein,
-        carbs: acc.carbs + curr.carbs,
-        fat: acc.fat + curr.fat,
-        fiber: acc.fiber + curr.fiber,
-      }),
-      { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
-    );
-    
-    setRecipes(updatedRecipes);
-    toast({
-      title: "Success",
-      description: "Ingredient weight updated successfully",
-    });
+  const handleUpdateIngredient = async (recipeIndex: number, ingredientIndex: number, newAmount: number) => {
+    try {
+      const recipe = recipes[recipeIndex];
+      if (!recipe) return;
+
+      const { error } = await supabase
+        .from('recipe_ingredients')
+        .update({ quantity_g: newAmount })
+        .eq('recipe_id', recipe.recipe_id)
+        .eq('ingredient_id', recipe.ingredients[ingredientIndex].ingredient_id);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      
+      toast({
+        title: "Success",
+        description: "Ingredient weight updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating ingredient:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update ingredient weight",
+        variant: "destructive",
+      });
+    }
   };
 
   return {

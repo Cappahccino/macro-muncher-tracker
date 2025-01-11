@@ -3,13 +3,13 @@ import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { Recipe } from "@/types/recipe";
+import { Recipe, SavedRecipe } from "@/types/recipe";
 
 interface RecipeContentProps {
-  recipes: Recipe[];
-  onSaveRecipe: (recipe: Recipe) => Promise<void>;
+  recipes: SavedRecipe[];
+  onSaveRecipe: (recipe: SavedRecipe) => void;
   onDeleteRecipe: (index: number) => void;
-  onSaveToVault: (recipe: Recipe) => Promise<void>;
+  onSaveToVault: (recipe: SavedRecipe) => void;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
   isLoading?: boolean;
 }

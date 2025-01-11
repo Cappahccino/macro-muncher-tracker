@@ -15,6 +15,7 @@ export interface Recipe {
   recipe_id?: string;
   title: string;
   description: string | null;
+  notes?: string;
   instructions: {
     steps: string[];
     servingSize?: {

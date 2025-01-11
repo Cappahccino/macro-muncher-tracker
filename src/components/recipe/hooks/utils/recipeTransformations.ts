@@ -44,20 +44,33 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
   const ingredients: Ingredient[] = (dbRecipe.recipe_ingredients || []).map(ingredient => ({
     name: ingredient.ingredients?.name || '',
     amount: ingredient.quantity_g,
-    calories: ingredient.custom_calories !== null ? ingredient.custom_calories : ingredient.calories,
-    protein: ingredient.custom_protein !== null ? ingredient.custom_protein : ingredient.protein,
-    carbs: ingredient.custom_carbs !== null ? ingredient.custom_carbs : ingredient.carbs,
-    fat: ingredient.custom_fat !== null ? ingredient.custom_fat : ingredient.fat,
-    fiber: ingredient.custom_fiber !== null ? ingredient.custom_fiber : ingredient.fiber,
+    macros: {
+      calories: ingredient.custom_calories !== null ? ingredient.custom_calories : ingredient.calories,
+      protein: ingredient.custom_protein !== null ? ingredient.custom_protein : ingredient.protein,
+      carbs: ingredient.custom_carbs !== null ? ingredient.custom_carbs : ingredient.carbs,
+      fat: ingredient.custom_fat !== null ? ingredient.custom_fat : ingredient.fat,
+      fiber: ingredient.custom_fiber !== null ? ingredient.custom_fiber : ingredient.fiber,
+    },
     ingredient_id: ingredient.ingredient_id
   }));
+
+  const instructionsData = typeof dbRecipe.instructions === 'string' 
+    ? JSON.parse(dbRecipe.instructions)
+    : dbRecipe.instructions;
 
   return {
     recipe_id: dbRecipe.recipe_id,
     title: dbRecipe.title,
+    description: dbRecipe.description,
     notes: dbRecipe.description || '',
-    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions.map(String) : [],
+    instructions: {
+      steps: Array.isArray(instructionsData) ? instructionsData : instructionsData?.steps || []
+    },
     ingredients,
+    dietary_tags: dbRecipe.dietary_tags || [],
+    created_at: dbRecipe.created_at,
+    updated_at: dbRecipe.updated_at,
+    user_id: dbRecipe.user_id,
     macros: {
       calories: dbRecipe.total_calories || 0,
       protein: dbRecipe.total_protein || 0,
@@ -71,9 +84,9 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
 export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
   return {
     title: recipe.title,
-    description: recipe.notes,
+    description: recipe.description || recipe.notes,
     instructions: recipe.instructions,
-    dietary_tags: [],
+    dietary_tags: recipe.dietary_tags || [],
     total_calories: recipe.macros.calories,
     total_protein: recipe.macros.protein,
     total_carbs: recipe.macros.carbs,
@@ -84,11 +97,11 @@ export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 
       recipe_id: '',
       ingredient_id: ingredient.ingredient_id || '',
       quantity_g: ingredient.amount,
-      calories: ingredient.calories,
-      protein: ingredient.protein,
-      carbs: ingredient.carbs,
-      fat: ingredient.fat,
-      fiber: ingredient.fiber,
+      calories: ingredient.macros.calories,
+      protein: ingredient.macros.protein,
+      carbs: ingredient.macros.carbs,
+      fat: ingredient.macros.fat,
+      fiber: ingredient.macros.fiber,
       custom_calories: null,
       custom_protein: null,
       custom_carbs: null,

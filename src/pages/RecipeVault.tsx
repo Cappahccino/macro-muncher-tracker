@@ -77,7 +77,18 @@ const RecipeVault = () => {
     instructions: typeof recipe.instructions === 'string' 
       ? { steps: JSON.parse(recipe.instructions) } 
       : recipe.instructions,
-    ingredients: recipe.ingredients || [],
+    ingredients: recipe.recipe_ingredients?.map(ri => ({
+      name: ri.ingredients?.name || '',
+      amount: ri.quantity_g,
+      macros: {
+        calories: ri.custom_calories || ri.calories || 0,
+        protein: ri.custom_protein || ri.protein || 0,
+        carbs: ri.custom_carbs || ri.carbs || 0,
+        fat: ri.custom_fat || ri.fat || 0,
+        fiber: ri.custom_fiber || ri.fiber || 0
+      },
+      ingredient_id: ri.ingredient_id
+    })) || [],
     macros: {
       calories: recipe.total_calories || 0,
       protein: recipe.total_protein || 0,

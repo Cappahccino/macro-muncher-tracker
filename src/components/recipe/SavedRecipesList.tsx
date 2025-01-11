@@ -138,12 +138,26 @@ export function SavedRecipesList({
               </div>
 
               <div className="grid grid-cols-5 gap-2">
-                {Object.entries(recipe.macros).map(([key, value]) => (
-                  <div key={key} className="bg-muted p-2 rounded">
-                    <p className="text-xs text-muted-foreground capitalize">{key}</p>
-                    <p className="font-medium">{Math.round(value)}{key === 'calories' ? '' : 'g'}</p>
-                  </div>
-                ))}
+                <div className="bg-muted p-2 rounded">
+                  <p className="text-xs text-muted-foreground">Calories</p>
+                  <p className="font-medium">{Math.round(recipe.macros.calories)}</p>
+                </div>
+                <div className="bg-muted p-2 rounded">
+                  <p className="text-xs text-muted-foreground">Protein</p>
+                  <p className="font-medium">{Math.round(recipe.macros.protein)}g</p>
+                </div>
+                <div className="bg-muted p-2 rounded">
+                  <p className="text-xs text-muted-foreground">Carbs</p>
+                  <p className="font-medium">{Math.round(recipe.macros.carbs)}g</p>
+                </div>
+                <div className="bg-muted p-2 rounded">
+                  <p className="text-xs text-muted-foreground">Fat</p>
+                  <p className="font-medium">{Math.round(recipe.macros.fat)}g</p>
+                </div>
+                <div className="bg-muted p-2 rounded">
+                  <p className="text-xs text-muted-foreground">Fiber</p>
+                  <p className="font-medium">{Math.round(recipe.macros.fiber)}g</p>
+                </div>
               </div>
             </div>
           </div>

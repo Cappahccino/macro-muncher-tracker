@@ -10,17 +10,17 @@ export interface Ingredient {
 }
 
 export interface Recipe {
-  recipe_id?: string;
+  recipe_id: string;
   title: string;
   description: string | null;
   instructions: {
-    steps?: string[];
+    steps: string[];
     servingSize?: {
       servings: number;
       gramsPerServing: number;
     };
-  } | null;
-  created_at?: string;
+  };
+  created_at: string;
   dietary_tags?: string[];
   total_calories?: number;
   total_protein?: number;

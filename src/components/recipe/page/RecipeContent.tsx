@@ -5,33 +5,11 @@ import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { Recipe } from "@/types/recipe";
 
-interface SavedRecipe {
-  title: string;
-  notes: string;
-  instructions: string[];
-  ingredients: {
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  }[];
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
-
 interface RecipeContentProps {
-  recipes: SavedRecipe[];
-  onSaveRecipe: (recipe: SavedRecipe) => void;
+  recipes: Recipe[];
+  onSaveRecipe: (recipe: Recipe) => Promise<void>;
   onDeleteRecipe: (index: number) => void;
-  onSaveToVault: (recipe: SavedRecipe) => void;
+  onSaveToVault: (recipe: Recipe) => Promise<void>;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;
   isLoading?: boolean;
 }

@@ -72,17 +72,7 @@ const RecipeVault = () => {
     }
   };
 
-  const filteredRecipes = recipes?.map(recipe => ({
-    ...recipe,
-    ingredients: [],  // We'll fetch these separately if needed
-    macros: {
-      calories: recipe.total_calories || 0,
-      protein: recipe.total_protein || 0,
-      carbs: recipe.total_carbs || 0,
-      fat: recipe.total_fat || 0,
-      fiber: recipe.total_fiber || 0
-    }
-  })).filter(recipe => {
+  const filteredRecipes = recipes?.filter(recipe => {
     // First apply dietary filter
     if (activeFilter !== "all" && !recipe.dietary_tags?.includes(activeFilter)) {
       return false;
@@ -157,6 +147,6 @@ const RecipeVault = () => {
       </div>
     </div>
   );
-};
+}
 
 export default RecipeVault;

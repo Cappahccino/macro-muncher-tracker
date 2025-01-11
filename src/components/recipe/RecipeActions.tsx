@@ -6,15 +6,27 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SaveRecipeButton } from "./buttons/SaveRecipeButton";
 import { PrintRecipeButton } from "./buttons/PrintRecipeButton";
 import { addRecipeToMeals } from "@/utils/recipe/recipeOperations";
-import { Recipe } from "@/types/recipe";
+
+interface Recipe {
+  recipe_id: string;
+  title: string;
+  description: string | null;
+  instructions: any | null;
+  created_at: string;
+  dietary_tags?: string[];
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+  total_fiber?: number;
+}
 
 interface RecipeActionsProps {
   recipe: Recipe;
   onDelete: () => void;
-  onSave?: (recipe: Recipe) => void;
 }
 
-export function RecipeActions({ recipe, onDelete, onSave }: RecipeActionsProps) {
+export function RecipeActions({ recipe, onDelete }: RecipeActionsProps) {
   const queryClient = useQueryClient();
 
   const handleAddToMeals = async (e: React.MouseEvent) => {
@@ -48,7 +60,7 @@ export function RecipeActions({ recipe, onDelete, onSave }: RecipeActionsProps) 
       >
         <Plus className="h-4 w-4" />
       </Button>
-      <SaveRecipeButton recipe={recipe} onSave={onSave} />
+      <SaveRecipeButton recipe={recipe} />
       <PrintRecipeButton recipe={recipe} />
       <DeleteRecipeDialog recipe={recipe} onDelete={onDelete} />
     </div>

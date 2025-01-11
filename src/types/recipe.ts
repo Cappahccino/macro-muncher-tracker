@@ -36,6 +36,4 @@ export interface Recipe {
     fat: number;
     fiber: number;
   };
-  updated_at?: string;
-  user_id?: string;
 }

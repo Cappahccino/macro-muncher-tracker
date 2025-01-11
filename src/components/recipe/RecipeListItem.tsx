@@ -31,7 +31,7 @@ export const RecipeListItem = ({ recipe, onDelete, onSave }: RecipeListItemProps
             <div className="flex-1">
               <RecipeHeader 
                 title={recipe.title}
-                createdAt={recipe.created_at || ''}
+                createdAt={recipe.created_at}
               />
               <RecipeDescription description={recipe.description} />
               

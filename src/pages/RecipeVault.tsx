@@ -34,7 +34,6 @@ const RecipeVault = () => {
 
     checkAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         navigate("/sign-in");
@@ -44,7 +43,7 @@ const RecipeVault = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['recipes'],
@@ -90,12 +89,15 @@ const RecipeVault = () => {
     }
   });
 
-  const handleDelete = async (recipeId: string) => {
+  const handleDelete = async (index: number) => {
+    const recipe = transformedRecipes[index];
+    if (!recipe) return;
+
     try {
       const { error } = await supabase
         .from('recipes')
         .delete()
-        .eq('recipe_id', recipeId);
+        .eq('recipe_id', recipe.recipe_id);
 
       if (error) throw error;
 
@@ -139,14 +141,14 @@ const RecipeVault = () => {
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
-      <RecipeVaultHeader />
+      <RecipeVaultHeader title="Recipe Vault" />
       
       <div className="mt-8 space-y-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <SearchBar 
-              value={searchQuery} 
-              onChange={setSearchQuery} 
+              searchQuery={searchQuery} 
+              onSearchChange={setSearchQuery} 
             />
           </div>
           <DietaryFilters 

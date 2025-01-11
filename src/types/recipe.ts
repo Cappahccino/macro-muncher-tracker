@@ -13,7 +13,6 @@ export interface Recipe {
   recipe_id: string;
   title: string;
   description: string;
-  notes?: string;
   instructions: string[];
   ingredients: Ingredient[];
   macros: {

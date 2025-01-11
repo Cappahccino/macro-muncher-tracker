@@ -1,15 +1,7 @@
 import { motion } from "framer-motion";
 import { RecipeListItem } from "./RecipeListItem";
 import { LoadingSpinner } from "./page/LoadingSpinner";
-
-interface Recipe {
-  recipe_id: string;
-  title: string;
-  description: string | null;
-  instructions: any | null;
-  created_at: string;
-  dietary_tags?: string[];
-}
+import { Recipe } from "@/types/recipe";
 
 interface RecipeListProps {
   recipes: Recipe[];

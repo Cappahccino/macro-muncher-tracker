@@ -10,16 +10,11 @@ export interface Ingredient {
 }
 
 export interface Recipe {
-  recipe_id?: string;
+  recipe_id: string;
   title: string;
-  description?: string | null;
-  instructions: {
-    steps: string[];
-    servingSize?: {
-      servings: number;
-      gramsPerServing: number;
-    };
-  };
+  description: string;
+  notes?: string;
+  instructions: string[];
   ingredients: Ingredient[];
   macros: {
     calories: number;

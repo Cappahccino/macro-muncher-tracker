@@ -52,11 +52,15 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
     ingredient_id: ingredient.ingredient_id
   }));
 
+  const instructionsArray = Array.isArray(dbRecipe.instructions) 
+    ? dbRecipe.instructions.map(String)
+    : [];
+
   return {
     recipe_id: dbRecipe.recipe_id,
     title: dbRecipe.title,
-    notes: dbRecipe.description || '',
-    instructions: Array.isArray(dbRecipe.instructions) ? dbRecipe.instructions.map(String) : [],
+    description: dbRecipe.description || '',
+    instructions: instructionsArray,
     ingredients,
     macros: {
       calories: dbRecipe.total_calories || 0,
@@ -64,16 +68,18 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
       carbs: dbRecipe.total_carbs || 0,
       fat: dbRecipe.total_fat || 0,
       fiber: dbRecipe.total_fiber || 0,
-    }
+    },
+    created_at: dbRecipe.created_at,
+    dietary_tags: dbRecipe.dietary_tags || []
   };
 };
 
 export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
   return {
     title: recipe.title,
-    description: recipe.notes,
+    description: recipe.description,
     instructions: recipe.instructions,
-    dietary_tags: [],
+    dietary_tags: recipe.dietary_tags || [],
     total_calories: recipe.macros.calories,
     total_protein: recipe.macros.protein,
     total_carbs: recipe.macros.carbs,

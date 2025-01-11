@@ -42,7 +42,7 @@ export function useRecipeSave() {
 
       const dbRecipe = {
         title: recipe.title,
-        description: recipe.notes,
+        description: recipe.description,
         instructions: { steps: recipe.instructions },
         user_id: session.user.id,
         total_calories: recipe.macros.calories,

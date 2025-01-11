@@ -1,18 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-
-interface Ingredient {
-  name: string;
-  amount: number;
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
+import { Ingredient } from "@/types/recipe";
 
 export const findOrCreateIngredient = async (ingredient: Ingredient) => {
+  if (!ingredient?.macros) {
+    throw new Error('Invalid ingredient data: missing macros');
+  }
+
   // First, try to find existing ingredient
   const { data: existingIngredient, error: searchError } = await supabase
     .from('ingredients')

@@ -72,7 +72,20 @@ const RecipeVault = () => {
     }
   };
 
-  const filteredRecipes = recipes?.filter(recipe => {
+  const filteredRecipes = recipes?.map(recipe => ({
+    ...recipe,
+    instructions: typeof recipe.instructions === 'string' 
+      ? { steps: JSON.parse(recipe.instructions) } 
+      : recipe.instructions,
+    ingredients: recipe.ingredients || [],
+    macros: {
+      calories: recipe.total_calories || 0,
+      protein: recipe.total_protein || 0,
+      carbs: recipe.total_carbs || 0,
+      fat: recipe.total_fat || 0,
+      fiber: recipe.total_fiber || 0
+    }
+  })).filter(recipe => {
     // First apply dietary filter
     if (activeFilter !== "all" && !recipe.dietary_tags?.includes(activeFilter)) {
       return false;

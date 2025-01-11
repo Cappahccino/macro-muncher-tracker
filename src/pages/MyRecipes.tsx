@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Recipe, SavedRecipe } from "@/types/recipe";
 
 const MyRecipes = () => {
   const navigate = useNavigate();
@@ -36,6 +37,23 @@ const MyRecipes = () => {
     checkAuth();
   }, [navigate, toast]);
 
+  // Convert Recipe to SavedRecipe
+  const convertToSavedRecipes = (recipes: Recipe[]): SavedRecipe[] => {
+    return recipes.map(recipe => ({
+      title: recipe.title,
+      notes: recipe.description || '',
+      instructions: recipe.instructions.steps,
+      ingredients: recipe.ingredients,
+      macros: {
+        calories: recipe.macros.calories,
+        protein: recipe.macros.protein,
+        carbs: recipe.macros.carbs,
+        fat: recipe.macros.fat,
+        fiber: recipe.macros.fiber
+      }
+    }));
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
@@ -47,10 +65,14 @@ const MyRecipes = () => {
           </div>
         ) : (
           <RecipeContent
-            recipes={recipes}
-            onSaveRecipe={handleSaveRecipe}
+            recipes={convertToSavedRecipes(recipes)}
+            onSaveRecipe={async (recipe) => {
+              await handleSaveRecipe(recipe as unknown as Recipe);
+            }}
             onDeleteRecipe={handleDeleteRecipe}
-            onSaveToVault={handleSaveToVault}
+            onSaveToVault={async (recipe) => {
+              await handleSaveToVault(recipe as unknown as Recipe);
+            }}
             onUpdateIngredient={handleUpdateIngredient}
           />
         )}

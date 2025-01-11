@@ -52,15 +52,18 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
     ingredient_id: ingredient.ingredient_id
   }));
 
-  const instructionsArray = Array.isArray(dbRecipe.instructions) 
-    ? dbRecipe.instructions.map(String)
-    : [];
+  const instructionsObj = typeof dbRecipe.instructions === 'string' 
+    ? JSON.parse(dbRecipe.instructions)
+    : dbRecipe.instructions;
 
   return {
     recipe_id: dbRecipe.recipe_id,
     title: dbRecipe.title,
     description: dbRecipe.description || '',
-    instructions: instructionsArray,
+    instructions: {
+      steps: Array.isArray(instructionsObj) ? instructionsObj : [],
+      servingSize: instructionsObj?.servingSize
+    },
     ingredients,
     macros: {
       calories: dbRecipe.total_calories || 0,

@@ -13,7 +13,13 @@ export interface Recipe {
   recipe_id: string;
   title: string;
   description: string;
-  instructions: string[];
+  instructions: {
+    steps: string[];
+    servingSize?: {
+      servings: number;
+      gramsPerServing: number;
+    };
+  };
   ingredients: Ingredient[];
   macros: {
     calories: number;
@@ -22,7 +28,7 @@ export interface Recipe {
     fat: number;
     fiber: number;
   };
-  created_at?: string;
+  created_at: string;
   dietary_tags?: string[];
   total_calories?: number;
   total_protein?: number;

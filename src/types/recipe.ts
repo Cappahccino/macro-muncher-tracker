@@ -29,4 +29,5 @@ export interface Recipe {
   total_carbs?: number;
   total_fat?: number;
   total_fiber?: number;
+  user_id?: string;
 }

@@ -70,7 +70,13 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
       fiber: dbRecipe.total_fiber || 0,
     },
     created_at: dbRecipe.created_at,
-    dietary_tags: dbRecipe.dietary_tags || []
+    dietary_tags: dbRecipe.dietary_tags || [],
+    total_calories: dbRecipe.total_calories || 0,
+    total_protein: dbRecipe.total_protein || 0,
+    total_carbs: dbRecipe.total_carbs || 0,
+    total_fat: dbRecipe.total_fat || 0,
+    total_fiber: dbRecipe.total_fiber || 0,
+    user_id: dbRecipe.user_id
   };
 };
 

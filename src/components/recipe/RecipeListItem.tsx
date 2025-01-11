@@ -6,15 +6,26 @@ import { RecipeHeader } from "./details/RecipeHeader";
 import { RecipeDescription } from "./details/RecipeDescription";
 import { MacronutrientSummary } from "./details/MacronutrientSummary";
 import { DietaryTags } from "./details/DietaryTags";
-import { Recipe } from "@/types/recipe";
+
+interface Recipe {
+  recipe_id: string;
+  title: string;
+  description: string | null;
+  instructions: any | null;
+  created_at: string;
+  dietary_tags?: string[];
+  total_calories?: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
+}
 
 interface RecipeListItemProps {
   recipe: Recipe;
   onDelete: () => void;
-  onSave?: (recipe: Recipe) => void;
 }
 
-export const RecipeListItem = ({ recipe, onDelete, onSave }: RecipeListItemProps) => {
+export const RecipeListItem = ({ recipe, onDelete }: RecipeListItemProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -44,7 +55,7 @@ export const RecipeListItem = ({ recipe, onDelete, onSave }: RecipeListItemProps
                 />
               )}
             </div>
-            <RecipeActions recipe={recipe} onDelete={onDelete} onSave={onSave} />
+            <RecipeActions recipe={recipe} onDelete={onDelete} />
           </div>
           <DietaryTags tags={recipe.dietary_tags || []} />
         </div>

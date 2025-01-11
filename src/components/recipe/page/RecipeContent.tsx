@@ -7,7 +7,7 @@ import { Recipe } from "@/types/recipe";
 
 interface RecipeContentProps {
   recipes: Recipe[];
-  onSaveRecipe: (recipe: Omit<Recipe, 'recipe_id' | 'created_at'>) => Promise<void>;
+  onSaveRecipe: (recipe: Recipe) => Promise<void>;
   onDeleteRecipe: (index: number) => void;
   onSaveToVault: (recipe: Recipe) => Promise<void>;
   onUpdateIngredient: (recipeIndex: number, ingredientIndex: number, newAmount: number) => void;

@@ -5,10 +5,31 @@ import { RecipeBasicInfo } from "./form/RecipeBasicInfo";
 import { IngredientsList } from "./form/IngredientsList";
 import { MacroSummary } from "./form/MacroSummary";
 import { FormActions } from "./form/FormActions";
-import { Recipe, Ingredient } from "@/types/recipe";
+
+interface Ingredient {
+  name: string;
+  amount: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
 
 interface CreateRecipeFormProps {
-  onSave: (recipe: Omit<Recipe, 'recipe_id' | 'created_at' | 'updated_at'>) => void;
+  onSave: (recipe: {
+    title: string;
+    notes: string;
+    instructions: string[];
+    ingredients: Ingredient[];
+    macros: {
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      fiber: number;
+    };
+  }) => void;
 }
 
 export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
@@ -80,19 +101,10 @@ export function CreateRecipeForm({ onSave }: CreateRecipeFormProps) {
     const totalMacros = calculateTotalMacros();
     onSave({
       title: recipeName,
-      description: notes,
       notes,
-      instructions: {
-        steps: instructions.split('\n').filter(line => line.trim() !== ''),
-      },
+      instructions: instructions.split('\n').filter(line => line.trim() !== ''),
       ingredients,
       macros: totalMacros,
-      dietary_tags: [],
-      total_calories: totalMacros.calories,
-      total_protein: totalMacros.protein,
-      total_carbs: totalMacros.carbs,
-      total_fat: totalMacros.fat,
-      total_fiber: totalMacros.fiber,
     });
     
     // Reset form

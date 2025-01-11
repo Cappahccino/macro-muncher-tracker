@@ -6,43 +6,7 @@ import { RecipeHeader } from "./details/RecipeHeader";
 import { RecipeDescription } from "./details/RecipeDescription";
 import { MacronutrientSummary } from "./details/MacronutrientSummary";
 import { DietaryTags } from "./details/DietaryTags";
-
-interface Recipe {
-  recipe_id: string;
-  title: string;
-  description: string | null;
-  instructions: {
-    steps?: string[];
-    servingSize?: {
-      servings: number;
-      gramsPerServing: number;
-    };
-  } | null;
-  created_at: string;
-  dietary_tags?: string[];
-  total_calories?: number;
-  total_protein?: number;
-  total_carbs?: number;
-  total_fat?: number;
-  total_fiber?: number;
-  notes: string;
-  ingredients: {
-    name: string;
-    amount: number;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  }[];
-  macros: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-  };
-}
+import { Recipe } from "@/types/recipe";
 
 interface RecipeListItemProps {
   recipe: Recipe;
@@ -67,7 +31,7 @@ export const RecipeListItem = ({ recipe, onDelete, onSave }: RecipeListItemProps
             <div className="flex-1">
               <RecipeHeader 
                 title={recipe.title}
-                createdAt={recipe.created_at}
+                createdAt={recipe.created_at || ''}
               />
               <RecipeDescription description={recipe.description} />
               

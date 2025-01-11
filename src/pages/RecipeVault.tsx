@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Recipe } from "@/types/recipe";
 
 const RecipeVault = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -72,13 +73,24 @@ const RecipeVault = () => {
     }
   };
 
-  const filteredRecipes = recipes?.filter(recipe => {
-    // First apply dietary filter
+  const transformedRecipes: Recipe[] = recipes?.map(dbRecipe => ({
+    ...dbRecipe,
+    notes: dbRecipe.description || '',
+    ingredients: [],  // We'll need to fetch these separately if needed
+    macros: {
+      calories: dbRecipe.total_calories || 0,
+      protein: dbRecipe.total_protein || 0,
+      carbs: dbRecipe.total_carbs || 0,
+      fat: dbRecipe.total_fat || 0,
+      fiber: dbRecipe.total_fiber || 0,
+    }
+  })) || [];
+
+  const filteredRecipes = transformedRecipes?.filter(recipe => {
     if (activeFilter !== "all" && !recipe.dietary_tags?.includes(activeFilter)) {
       return false;
     }
     
-    // Then apply search filter if there's a search query
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       return (
@@ -137,7 +149,7 @@ const RecipeVault = () => {
             ) : (
               <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
                 <RecipeList 
-                  recipes={filteredRecipes || []} 
+                  recipes={filteredRecipes} 
                   onDelete={handleDelete}
                 />
               </ScrollArea>

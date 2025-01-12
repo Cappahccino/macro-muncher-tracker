@@ -1,25 +1,29 @@
 import { Header } from "@/components/Header";
-import { RecipeContent } from "@/components/recipe/page/RecipeContent";
-import { useRecipeManagement } from "@/components/recipe/hooks/useRecipeManagement";
-import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useEffect } from "react";
+import { DietaryFilters } from "@/components/recipe/DietaryFilters";
+import { QuickSuggestions } from "@/components/recipe/QuickSuggestions";
+import { HealthyAlternative } from "@/components/recipe/HealthyAlternative";
+import { SearchBar } from "@/components/recipe/SearchBar";
+import { RecipeList } from "@/components/recipe/RecipeList";
+import { RecipeVaultHeader } from "@/components/recipe/RecipeVaultHeader";
+import { useRecipes } from "@/hooks/useRecipes";
+import { motion } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Recipe, SavedRecipe } from "@/types/recipe";
-import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
+import { useNavigate } from "react-router-dom";
 
 const RecipeVault = () => {
-  const navigate = useNavigate();
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const { recipes, isLoading, queryClient } = useRecipes();
   const { toast } = useToast();
-  const {
-    recipes,
-    isLoading,
-    handleSaveRecipe,
-    handleDeleteRecipe,
-    handleSaveToVault,
-    handleUpdateIngredient
-  } = useRecipeManagement();
+  const navigate = useNavigate();
 
+  // Check authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -34,55 +38,139 @@ const RecipeVault = () => {
     };
 
     checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate("/sign-in");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
-  // Convert Recipe to SavedRecipe
-  const convertToSavedRecipes = (recipes: Recipe[]): SavedRecipe[] => {
-    return recipes.map(recipe => ({
-      title: recipe.title,
-      notes: recipe.description || '',
-      description: recipe.description,
-      instructions: recipe.instructions.steps,
-      ingredients: recipe.ingredients.map(ingredient => ({
-        name: ingredient.name,
-        amount: ingredient.amount,
-        macros: {
-          calories: ingredient.macros.calories,
-          protein: ingredient.macros.protein,
-          carbs: ingredient.macros.carbs,
-          fat: ingredient.macros.fat,
-          fiber: ingredient.macros.fiber
-        }
-      })),
-      macros: recipe.macros
-    }));
+  const handleDelete = async () => {
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      if (searchQuery) {
+        setSearchQuery("");
+        setIsSearching(false);
+      }
+      toast({
+        title: "Success",
+        description: "Recipe deleted successfully",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete recipe",
+        variant: "destructive",
+      });
+    }
   };
+
+  const filteredRecipes = recipes?.map(recipe => ({
+    ...recipe,
+    instructions: typeof recipe.instructions === 'string' 
+      ? { steps: JSON.parse(recipe.instructions) } 
+      : recipe.instructions,
+    ingredients: recipe.recipe_ingredients?.map(ri => ({
+      name: ri.ingredients?.name || '',
+      amount: ri.quantity_g,
+      macros: {
+        calories: ri.custom_calories || ri.calories || 0,
+        protein: ri.custom_protein || ri.protein || 0,
+        carbs: ri.custom_carbs || ri.carbs || 0,
+        fat: ri.custom_fat || ri.fat || 0,
+        fiber: ri.custom_fiber || ri.fiber || 0
+      },
+      ingredient_id: ri.ingredient_id
+    })) || [],
+    macros: {
+      calories: recipe.total_calories || 0,
+      protein: recipe.total_protein || 0,
+      carbs: recipe.total_carbs || 0,
+      fat: recipe.total_fat || 0,
+      fiber: recipe.total_fiber || 0
+    }
+  })).filter(recipe => {
+    // First apply dietary filter
+    if (activeFilter !== "all" && !recipe.dietary_tags?.includes(activeFilter)) {
+      return false;
+    }
+    
+    // Then apply search filter if there's a search query
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        recipe.title.toLowerCase().includes(searchLower) ||
+        recipe.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return true;
+  });
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Header />
-      <div className="space-y-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-            <LoadingSpinner />
+      
+      <div className="mt-8 space-y-8">
+        <RecipeVaultHeader title="Recipe Vault" />
+
+        <div className="space-y-6">
+          <HealthyAlternative />
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex-1 w-full md:w-auto">
+              <SearchBar
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                isSearching={isSearching}
+                setIsSearching={setIsSearching}
+              />
+            </div>
           </div>
-        ) : (
-          <RecipeContent
-            recipes={convertToSavedRecipes(recipes)}
-            onSaveRecipe={async (recipe) => {
-              await handleSaveRecipe(recipe as unknown as Recipe);
-            }}
-            onDeleteRecipe={handleDeleteRecipe}
-            onSaveToVault={async (recipe) => {
-              await handleSaveToVault(recipe as unknown as Recipe);
-            }}
-            onUpdateIngredient={handleUpdateIngredient}
-            isLoading={isLoading}
-          />
-        )}
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <DietaryFilters 
+              activeFilter={activeFilter} 
+              onFilterChange={setActiveFilter} 
+            />
+            <QuickSuggestions />
+          </div>
+
+          <Separator className="my-8" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-semibold mb-4 bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
+              Your Recipes
+            </h2>
+            
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <ScrollArea className="h-[600px] rounded-md border bg-card/50 backdrop-blur-sm p-4">
+                <RecipeList 
+                  recipes={filteredRecipes || []} 
+                  onDelete={handleDelete}
+                />
+              </ScrollArea>
+            )}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default RecipeVault;

@@ -14,8 +14,8 @@ export interface Ingredient {
 export interface Recipe {
   recipe_id?: string;
   title: string;
-  description: string | null;
-  notes?: string;
+  description: string;
+  notes: string;
   instructions: {
     steps: string[];
     servingSize?: {

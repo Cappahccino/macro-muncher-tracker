@@ -58,10 +58,24 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
     ? JSON.parse(dbRecipe.instructions)
     : dbRecipe.instructions;
 
+  const totalMacros = ingredients.reduce((acc, ingredient) => ({
+    calories: acc.calories + ingredient.macros.calories,
+    protein: acc.protein + ingredient.macros.protein,
+    carbs: acc.carbs + ingredient.macros.carbs,
+    fat: acc.fat + ingredient.macros.fat,
+    fiber: acc.fiber + ingredient.macros.fiber,
+  }), {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+  });
+
   return {
     recipe_id: dbRecipe.recipe_id,
     title: dbRecipe.title,
-    description: dbRecipe.description,
+    description: dbRecipe.description || '',
     notes: dbRecipe.description || '',
     instructions: {
       steps: Array.isArray(instructionsData) ? instructionsData : instructionsData?.steps || []
@@ -71,27 +85,35 @@ export const transformDatabaseRecipeToRecipe = (dbRecipe: DatabaseRecipe): Recip
     created_at: dbRecipe.created_at,
     updated_at: dbRecipe.updated_at,
     user_id: dbRecipe.user_id,
-    macros: {
-      calories: dbRecipe.total_calories || 0,
-      protein: dbRecipe.total_protein || 0,
-      carbs: dbRecipe.total_carbs || 0,
-      fat: dbRecipe.total_fat || 0,
-      fiber: dbRecipe.total_fiber || 0,
-    }
+    macros: totalMacros
   };
 };
 
 export const transformRecipeToDatabase = (recipe: Recipe): Omit<DatabaseRecipe, 'recipe_id' | 'user_id' | 'created_at' | 'updated_at'> => {
+  const totalMacros = recipe.ingredients.reduce((acc, ingredient) => ({
+    calories: acc.calories + ingredient.macros.calories,
+    protein: acc.protein + ingredient.macros.protein,
+    carbs: acc.carbs + ingredient.macros.carbs,
+    fat: acc.fat + ingredient.macros.fat,
+    fiber: acc.fiber + ingredient.macros.fiber,
+  }), {
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+  });
+
   return {
     title: recipe.title,
     description: recipe.description || recipe.notes,
     instructions: recipe.instructions,
     dietary_tags: recipe.dietary_tags || [],
-    total_calories: recipe.macros.calories,
-    total_protein: recipe.macros.protein,
-    total_carbs: recipe.macros.carbs,
-    total_fat: recipe.macros.fat,
-    total_fiber: recipe.macros.fiber,
+    total_calories: totalMacros.calories,
+    total_protein: totalMacros.protein,
+    total_carbs: totalMacros.carbs,
+    total_fat: totalMacros.fat,
+    total_fiber: totalMacros.fiber,
     recipe_ingredients: recipe.ingredients.map(ingredient => ({
       recipe_ingredient_id: '',
       recipe_id: '',

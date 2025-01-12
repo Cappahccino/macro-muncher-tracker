@@ -3,7 +3,7 @@ import { SavedRecipesList } from "@/components/recipe/SavedRecipesList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { Recipe, SavedRecipe } from "@/types/recipe";
+import { SavedRecipe } from "@/types/recipe";
 
 interface RecipeContentProps {
   recipes: SavedRecipe[];

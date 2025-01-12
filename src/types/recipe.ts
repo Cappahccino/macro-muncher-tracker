@@ -40,6 +40,7 @@ export interface Recipe {
 export interface SavedRecipe {
   title: string;
   notes: string;
+  description?: string;
   instructions: string[];
   ingredients: Ingredient[];
   macros: {

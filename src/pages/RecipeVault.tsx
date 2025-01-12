@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Recipe, SavedRecipe } from "@/types/recipe";
+import { LoadingSpinner } from "@/components/recipe/page/LoadingSpinner";
 
 const RecipeVault = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const RecipeVault = () => {
     return recipes.map(recipe => ({
       title: recipe.title,
       notes: recipe.description || '',
+      description: recipe.description,
       instructions: recipe.instructions.steps,
       ingredients: recipe.ingredients.map(ingredient => ({
         name: ingredient.name,
@@ -67,9 +69,13 @@ const RecipeVault = () => {
         ) : (
           <RecipeContent
             recipes={convertToSavedRecipes(recipes)}
-            onSaveRecipe={handleSaveRecipe}
+            onSaveRecipe={async (recipe) => {
+              await handleSaveRecipe(recipe as unknown as Recipe);
+            }}
             onDeleteRecipe={handleDeleteRecipe}
-            onSaveToVault={handleSaveToVault}
+            onSaveToVault={async (recipe) => {
+              await handleSaveToVault(recipe as unknown as Recipe);
+            }}
             onUpdateIngredient={handleUpdateIngredient}
             isLoading={isLoading}
           />
